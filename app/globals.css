@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-remax-red:  #FF1200;
+  --color-remax-blue: #0043FF;
+  --color-background: #ffffff;
+  --color-foreground: #171717;
+  --font-sans: var(--font-montserrat), Arial, Helvetica, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #ffffff;
+  color: #171717;
+  font-family: var(--font-montserrat), Arial, Helvetica, sans-serif;
+}
