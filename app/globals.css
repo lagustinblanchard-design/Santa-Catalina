@@ -3,8 +3,14 @@
 @theme inline {
   --color-remax-red:  #FF1200;
   --color-remax-blue: #0043FF;
+  --color-paye-red:   #AA1120;
+  --color-paye-bone:  #F2ECE0;
+  --color-paye-graphite: #2E2A26;
+  --color-paye-gray-mid: #6B6660;
+  --color-paye-gray-light: #D8D2C7;
+  --color-paye-brown: #8A6A47;
   --color-background: #ffffff;
-  --color-foreground: #171717;
+  --color-foreground: #2E2A26;
   --font-sans: var(--font-montserrat), Arial, Helvetica, sans-serif;
 }
 
@@ -14,6 +20,6 @@ html {
 
 body {
   background: #ffffff;
-  color: #171717;
+  color: #2E2A26;
   font-family: var(--font-montserrat), Arial, Helvetica, sans-serif;
 }

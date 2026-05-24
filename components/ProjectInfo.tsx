@@ -2,64 +2,63 @@ import { SITE, LOT_TYPES } from '@/lib/data'
 
 export default function ProjectInfo() {
   return (
-    <section id="proyecto" className="bg-white py-20">
+    <section id="proyecto" className="py-20" style={{ background: '#F2ECE0' }}>
       <div className="mx-auto max-w-6xl px-6">
         <div className="mb-12 text-center">
-          <span className="mb-3 inline-block rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-widest text-white" style={{ backgroundColor: '#FF1200' }}>
+          <span className="mb-3 inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest text-white" style={{ backgroundColor: '#AA1120' }}>
             El proyecto
           </span>
-          <h2 className="text-4xl font-black text-gray-900">Predios Santa Catalina</h2>
-          <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-            Sistema de gestión y desarrollo inmobiliario comercializado por{' '}
-            <strong>RE/MAX PAYÉ</strong> en Corrientes Capital.
+          <h2 className="text-4xl font-black" style={{ color: '#2E2A26' }}>Predios Santa Catalina</h2>
+          <p className="mt-4 text-lg max-w-2xl mx-auto" style={{ color: '#6B6660', lineHeight: 1.7 }}>
+            Loteo residencial y mixto comercializado por{' '}
+            <strong style={{ color: '#2E2A26' }}>RE/MAX PAYÉ</strong> en Corrientes Capital.
           </p>
         </div>
 
         {/* Context cards */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-16">
           {[
-            { label: 'Desarrollador', value: SITE.developer, icon: '🏗️' },
-            { label: 'Aprobación', value: SITE.ordinance, icon: '📋' },
-            { label: 'Manzanas', value: `${SITE.totalBlocks} en total`, icon: '🗺️' },
-            { label: 'Etapa actual', value: SITE.stage, icon: '📍' },
+            { label: 'Desarrollador', value: SITE.developer },
+            { label: 'Aprobación',    value: SITE.ordinance },
+            { label: 'Manzanas',      value: `${SITE.totalBlocks} en total` },
+            { label: 'Etapa actual',  value: SITE.stage },
           ].map((item) => (
-            <div key={item.label} className="rounded-2xl border border-gray-100 bg-gray-50 p-6">
-              <div className="mb-3 text-2xl">{item.icon}</div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">{item.label}</p>
-              <p className="mt-1 text-lg font-bold text-gray-900">{item.value}</p>
+            <div key={item.label} className="rounded-2xl border p-6" style={{ background: '#fff', borderColor: '#D8D2C7' }}>
+              <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: '#8A6A47' }}>{item.label}</p>
+              <p className="text-lg font-bold" style={{ color: '#2E2A26' }}>{item.value}</p>
             </div>
           ))}
         </div>
 
         {/* Location */}
-        <div className="mb-16 rounded-2xl bg-gray-900 p-8 text-white">
-          <h3 className="mb-3 text-xl font-bold">📍 Ubicación</h3>
-          <p className="text-gray-300">{SITE.location}</p>
-          <p className="mt-2 text-sm text-gray-400">
+        <div className="mb-16 rounded-2xl p-8 text-white" style={{ background: '#2E2A26' }}>
+          <h3 className="mb-3 text-xl font-bold">Ubicación</h3>
+          <p style={{ color: '#D8D2C7' }}>{SITE.location}</p>
+          <p className="mt-2 text-sm" style={{ color: '#6B6660' }}>
             Corrientes Capital — zona de expansión urbana con acceso a servicios y vías principales.
           </p>
         </div>
 
         {/* Lot typologies */}
         <div>
-          <h3 className="mb-6 text-2xl font-bold text-gray-900">Tipologías de lotes</h3>
-          <div className="overflow-x-auto rounded-2xl border border-gray-200">
+          <h3 className="mb-6 text-2xl font-bold" style={{ color: '#2E2A26' }}>Tipologías de lotes</h3>
+          <div className="overflow-x-auto rounded-2xl border" style={{ borderColor: '#D8D2C7' }}>
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-50">
-                  <th className="px-6 py-4 text-left font-semibold text-gray-700">Tipología</th>
-                  <th className="px-6 py-4 text-left font-semibold text-gray-700">Medidas</th>
-                  <th className="px-6 py-4 text-left font-semibold text-gray-700">Superficie</th>
-                  <th className="px-6 py-4 text-left font-semibold text-gray-700">Uso</th>
+                <tr style={{ background: '#fff' }}>
+                  <th className="px-6 py-4 text-left font-semibold" style={{ color: '#2E2A26' }}>Tipología</th>
+                  <th className="px-6 py-4 text-left font-semibold" style={{ color: '#2E2A26' }}>Medidas</th>
+                  <th className="px-6 py-4 text-left font-semibold" style={{ color: '#2E2A26' }}>Superficie</th>
+                  <th className="px-6 py-4 text-left font-semibold" style={{ color: '#2E2A26' }}>Uso</th>
                 </tr>
               </thead>
               <tbody>
                 {Object.entries(LOT_TYPES).map(([key, lot], i) => (
-                  <tr key={key} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                    <td className="px-6 py-4 font-medium text-gray-900">{lot.label}</td>
-                    <td className="px-6 py-4 text-gray-600">{lot.dims}</td>
-                    <td className="px-6 py-4 text-gray-600">{lot.sqm} m²</td>
-                    <td className="px-6 py-4 text-gray-600">{lot.use}</td>
+                  <tr key={key} style={{ background: i % 2 === 0 ? '#fff' : '#F2ECE0', borderTop: '1px solid #D8D2C7' }}>
+                    <td className="px-6 py-4 font-medium" style={{ color: '#2E2A26' }}>{lot.label}</td>
+                    <td className="px-6 py-4" style={{ color: '#6B6660' }}>{lot.dims}</td>
+                    <td className="px-6 py-4" style={{ color: '#6B6660' }}>{lot.sqm} m²</td>
+                    <td className="px-6 py-4" style={{ color: '#6B6660' }}>{lot.use}</td>
                   </tr>
                 ))}
               </tbody>

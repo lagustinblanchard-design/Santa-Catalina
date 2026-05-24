@@ -166,6 +166,20 @@ export const LOTS: Lot[] = Object.entries(MZ).flatMap(([blockStr, defs]) => {
   }))
 })
 
+function priceForDims(dims: string): number | undefined {
+  if (dims === '12×30') return 17650
+  if (dims === '12×28') return 16450
+  return undefined
+}
+
+export function applyStatuses(overrides: Record<string, import('./data').LotStatus>): Lot[] {
+  return LOTS.map(lot => {
+    const status = overrides[lot.id] ?? lot.status
+    const price = status === 'DISPONIBLE' ? priceForDims(lot.dims) : undefined
+    return { ...lot, status, price }
+  })
+}
+
 export function getBlockLots(block: number): Lot[] {
   return LOTS.filter(l => l.block === block)
 }
