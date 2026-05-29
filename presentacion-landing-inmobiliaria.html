@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Landing Page Inmobiliaria — Presentación Comercial</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: #1a1a2e;
+    }
+
+    .slide {
+      width: 297mm;
+      min-height: 210mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 16mm 20mm;
+      page-break-after: always;
+      page-break-inside: avoid;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ── Portada ── */
+    .slide-cover {
+      background: linear-gradient(135deg, #0f0c29 0%, #1a1a4e 50%, #0f3460 100%);
+      align-items: flex-start;
+      justify-content: flex-end;
+    }
+    .slide-cover::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 320px; height: 320px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(200,160,60,0.18) 0%, transparent 70%);
+    }
+    .slide-cover .tag {
+      background: #c8a03c;
+      color: #fff;
+      font-size: 9pt;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 2px;
+      margin-bottom: 18px;
+      display: inline-block;
+    }
+    .slide-cover h1 {
+      font-size: 40pt;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.1;
+      margin-bottom: 14px;
+    }
+    .slide-cover h1 span { color: #c8a03c; }
+    .slide-cover .subtitle {
+      font-size: 12pt;
+      color: rgba(255,255,255,0.65);
+      font-weight: 300;
+      max-width: 180mm;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+    .slide-cover .pills {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .slide-cover .pill {
+      border: 1px solid rgba(200,160,60,0.5);
+      color: #c8a03c;
+      font-size: 9pt;
+      font-weight: 600;
+      padding: 5px 14px;
+      border-radius: 20px;
+      letter-spacing: 1px;
+    }
+    .slide-cover .deco-line {
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 100%; height: 4px;
+      background: linear-gradient(90deg, #c8a03c, transparent);
+    }
+
+    /* ── Slide estándar claro ── */
+    .slide-light {
+      background: #f9f8f5;
+    }
+    .slide-light .slide-header {
+      margin-bottom: 22px;
+    }
+    .slide-light .slide-number {
+      font-size: 8pt;
+      font-weight: 700;
+      color: #c8a03c;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .slide-light h2 {
+      font-size: 22pt;
+      font-weight: 800;
+      color: #0f0c29;
+      line-height: 1.2;
+    }
+    .slide-light h2 span { color: #c8a03c; }
+    .slide-light .divider {
+      width: 40px; height: 3px;
+      background: #c8a03c;
+      margin-top: 10px;
+    }
+
+    /* ── Slide oscuro ── */
+    .slide-dark {
+      background: linear-gradient(135deg, #0f0c29 0%, #1a1a4e 100%);
+    }
+    .slide-dark .slide-number {
+      font-size: 8pt;
+      font-weight: 700;
+      color: #c8a03c;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .slide-dark h2 {
+      font-size: 22pt;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+    .slide-dark h2 span { color: #c8a03c; }
+    .slide-dark .divider {
+      width: 40px; height: 3px;
+      background: #c8a03c;
+      margin-bottom: 22px;
+    }
+
+    /* ── Items de lista ── */
+    .items-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 4px;
+    }
+    .items-grid.single { grid-template-columns: 1fr; }
+    .items-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+
+    .item-card {
+      background: #ffffff;
+      border-radius: 6px;
+      padding: 14px 16px;
+      border-left: 3px solid #c8a03c;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    }
+    .item-card-dark {
+      background: rgba(255,255,255,0.06);
+      border-radius: 6px;
+      padding: 14px 16px;
+      border-left: 3px solid #c8a03c;
+    }
+    .item-card p, .item-card-dark p {
+      font-size: 10pt;
+      color: #2d2d2d;
+      line-height: 1.55;
+      font-weight: 500;
+    }
+    .item-card-dark p { color: rgba(255,255,255,0.85); }
+    .item-card .label, .item-card-dark .label {
+      font-size: 8pt;
+      font-weight: 700;
+      color: #c8a03c;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 5px;
+    }
+    .item-card .arrow {
+      color: #c8a03c;
+      font-weight: 700;
+      font-size: 11pt;
+    }
+
+    /* ── Slide Problema ── */
+    .problema-list {
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      margin-top: 4px;
+    }
+    .problema-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      background: #fff;
+      border-radius: 6px;
+      padding: 12px 16px;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.06);
+    }
+    .problema-item .icon {
+      font-size: 16pt;
+      min-width: 26px;
+    }
+    .problema-item p {
+      font-size: 10.5pt;
+      color: #2d2d2d;
+      font-weight: 500;
+      line-height: 1.45;
+    }
+    .problema-item p strong {
+      color: #c0392b;
+      font-weight: 700;
+    }
+
+    /* ── Slide Inversión ── */
+    .inversion-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 4px;
+    }
+    .inv-card {
+      background: rgba(255,255,255,0.07);
+      border-radius: 8px;
+      padding: 20px 18px;
+      border: 1px solid rgba(200,160,60,0.3);
+    }
+    .inv-card .inv-title {
+      font-size: 9pt;
+      font-weight: 700;
+      color: #c8a03c;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+    }
+    .inv-card .inv-price {
+      font-size: 22pt;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .inv-card .inv-sub {
+      font-size: 9pt;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 14px;
+    }
+    .inv-card ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .inv-card ul li {
+      font-size: 9.5pt;
+      color: rgba(255,255,255,0.8);
+      padding-left: 14px;
+      position: relative;
+      line-height: 1.4;
+    }
+    .inv-card ul li::before {
+      content: '–';
+      position: absolute;
+      left: 0;
+      color: #c8a03c;
+    }
+    .inv-compare {
+      grid-column: 1 / -1;
+      background: rgba(200,160,60,0.1);
+      border: 1px solid rgba(200,160,60,0.4);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+    }
+    .inv-compare p {
+      font-size: 10pt;
+      color: rgba(255,255,255,0.8);
+    }
+    .inv-compare strong { color: #c8a03c; }
+
+    /* ── Slide CTA ── */
+    .slide-cta {
+      background: linear-gradient(135deg, #0f3460 0%, #0f0c29 100%);
+      align-items: center;
+      text-align: center;
+    }
+    .slide-cta .cta-tag {
+      background: #c8a03c;
+      color: #fff;
+      font-size: 8pt;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 2px;
+      margin-bottom: 20px;
+      display: inline-block;
+    }
+    .slide-cta h2 {
+      font-size: 28pt;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 10px;
+      line-height: 1.15;
+    }
+    .slide-cta h2 span { color: #c8a03c; }
+    .slide-cta .cta-sub {
+      font-size: 11pt;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 32px;
+      max-width: 160mm;
+    }
+    .cta-steps {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-bottom: 32px;
+    }
+    .cta-step {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(200,160,60,0.3);
+      border-radius: 8px;
+      padding: 16px 18px;
+      width: 55mm;
+      text-align: left;
+    }
+    .cta-step .step-num {
+      font-size: 20pt;
+      font-weight: 800;
+      color: #c8a03c;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .cta-step p {
+      font-size: 9.5pt;
+      color: rgba(255,255,255,0.8);
+      line-height: 1.45;
+    }
+    .cta-footer {
+      font-size: 9pt;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 1px;
+    }
+
+    /* ── Decoraciones globales ── */
+    .corner-deco {
+      position: absolute;
+      bottom: 10mm;
+      right: 14mm;
+      font-size: 8pt;
+      color: rgba(200,160,60,0.35);
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    @media print {
+      body { background: white; }
+      .slide {
+        width: 297mm;
+        min-height: 210mm;
+        page-break-after: always;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SLIDE 1: PORTADA -->
+  <div class="slide slide-cover">
+    <div class="tag">Propuesta Comercial</div>
+    <h1>Tu Loteo,<br><span>Vendiendo Solo</span></h1>
+    <p class="subtitle">Landing Page profesional para desarrolladores e inmobiliarias que quieren vender más con menos fricción.</p>
+    <div class="pills">
+      <span class="pill">Mapa Interactivo</span>
+      <span class="pill">Calculadora de Precios</span>
+      <span class="pill">Contacto Directo</span>
+      <span class="pill">24/7 sin vendedor</span>
+    </div>
+    <div class="deco-line"></div>
+    <span class="corner-deco">Landing Page Inmobiliaria</span>
+  </div>
+
+  <!-- SLIDE 2: EL PROBLEMA -->
+  <div class="slide slide-light">
+    <div class="slide-header">
+      <div class="slide-number">02 — El Problema</div>
+      <h2>Cómo se Vende <span>Hoy</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="problema-list">
+      <div class="problema-item">
+        <span class="icon">📄</span>
+        <p>PDFs por WhatsApp que <strong>nadie guarda</strong> y que quedan desactualizados al mes siguiente.</p>
+      </div>
+      <div class="problema-item">
+        <span class="icon">📞</span>
+        <p>Llamadas explicando precios y disponibilidad <strong>una y otra vez</strong>, todos los días.</p>
+      </div>
+      <div class="problema-item">
+        <span class="icon">🏢</span>
+        <p>Publicaciones en portales que muestran tu loteo <strong>junto a la competencia</strong>, con sus condiciones y sus precios.</p>
+      </div>
+      <div class="problema-item">
+        <span class="icon">⏰</span>
+        <p>El vendedor siempre tiene que estar disponible para <strong>informar lo básico</strong>: qué lotes hay, cuánto sale, cómo se paga.</p>
+      </div>
+    </div>
+    <span class="corner-deco">Landing Page Inmobiliaria</span>
+  </div>
+
+  <!-- SLIDE 3: LA SOLUCIÓN -->
+  <div class="slide slide-dark">
+    <div class="slide-number">03 — La Solución</div>
+    <h2>Landing Page <span>Inmobiliaria</span></h2>
+    <div class="divider"></div>
+    <div class="items-grid">
+      <div class="item-card-dark">
+        <div class="label">Tu marca, tu espacio</div>
+        <p>Una página exclusiva para tu loteo. No comparte pantalla con la competencia.</p>
+      </div>
+      <div class="item-card-dark">
+        <div class="label">Funciona 24/7</div>
+        <p>Sin que nadie tenga que estar presente. El cliente se informa a cualquier hora.</p>
+      </div>
+      <div class="item-card-dark">
+        <div class="label">Lead calificado</div>
+        <p>El cliente llega listo para cerrar: ya vio precios, disponibilidad y opciones de pago.</p>
+      </div>
+      <div class="item-card-dark">
+        <div class="label">Ejemplo real</div>
+        <p>Predios Santa Catalina — Corrientes Capital. 14 manzanas, 362 lotes, en vivo.</p>
+      </div>
+    </div>
+    <span class="corner-deco" style="color:rgba(200,160,60,0.35)">Landing Page Inmobiliaria</span>
+  </div>
+
+  <!-- SLIDE 4: QUÉ INCLUYE -->
+  <div class="slide slide-light">
+    <div class="slide-header">
+      <div class="slide-number">04 — Módulos</div>
+      <h2>¿Qué <span>Incluye?</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="items-grid">
+      <div class="item-card">
+        <div class="label">Mapa SVG Interactivo</div>
+        <p>Cada lote con estado en tiempo real: disponible, reservado o vendido. Con hover y tooltips.</p>
+      </div>
+      <div class="item-card">
+        <div class="label">Calculadora de Precios</div>
+        <p>4 tipologías × 4 modalidades de pago. El cliente calcula solo: contado, cuotas pesos o USD.</p>
+      </div>
+      <div class="item-card">
+        <div class="label">Sección de Financiación</div>
+        <p>Tablas comparativas por esquema de pago, con disponibilidad por tipología incluida.</p>
+      </div>
+      <div class="item-card">
+        <div class="label">Galería + Planos</div>
+        <p>Imágenes aéreas, renders y plano oficial descargable en PDF.</p>
+      </div>
+      <div class="item-card">
+        <div class="label">Contacto Directo</div>
+        <p>Formulario al email + botón WhatsApp flotante con mensaje pre-cargado.</p>
+      </div>
+      <div class="item-card">
+        <div class="label">100% Mobile</div>
+        <p>Diseño responsivo. Funciona perfecto desde el celular, donde llega el 80% del tráfico.</p>
+      </div>
+    </div>
+    <span class="corner-deco">Landing Page Inmobiliaria</span>
+  </div>
+
+  <!-- SLIDE 5: PROCESOS QUE ELIMINA -->
+  <div class="slide slide-dark">
+    <div class="slide-number">05 — Eficiencia</div>
+    <h2>Procesos que <span>Elimina</span></h2>
+    <div class="divider"></div>
+    <div class="items-grid">
+      <div class="item-card-dark">
+        <p><span class="arrow">✕</span> Mandar PDFs a cada consulta<br><span style="color:#c8a03c;font-weight:600">→ Todo está en la página</span></p>
+      </div>
+      <div class="item-card-dark">
+        <p><span class="arrow">✕</span> Explicar cuánto sale con 12 cuotas<br><span style="color:#c8a03c;font-weight:600">→ La calculadora lo hace sola</span></p>
+      </div>
+      <div class="item-card-dark">
+        <p><span class="arrow">✕</span> Responder si ese lote está disponible<br><span style="color:#c8a03c;font-weight:600">→ El mapa lo muestra en vivo</span></p>
+      </div>
+      <div class="item-card-dark">
+        <p><span class="arrow">✕</span> Armar presentaciones por cliente<br><span style="color:#c8a03c;font-weight:600">→ La landing es la presentación</span></p>
+      </div>
+      <div class="item-card-dark">
+        <p><span class="arrow">✕</span> Coordinar reuniones para el plano<br><span style="color:#c8a03c;font-weight:600">→ Lo ven solos, a cualquier hora</span></p>
+      </div>
+      <div class="item-card-dark">
+        <p><span class="arrow">✕</span> Filtrar consultas sin calidad<br><span style="color:#c8a03c;font-weight:600">→ El que llama ya vio todo</span></p>
+      </div>
+    </div>
+    <span class="corner-deco" style="color:rgba(200,160,60,0.35)">Landing Page Inmobiliaria</span>
+  </div>
+
+  <!-- SLIDE 6: INVERSIÓN -->
+  <div class="slide slide-dark">
+    <div class="slide-number">06 — Inversión</div>
+    <h2><span>Inversión</span></h2>
+    <div class="divider"></div>
+    <div class="inversion-grid">
+      <div class="inv-card">
+        <div class="inv-title">Desarrollo</div>
+        <div class="inv-price">USD 2.500<span style="font-size:13pt;font-weight:400;color:rgba(255,255,255,0.5)"> – 3.500</span></div>
+        <div class="inv-sub">Pago único · 50% al iniciar · 50% al entregar</div>
+        <ul>
+          <li>Mapa SVG interactivo completo</li>
+          <li>Calculadora multi-modalidad</li>
+          <li>Todos los módulos incluidos</li>
+          <li>Deploy en dominio propio</li>
+          <li>Diseño con tu marca y colores</li>
+        </ul>
+      </div>
+      <div class="inv-card">
+        <div class="inv-title">Mantenimiento Mensual</div>
+        <div class="inv-price">USD 100<span style="font-size:13pt;font-weight:400;color:rgba(255,255,255,0.5)"> – 150</span></div>
+        <div class="inv-sub">Contrato mínimo 6 meses</div>
+        <ul>
+          <li>Hosting y dominio incluido</li>
+          <li>Actualización de estados de lotes</li>
+          <li>Cambios de precios y condiciones</li>
+          <li>Soporte por WhatsApp en 24hs</li>
+          <li>Hasta 3 cambios de contenido/mes</li>
+        </ul>
+      </div>
+      <div class="inv-compare">
+        <p>Zonaprop Premium cuesta <strong>USD 200–400/mes</strong> y muestra tu loteo junto a la competencia. Esta página es <strong>tuya para siempre.</strong></p>
+      </div>
+    </div>
+    <span class="corner-deco" style="color:rgba(200,160,60,0.35)">Landing Page Inmobiliaria</span>
+  </div>
+
+  <!-- SLIDE 7: PARA QUIÉN -->
+  <div class="slide slide-light">
+    <div class="slide-header">
+      <div class="slide-number">07 — Perfil de Cliente</div>
+      <h2>¿Para Quién Tiene <span>Sentido?</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="items-grid">
+      <div class="item-card">
+        <div class="label">Escala del proyecto</div>
+        <p>Loteos con más de 30 lotes y más de una tipología o modalidad de pago.</p>
+      </div>
+      <div class="item-card">
+        <div class="label">Volumen de consultas</div>
+        <p>Equipos de ventas que atienden más de 20 consultas por semana.</p>
+      </div>
+      <div class="item-card">
+        <div class="label">Identidad de marca</div>
+        <p>Desarrolladores que quieren diferenciarse con su propia presencia digital, sin depender de portales.</p>
+      </div>
+      <div class="item-card" style="border-left-color:#2ecc71; background: #f0fff4;">
+        <div class="label" style="color:#27ae60">Retorno inmediato</div>
+        <p>La página se paga sola en el primer mes de consultas ahorradas y leads mejor calificados.</p>
+      </div>
+    </div>
+    <span class="corner-deco">Landing Page Inmobiliaria</span>
+  </div>
+
+  <!-- SLIDE 8: PRÓXIMO PASO -->
+  <div class="slide slide-cta">
+    <span class="cta-tag">Próximo Paso</span>
+    <h2>Empezamos en <span>48 horas</span></h2>
+    <p class="cta-sub">15 minutos de demo en vivo son suficientes para ver si tiene sentido para tu proyecto.</p>
+    <div class="cta-steps">
+      <div class="cta-step">
+        <div class="step-num">01</div>
+        <p>Demo en vivo de Santa Catalina — 15 minutos por videollamada o presencial.</p>
+      </div>
+      <div class="cta-step">
+        <div class="step-num">02</div>
+        <p>Evaluamos juntos la estructura de tu loteo y las necesidades del proyecto.</p>
+      </div>
+      <div class="cta-step">
+        <div class="step-num">03</div>
+        <p>Arrancamos en 48hs. Entrega estimada: 3 a 4 semanas desde el inicio.</p>
+      </div>
+    </div>
+    <p class="cta-footer">Contacto por WhatsApp para agendar la demo</p>
+  </div>
+
+</body>
+</html>
