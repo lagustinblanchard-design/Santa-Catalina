@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { SITE } from '@/lib/data'
+import AnimateIn from './AnimateIn'
 
 type Field = 'name' | 'phone' | 'interest' | 'message'
 
@@ -65,13 +66,15 @@ export default function ContactForm() {
   return (
     <section id="contacto" className="py-20" style={{ background: '#F2ECE0' }}>
       <div className="mx-auto max-w-6xl px-6">
-        <div className="mb-12 text-center">
-          <span className="mb-3 inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest text-white" style={{ backgroundColor: '#AA1120' }}>
-            Contacto
-          </span>
-          <h2 className="text-4xl font-black" style={{ color: '#2E2A26' }}>¿Te interesa un lote?</h2>
-          <p className="mt-4" style={{ color: '#6B6660' }}>Completá el formulario y un asesor te va a contactar.</p>
-        </div>
+        <AnimateIn>
+          <div className="mb-12 text-center">
+            <span className="mb-3 inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest text-white" style={{ backgroundColor: '#AA1120' }}>
+              Contacto
+            </span>
+            <h2 className="text-4xl font-black" style={{ color: '#2E2A26' }}>¿Te interesa un lote?</h2>
+            <p className="mt-4" style={{ color: '#6B6660' }}>Completá el formulario y un asesor te va a contactar.</p>
+          </div>
+        </AnimateIn>
 
         <div className="grid gap-12 lg:grid-cols-2 max-w-5xl mx-auto">
           {/* Form */}

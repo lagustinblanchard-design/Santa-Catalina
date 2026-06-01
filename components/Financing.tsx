@@ -1,3 +1,4 @@
+import AnimateIn from './AnimateIn'
 import { FINANCING_12, FINANCING_36, LOT_TYPES, NOTARIAL_COSTS, type LotSize } from '@/lib/data'
 
 const SIZES = Object.keys(LOT_TYPES) as LotSize[]
@@ -12,12 +13,14 @@ export default function Financing() {
   return (
     <section id="financiacion" className="py-20" style={{ background: '#F2ECE0' }}>
       <div className="mx-auto max-w-6xl px-6">
-        <div className="mb-12 text-center">
-          <span className="mb-3 inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest text-white" style={{ backgroundColor: '#AA1120' }}>
-            Financiación
-          </span>
-          <h2 className="text-4xl font-black" style={{ color: '#2E2A26' }}>Opciones de pago</h2>
-        </div>
+        <AnimateIn>
+          <div className="mb-12 text-center">
+            <span className="mb-3 inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest text-white" style={{ backgroundColor: '#AA1120' }}>
+              Financiación
+            </span>
+            <h2 className="text-4xl font-black" style={{ color: '#2E2A26' }}>Opciones de pago</h2>
+          </div>
+        </AnimateIn>
 
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Opción 1 — 12 cuotas */}
