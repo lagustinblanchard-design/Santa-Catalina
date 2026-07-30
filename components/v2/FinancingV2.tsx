@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import { FINANCING_12, FINANCING_36, LOT_TYPES, NOTARIAL_COSTS, type LotSize } from '@/lib/data'
 
 const CINZEL  = "var(--font-cinzel), 'Cinzel', serif"
@@ -55,7 +56,7 @@ export default function FinancingV2() {
                   {SIZES.filter(s => FINANCING_12[s]).map((size) => {
                     const f = FINANCING_12[size]!
                     return (
-                      <>
+                      <Fragment key={size}>
                         {f.downPesos > 0 && (
                           <tr key={`${size}-pesos`} style={{ borderBottom: '1px solid #111' }}>
                             <td style={{ padding: '0.875rem 0.5rem', fontFamily: JOSEFIN, fontWeight: 500, color: '#F5F0EB', fontSize: '0.8rem' }}>{LOT_TYPES[size].dims}</td>
@@ -74,7 +75,7 @@ export default function FinancingV2() {
                             <td style={{ padding: '0.875rem 0.5rem', fontFamily: JOSEFIN, color: '#ccc', fontSize: '0.8rem' }}>{fmt(f.installmentUSD)}</td>
                           </tr>
                         )}
-                      </>
+                      </Fragment>
                     )
                   })}
                 </tbody>

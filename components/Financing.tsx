@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import AnimateIn from './AnimateIn'
 import { FINANCING_12, FINANCING_36, LOT_TYPES, NOTARIAL_COSTS, type LotSize } from '@/lib/data'
 
@@ -47,7 +48,7 @@ export default function Financing() {
                   {SIZES.filter(s => FINANCING_12[s]).map((size) => {
                     const f = FINANCING_12[size]!
                     return (
-                      <>
+                      <Fragment key={size}>
                         {f.downPesos > 0 && (
                           <tr key={`${size}-pesos`} style={{ borderBottom: '1px solid #F2ECE0' }}>
                             <td className="py-3 font-medium" style={{ color: '#2E2A26' }}>{LOT_TYPES[size].dims}</td>
@@ -69,7 +70,7 @@ export default function Financing() {
                             <td className="py-3" style={{ color: '#2E2A26' }}>{fmt(f.installmentUSD)}</td>
                           </tr>
                         )}
-                      </>
+                      </Fragment>
                     )
                   })}
                 </tbody>
