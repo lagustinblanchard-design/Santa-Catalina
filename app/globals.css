@@ -23,3 +23,17 @@ body {
   color: #2E2A26;
   font-family: var(--font-montserrat), Arial, Helvetica, sans-serif;
 }
+
+/* Respeta la preferencia del sistema: neutraliza scroll suave, animate-bounce (Tailwind),
+   framer-motion y la rotación automática de cámara en /mapa-3d (ver LotMap3D.tsx). */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

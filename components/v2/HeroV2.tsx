@@ -8,7 +8,7 @@ const JOSEFIN = "var(--font-josefin), 'Josefin Sans', sans-serif"
 export default function HeroV2() {
   return (
     <section id="inicio" style={{
-      minHeight: '100vh', background: '#0C0C0C',
+      minHeight: '100svh', background: '#0C0C0C',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
       position: 'relative', overflow: 'hidden',

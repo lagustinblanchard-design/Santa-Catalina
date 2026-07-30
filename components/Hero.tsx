@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { SITE } from '@/lib/data'
 
@@ -9,19 +10,51 @@ const fadeUp = (delay = 0) => ({
   transition: { duration: 0.65, delay, ease: 'easeOut' as const },
 })
 
+// Network Information API — no está en el lib.dom.d.ts estándar. Sólo la usamos para
+// negar la carga (saveData / conexiones lentas), nunca para exigirla: si el navegador
+// no la expone (Safari, Firefox), asumimos que puede cargar el video.
+type NetworkInformation = { saveData?: boolean; effectiveType?: string }
+
 export default function Hero() {
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+
+    const nav = navigator as Navigator & { connection?: NetworkInformation }
+    const conn = nav.connection
+    const isDesktop = window.matchMedia('(min-width: 768px)').matches
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const isSlowConnection = conn?.saveData === true || conn?.effectiveType === 'slow-2g' || conn?.effectiveType === '2g' || conn?.effectiveType === '3g'
+
+    // En mobile, con reduced-motion, o con conexión lenta/saveData: el hero se queda
+    // en el poster estático. El <video> nunca descarga los ~5,7 MB.
+    if (!isDesktop || prefersReducedMotion || isSlowConnection) return
+
+    const source = document.createElement('source')
+    source.src = '/hero-video.mp4'
+    source.type = 'video/mp4'
+    video.appendChild(source)
+    video.load()
+    video.play().catch(() => {
+      // autoplay bloqueado por el navegador — el poster se queda de fondo, sin error visible
+    })
+  }, [])
+
   return (
     <section
       id="inicio"
       className="relative flex min-h-screen items-center justify-center overflow-hidden"
       style={{ background: '#2E2A26' }}
     >
-      {/* Aerial background video */}
+      {/* Aerial background video — el <source> se agrega en runtime sólo en desktop
+          (ver useEffect arriba). preload="none" evita cualquier descarga hasta entonces. */}
       <video
+        ref={videoRef}
         className="absolute inset-0 h-full w-full object-cover"
-        src="/hero-video.mp4"
-        poster="/hero-fallback.jpg"
-        autoPlay
+        poster="/hero-poster.webp"
+        preload="none"
         loop
         muted
         playsInline

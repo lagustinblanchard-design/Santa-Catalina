@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 
 const LINKS = [
   { href: '#proyecto',     label: 'El proyecto' },
@@ -31,11 +32,14 @@ export default function Navbar() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         {/* Logo Desarrollos Payé */}
         <a href="#inicio" className="flex items-center gap-3">
-          <img
-            src="/logo_paye.png.png"
+          <Image
+            src="/logo-paye.png"
             alt="Desarrollos Payé"
-            height={40}
-            style={{ height: 40, width: 'auto', filter: scrolled ? 'none' : 'brightness(0) invert(1)' }}
+            width={712}
+            height={400}
+            priority
+            className="h-10 w-auto"
+            style={{ filter: scrolled ? 'none' : 'brightness(0) invert(1)' }}
           />
           <span
             className="text-xs font-semibold"
