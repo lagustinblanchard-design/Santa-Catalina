@@ -11,6 +11,12 @@ import WhatsAppButton from '@/components/WhatsAppButton'
 import { LOTS, applyStatuses } from '@/lib/lots'
 import { fetchLotStatuses } from '@/lib/sheets'
 
+// Rediseño en curso — mismo contenido comercial que `/`. noindex para no competir
+// con la home en buscadores mientras no esté decidido si reemplaza a `/` o se descarta.
+export const metadata = {
+  robots: { index: false, follow: true },
+}
+
 export default async function HomeV2() {
   let lots = LOTS
   try {

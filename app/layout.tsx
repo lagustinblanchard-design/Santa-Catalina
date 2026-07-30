@@ -8,7 +8,15 @@ const montserrat = Montserrat({
   display: 'swap',
 })
 
+// Preferí NEXT_PUBLIC_SITE_URL en Vercel (dominio custom estable) una vez confirmado.
+// VERCEL_URL lo inyecta Vercel automáticamente en cada deploy (preview o producción) —
+// sin eso, las URLs de Open Graph salen relativas y WhatsApp/Telegram no muestran imagen.
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: 'Predios Santa Catalina — Segunda Preventa | RE/MAX PAYÉ',
   description:
     'Lotes residenciales y mixtos en Corrientes Capital. 14 manzanas, financiación en pesos y dólares. Comercializado por RE/MAX PAYÉ.',
@@ -16,6 +24,9 @@ export const metadata: Metadata = {
     title: 'Predios Santa Catalina — Segunda Preventa',
     description: 'Lotes residenciales y mixtos en Corrientes Capital. Financiación disponible.',
     type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
   },
 }
 

@@ -9,13 +9,19 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' https://maps.googleapis.com",
+      // 'wasm-unsafe-eval': @loaders.gl/draco instancia WebAssembly para decodificar mallas
+      // Draco (los 3D Tiles de Cesium ion vienen comprimidos así). unpkg.com: fallback de CDN
+      // de @loaders.gl para los workers cuando no hay build local de los mismos.
+      "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://maps.googleapis.com https://unpkg.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       // *.cesium.com / assets.ion.cesium.com: terreno fotorrealista (malla de dron vía Cesium ion).
       // Dormido hasta que haya un asset real — ver NEXT_PUBLIC_CESIUM_ION_* en .env.example.
       "img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.arcgisonline.com https://*.cesium.com https://assets.ion.cesium.com",
-      "connect-src 'self' https://*.googleapis.com https://docs.google.com https://*.arcgisonline.com https://*.cesium.com https://assets.ion.cesium.com https://api.cesium.com",
+      "connect-src 'self' https://*.googleapis.com https://docs.google.com https://*.arcgisonline.com https://*.cesium.com https://assets.ion.cesium.com https://api.cesium.com https://unpkg.com",
+      // blob:: @loaders.gl crea los web workers de decodificación (Tile3DLayer/CesiumIonLoader)
+      // desde blob URLs. Sin esto caen a default-src 'self' y quedan bloqueados en silencio.
+      "worker-src 'self' blob:",
       "frame-src 'none'",
     ].join('; '),
   },
