@@ -20,6 +20,9 @@ Plan completo (capturas, specs de vuelo) en `~/.claude/plans/para-el-terreno-fot
 
 **Pipeline:** dron (grilla nadir, 80% frontal / 70% lateral, ~80-100m AGL, + 1 pasada oblicua ~45° de borde) → **WebODM** (fotogrametría, gratis, obtiene `odm_textured_model_geo.obj` + `.mtl` + texturas) → **Cesium ion** (tilea a 3D Tiles, free tier) → deck.gl `Tile3DLayer`.
 
+> **Para el día del vuelo: ver `VUELO-FOTOGRAMETRIA-CHECKLIST.md`** — checklist de campo con
+> parámetros exactos, ventana horaria, cálculo de baterías y verificación in situ.
+
 **Ya implementado en `LotMap3D.tsx` (dormido, sin regresión):**
 - `Tile3DLayer` + `CesiumIonLoader` (de `@loaders.gl/3d-tiles`, ya instalado, sin deps nuevas).
 - Gateado por `HAS_TERRAIN_MESH = Boolean(NEXT_PUBLIC_CESIUM_ION_ASSET_ID && NEXT_PUBLIC_CESIUM_ION_TOKEN)`. Sin esas env vars, el toggle "🛰 Vista real (dron)" ni aparece — validado con capturas + 0 errores de consola, comportamiento idéntico a antes.
