@@ -70,8 +70,9 @@ export default function InteractiveLotMap({ lots }: { lots: Lot[] }) {
   }, [])
   const onLeave  = useCallback(() => { setHovered(null); setTooltip(null) }, [])
   const onClick  = useCallback((lot: Lot) => {
+    // No auto-scroll a #contacto: en mobile sacaba de pantalla la ficha recién abierta
+    // (`Mobile: selected lot panel` más abajo) 200ms después de mostrarla.
     setSelected(lot)
-    setTimeout(() => document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' }), 200)
   }, [])
 
   const totalCounts = Object.fromEntries(

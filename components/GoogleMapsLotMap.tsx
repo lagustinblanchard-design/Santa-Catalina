@@ -99,7 +99,9 @@ export default function GoogleMapsLotMap({ lots }: { lots: Lot[] }) {
       streetViewControl: false,
       fullscreenControl: true,
       maxZoom: 21,
-      gestureHandling: 'greedy',
+      // 'cooperative': un dedo scrollea la página, dos dedos mueven el mapa (con overlay
+      // "Usá dos dedos"). Con 'greedy' el mapa capturaba el scroll de la landing en mobile.
+      gestureHandling: 'cooperative',
     })
     mapObj.current = map
     infoWin.current = new google.maps.InfoWindow()

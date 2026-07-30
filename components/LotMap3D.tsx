@@ -24,7 +24,7 @@ import { TileLayer, Tile3DLayer } from '@deck.gl/geo-layers'
 import { ScenegraphLayer } from '@deck.gl/mesh-layers'
 import { CesiumIonLoader } from '@loaders.gl/3d-tiles'
 import { type Lot } from '@/lib/lots'
-import { STATUS_LABELS, type LotStatus } from '@/lib/data'
+import { STATUS_LABELS, SITE, type LotStatus } from '@/lib/data'
 import GEO from '@/lib/lot_geometry.json'
 
 // ---------- Georreferenciado (idéntico a GoogleMapsLotMap) ----------
@@ -476,7 +476,7 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
           })
           setViewState(vs)
         }}
-        controller={{ dragRotate: true }}
+        controller={{ dragRotate: true, touchRotate: true, inertia: 300 }}
         effects={[lightingEffect]}
         layers={layers}
         getCursor={({ isDragging, isHovering }) => (isDragging ? 'grabbing' : isHovering ? 'pointer' : 'grab')}
@@ -590,7 +590,7 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
           style={{ background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.65) 100%)' }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo_paye.png.png" alt="Payé" className="mb-6 h-16 w-auto drop-shadow-2xl" />
+          <img src="/logo-paye.png" alt="Payé" className="mb-6 h-16 w-auto drop-shadow-2xl" />
           <p className="text-xs font-bold uppercase tracking-[0.3em]" style={{ color: '#FF4230' }}>
             Recorrido virtual
           </p>
@@ -657,11 +657,15 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
             )}
             {selected.status === 'DISPONIBLE' && (
               <a
-                href="#contacto"
+                href={`https://wa.me/${SITE.WA_NUMBER.replace(/\D/g, '')}?text=${encodeURIComponent(
+                  `Hola, me interesa el Lote ${selected.lot} de la Manzana ${selected.block} — Santa Catalina.`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="block rounded-lg py-2 text-center text-xs font-bold text-white"
                 style={{ background: '#dc2626' }}
               >
-                Consultar disponibilidad →
+                Consultar por WhatsApp →
               </a>
             )}
           </div>
