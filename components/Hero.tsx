@@ -107,12 +107,12 @@ export default function Hero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8, duration: 0.5 }}
-          className="mt-16 grid grid-cols-3 gap-6 border-t pt-10"
+          className="mt-8 grid grid-cols-3 gap-3 border-t pt-6 sm:mt-16 sm:gap-6 sm:pt-10"
           style={{ borderColor: 'rgba(242,236,224,0.15)' }}
         >
           {[
             { value: '14', label: 'Manzanas', color: '#AA1120' },
-            { value: '312–467', label: 'm² por lote', color: '#fff' },
+            { value: '312–520', label: 'm² por lote', color: '#fff' },
             { value: 'USD', label: 'Financiación disponible', color: '#fff' },
           ].map(({ value, label, color }, i) => (
             <motion.div
@@ -121,8 +121,8 @@ export default function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.85 + i * 0.12, duration: 0.5, ease: 'easeOut' as const }}
             >
-              <p className="text-3xl font-black" style={{ color }}>{value}</p>
-              <p className="text-sm" style={{ color: 'rgba(242,236,224,0.65)' }}>{label}</p>
+              <p className="text-xl font-black sm:text-3xl" style={{ color }}>{value}</p>
+              <p className="text-xs sm:text-sm" style={{ color: 'rgba(242,236,224,0.65)' }}>{label}</p>
             </motion.div>
           ))}
         </motion.div>

@@ -118,7 +118,7 @@ export default function HeroV2() {
         }}>
           {[
             { val: '14',      sub: 'Manzanas' },
-            { val: '312–450', sub: 'm² por lote' },
+            { val: '312–520', sub: 'm² por lote' },
             { val: 'USD',     sub: 'Financiación' },
           ].map((s, i) => (
             <div key={s.sub} style={{ paddingRight: i < 2 ? '2rem' : 0, borderRight: i < 2 ? '1px solid #1a1a1a' : 'none', paddingLeft: i > 0 ? '2rem' : 0 }}>
