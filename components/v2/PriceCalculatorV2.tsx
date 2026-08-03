@@ -1,14 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { PRICES, FINANCING_12, FINANCING_36, LOT_TYPES, type LotSize } from '@/lib/data'
+import { PRICES, FINANCING_12, FINANCING_18, FINANCING_36, LOT_TYPES, type LotSize } from '@/lib/data'
 
-type Modality = 'contado' | '12_pesos' | '12_usd' | '36_usd'
+type Modality = 'contado' | '12_pesos' | '12_usd' | '18_usd' | '36_usd'
 
 const MODALITY_LABELS: Record<Modality, string> = {
   contado:    'Contado · 5% desc.',
   '12_pesos': '12 cuotas · Pesos',
   '12_usd':   '12 cuotas · USD',
+  '18_usd':   '18 cuotas · USD (Mixto)',
   '36_usd':   '36 cuotas · USD',
 }
 
@@ -25,6 +26,7 @@ export default function PriceCalculatorV2() {
 
   const price = PRICES[size]
   const fin12 = FINANCING_12[size]
+  const fin18 = FINANCING_18[size]
   const fin36 = FINANCING_36[size]
 
   function Row({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
@@ -75,6 +77,23 @@ export default function PriceCalculatorV2() {
         </>
       )
     }
+    if (modality === '18_usd') {
+      if (!fin18) return (
+        <div style={{ padding: '1.5rem', border: '1px solid #2a2000', background: '#141000', fontFamily: JOSEFIN, fontSize: '0.75rem', color: '#cc8800', letterSpacing: '0.05em' }}>
+          No disponible para esta tipología — 18 cuotas es sólo para lotes mixtos.
+        </div>
+      )
+      return (
+        <>
+          <Row label="Entrega (30%)" value={fmt(fin18.downUSD)} />
+          <Row label="18 cuotas de" value={fmt(fin18.installmentUSD)} />
+          <Row label="Total financiado" value={fmt(fin18.downUSD + fin18.installmentUSD * 18)} highlight />
+          <div style={{ marginTop: '1rem', padding: '0.75rem 1rem', border: '1px solid #2a2000', background: '#141000', fontFamily: JOSEFIN, fontSize: '0.65rem', color: '#cc8800', letterSpacing: '0.1em' }}>
+            Disponibilidad: {fin18.availability} — Confirmar antes de ofrecer
+          </div>
+        </>
+      )
+    }
     if (modality === '36_usd') {
       if (!fin36) return (
         <div style={{ padding: '1.5rem', border: '1px solid #2a2000', background: '#141000', fontFamily: JOSEFIN, fontSize: '0.75rem', color: '#cc8800', letterSpacing: '0.05em' }}>
@@ -117,7 +136,7 @@ export default function PriceCalculatorV2() {
             <p style={{ fontFamily: JOSEFIN, fontSize: '0.58rem', letterSpacing: '0.2em', color: '#888', textTransform: 'uppercase', marginBottom: '1rem' }}>
               Tipología de lote
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1px' }}>
               {(Object.keys(LOT_TYPES) as LotSize[]).map(key => (
                 <button key={key} onClick={() => setSize(key)} style={{
                   background: size === key ? '#FF1200' : '#111',
@@ -128,7 +147,7 @@ export default function PriceCalculatorV2() {
                 }}>
                   <div>{LOT_TYPES[key].dims}</div>
                   <div style={{ fontSize: '0.55rem', marginTop: '0.3rem', opacity: 0.7, fontFamily: JOSEFIN }}>
-                    {LOT_TYPES[key].sqm} m²
+                    {LOT_TYPES[key].sqm.toLocaleString('es-AR')} m²
                   </div>
                 </button>
               ))}

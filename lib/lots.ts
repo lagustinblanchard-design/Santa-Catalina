@@ -31,14 +31,21 @@ type S = LotStatus
 const V: S = 'VENDIDO', D: S = 'DISPONIBLE', R: S = 'RESERVADO',
       F: S = 'FIDEICOMISO', NC: S = 'NO_COMERCIALIZABLE'
 
+// Precio de lista USD por dims crudo (mismo valor que PRICES[size].cashUSD en lib/data.ts,
+// keyed sin el reemplazo 'x'→'×'). Única fuente: la usan lot() y priceForDims() más abajo,
+// para no repetir estos 5 números en dos lugares que puedan desincronizarse.
+const DIMS_PRICE_USD: Record<string, number> = {
+  '12x26':    17160,
+  '12x28':    18480,
+  '12x30':    19800,
+  '15x30':    24750,
+  '15.55x30': 25650,
+}
+
 function lot(d: string, s: S): { dims: string; sqm: number; status: S; price?: number } {
   const [w, h] = d.split('x').map(Number)
   const sqm = Math.round(w * h)
-  let price: number | undefined
-  if (s === 'DISPONIBLE') {
-    if (d === '12x30') price = 17650
-    else if (d === '12x28') price = 16450
-  }
+  const price = s === 'DISPONIBLE' ? DIMS_PRICE_USD[d] : undefined
   return { dims: d.replace('x', '×'), sqm, status: s, price }
 }
 
@@ -167,9 +174,7 @@ export const LOTS: Lot[] = Object.entries(MZ).flatMap(([blockStr, defs]) => {
 })
 
 function priceForDims(dims: string): number | undefined {
-  if (dims === '12×30') return 17650
-  if (dims === '12×28') return 16450
-  return undefined
+  return DIMS_PRICE_USD[dims.replace('×', 'x')]
 }
 
 export function applyStatuses(overrides: Record<string, import('./data').LotStatus>): Lot[] {

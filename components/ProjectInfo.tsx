@@ -114,7 +114,7 @@ export default function ProjectInfo() {
                     <tr key={key} style={{ background: i % 2 === 0 ? '#fff' : '#F2ECE0', borderTop: '1px solid #D8D2C7' }}>
                       <td className="px-6 py-4 font-medium" style={{ color: '#2E2A26' }}>{lot.label}</td>
                       <td className="px-6 py-4" style={{ color: '#6B6660' }}>{lot.dims}</td>
-                      <td className="px-6 py-4" style={{ color: '#6B6660' }}>{lot.sqm} m²</td>
+                      <td className="px-6 py-4" style={{ color: '#6B6660' }}>{lot.sqm.toLocaleString('es-AR')} m²</td>
                       <td className="px-6 py-4" style={{ color: '#6B6660' }}>{lot.use}</td>
                     </tr>
                   ))}

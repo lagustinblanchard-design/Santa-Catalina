@@ -12,39 +12,53 @@ export const SITE = {
   CONTACT_EMAIL: 'info@remaxpaye.com.ar', // ← REEMPLAZAR
 }
 
-export type LotSize = '12x26' | '12x28' | '12x30' | 'mixto'
+export type LotSize = '12x26' | '12x28' | '12x30' | '15x30' | '15.55x30'
 
+// Precios vigentes al 31/07/2026 (lista de precios PAYÉ). Las dos tipologías
+// "Mixto" son lotes distintos (450 m² y 466,5 m²), no una sola con dos nombres.
 export const LOT_TYPES: Record<LotSize, { label: string; dims: string; sqm: number; use: string }> = {
-  '12x26': { label: 'Residencial chico',   dims: '12 × 26 m', sqm: 312, use: 'Vivienda' },
-  '12x28': { label: 'Residencial mediano', dims: '12 × 28 m', sqm: 336, use: 'Vivienda' },
-  '12x30': { label: 'Residencial grande',  dims: '12 × 30 m', sqm: 360, use: 'Vivienda' },
-  mixto:   { label: 'Mixto',               dims: '15,55 × 30 m', sqm: 450, use: 'Vivienda + Comercio' },
+  '12x26':    { label: 'Residencial chico',   dims: '12 × 26 m',    sqm: 312,   use: 'Vivienda' },
+  '12x28':    { label: 'Residencial mediano', dims: '12 × 28 m',    sqm: 336,   use: 'Vivienda' },
+  '12x30':    { label: 'Residencial grande',  dims: '12 × 30 m',    sqm: 360,   use: 'Vivienda' },
+  '15x30':    { label: 'Mixto chico',         dims: '15 × 30 m',    sqm: 450,   use: 'Vivienda + Comercio' },
+  '15.55x30': { label: 'Mixto grande',        dims: '15,55 × 30 m', sqm: 466.5, use: 'Vivienda + Comercio' },
 }
 
+// El 5% de descuento al contado aplica a las 5 tipologías.
 export const PRICES: Record<LotSize, { cashUSD: number; discount: number }> = {
-  '12x26': { cashUSD: 15288, discount: 0.05 },
-  '12x28': { cashUSD: 16450, discount: 0.05 },
-  '12x30': { cashUSD: 17650, discount: 0.05 },
-  mixto:   { cashUSD: 22050, discount: 0    },
+  '12x26':    { cashUSD: 17160, discount: 0.05 },
+  '12x28':    { cashUSD: 18480, discount: 0.05 },
+  '12x30':    { cashUSD: 19800, discount: 0.05 },
+  '15x30':    { cashUSD: 24750, discount: 0.05 },
+  '15.55x30': { cashUSD: 25650, discount: 0.05 },
 }
 
-// Opción 1 — 12 cuotas (30% de entrega)
+// Opción 1 — 12 cuotas, 30% de entrega. Sólo residencial (Mixto no tiene esta opción).
 export const FINANCING_12: Partial<Record<LotSize, {
   downPesos: number; installmentPesos: number
   downUSD: number;   installmentUSD: number
 }>> = {
-  '12x26': { downPesos: 6885000, installmentPesos: 1338750, downUSD: 0, installmentUSD: 0 }, // SIN UNIDADES en pesos
-  '12x28': { downPesos: 7402500, installmentPesos: 1439370, downUSD: 4935, installmentUSD: 960  },
-  '12x30': { downPesos: 7942500, installmentPesos: 1544375, downUSD: 5295, installmentUSD: 1030 },
+  '12x26': { downPesos: 8236800, installmentPesos: 1601600, downUSD: 5150, installmentUSD: 1000 },
+  '12x28': { downPesos: 8870400, installmentPesos: 1724800, downUSD: 5550, installmentUSD: 1080 },
+  '12x30': { downPesos: 9504000, installmentPesos: 1848000, downUSD: 5940, installmentUSD: 1150 },
 }
 
-// Opción 2 — 36 cuotas en USD
+// Opción 2 — 18 cuotas en USD, 30% de entrega. Sólo Mixto (residencial no tiene esta opción).
+export const FINANCING_18: Partial<Record<LotSize, {
+  downUSD: number; installmentUSD: number; availability: string
+}>> = {
+  '15x30':    { downUSD: 7425, installmentUSD: 960,  availability: '9 lotes disponibles' },
+  '15.55x30': { downUSD: 7695, installmentUSD: 1500, availability: '4 lotes disponibles' },
+}
+
+// Opción 3 — 36 cuotas en USD
 export const FINANCING_36: Partial<Record<LotSize, {
   downUSD: number; installmentUSD: number; availability: string
 }>> = {
-  '12x26': { downUSD: 1500, installmentUSD: 640, availability: 'SIN UNIDADES' },
-  '12x28': { downUSD: 2000, installmentUSD: 670, availability: '4 lotes disponibles' },
-  '12x30': { downUSD: 2000, installmentUSD: 730, availability: 'Consultar' },
+  '12x26': { downUSD: 2000, installmentUSD: 590, availability: '2 lotes disponibles' },
+  '12x28': { downUSD: 2000, installmentUSD: 650, availability: 'Consultar' },
+  '12x30': { downUSD: 2000, installmentUSD: 700, availability: 'Consultar' },
+  '15x30': { downUSD: 3000, installmentUSD: 920, availability: '9 lotes disponibles' },
 }
 
 export const NOTARIAL_COSTS = [

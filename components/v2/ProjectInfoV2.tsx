@@ -83,7 +83,7 @@ export default function ProjectInfoV2() {
                 <tr key={key} style={{ borderBottom: '1px solid #141414' }}>
                   <td style={{ padding: '1rem', fontFamily: JOSEFIN, fontWeight: 500, color: '#F5F0EB', fontSize: '0.85rem' }}>{lot.label}</td>
                   <td style={{ padding: '1rem', fontFamily: JOSEFIN, color: '#bbb', fontSize: '0.85rem' }}>{lot.dims}</td>
-                  <td style={{ padding: '1rem', fontFamily: JOSEFIN, color: '#bbb', fontSize: '0.85rem' }}>{lot.sqm} m²</td>
+                  <td style={{ padding: '1rem', fontFamily: JOSEFIN, color: '#bbb', fontSize: '0.85rem' }}>{lot.sqm.toLocaleString('es-AR')} m²</td>
                   <td style={{ padding: '1rem', fontFamily: JOSEFIN, color: '#bbb', fontSize: '0.85rem' }}>{lot.use}</td>
                 </tr>
               ))}

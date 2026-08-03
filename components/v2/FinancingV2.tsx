@@ -1,5 +1,5 @@
 import { Fragment } from 'react'
-import { FINANCING_12, FINANCING_36, LOT_TYPES, NOTARIAL_COSTS, type LotSize } from '@/lib/data'
+import { FINANCING_12, FINANCING_18, FINANCING_36, LOT_TYPES, NOTARIAL_COSTS, type LotSize } from '@/lib/data'
 
 const CINZEL  = "var(--font-cinzel), 'Cinzel', serif"
 const JOSEFIN = "var(--font-josefin), 'Josefin Sans', sans-serif"
@@ -129,6 +129,48 @@ export default function FinancingV2() {
             <div style={{ marginTop: '1.5rem', padding: '1rem', border: '1px solid #2a2000', background: '#141000', fontFamily: JOSEFIN, fontSize: '0.65rem', color: '#cc8800', letterSpacing: '0.1em' }}>
               Confirmar disponibilidad de financiación a 36 cuotas antes de ofrecer al cliente.
             </div>
+          </div>
+        </div>
+
+        {/* Opción 3 — 18 cuotas (sólo Mixto) */}
+        <div style={{ background: '#0C0C0C', padding: '2.5rem', marginTop: '1px' }}>
+          <div style={{ marginBottom: '2rem' }}>
+            <span style={{ fontFamily: JOSEFIN, fontSize: '0.55rem', letterSpacing: '0.2em', color: '#0043FF', textTransform: 'uppercase', background: 'rgba(0,67,255,0.12)', padding: '0.3rem 0.75rem' }}>
+              Opción 03
+            </span>
+            <h3 style={{ fontFamily: CINZEL, fontSize: '1.5rem', fontWeight: 700, color: '#F5F0EB', marginTop: '1rem', marginBottom: '0.25rem' }}>
+              18 cuotas
+            </h3>
+            <p style={{ fontFamily: JOSEFIN, fontSize: '0.75rem', color: '#999' }}>
+              30% de entrega + 18 cuotas mensuales en USD — sólo lotes mixtos
+            </p>
+          </div>
+
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  {['Lote', 'Entrega', 'Cuota', 'Disponibilidad'].map(h => (
+                    <th key={h} style={{ padding: '0.75rem 0.5rem', textAlign: 'left', borderBottom: '1px solid #1a1a1a', fontFamily: JOSEFIN, fontSize: '0.55rem', letterSpacing: '0.15em', color: '#888', textTransform: 'uppercase' }}>
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {SIZES.filter(s => FINANCING_18[s]).map((size) => {
+                  const f = FINANCING_18[size]!
+                  return (
+                    <tr key={size} style={{ borderBottom: '1px solid #111' }}>
+                      <td style={{ padding: '0.875rem 0.5rem', fontFamily: JOSEFIN, fontWeight: 500, color: '#F5F0EB', fontSize: '0.8rem' }}>{LOT_TYPES[size].dims}</td>
+                      <td style={{ padding: '0.875rem 0.5rem', fontFamily: JOSEFIN, color: '#ccc', fontSize: '0.8rem' }}>{fmt(f.downUSD)}</td>
+                      <td style={{ padding: '0.875rem 0.5rem', fontFamily: JOSEFIN, color: '#ccc', fontSize: '0.8rem' }}>{fmt(f.installmentUSD)}</td>
+                      <td style={{ padding: '0.875rem 0.5rem', fontFamily: JOSEFIN, fontSize: '0.7rem', color: '#4ade80' }}>{f.availability}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
 

@@ -105,7 +105,8 @@ export default function ContactFormV2() {
                 <option value="12x26 — 312 m²">12×26 — 312 m² (Residencial chico)</option>
                 <option value="12x28 — 336 m²">12×28 — 336 m² (Residencial mediano)</option>
                 <option value="12x30 — 360 m²">12×30 — 360 m² (Residencial grande)</option>
-                <option value="Mixto — ~450 m²">Mixto — ~450 m² (Vivienda + Comercio)</option>
+                <option value="Mixto 15x30 — 450 m²">Mixto 15×30 — 450 m² (Vivienda + Comercio)</option>
+                <option value="Mixto 15,55x30 — 466,5 m²">Mixto 15,55×30 — 466,5 m² (Vivienda + Comercio)</option>
                 <option value="No definido">No definido aún</option>
               </select>
             </div>
