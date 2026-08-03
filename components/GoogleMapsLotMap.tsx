@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
+import Link from 'next/link'
 import { setOptions, importLibrary } from '@googlemaps/js-api-loader'
 import { type Lot } from '@/lib/lots'
 import { STATUS_LABELS, type LotStatus } from '@/lib/data'
@@ -305,13 +306,22 @@ export default function GoogleMapsLotMap({ lots }: { lots: Lot[] }) {
                 Disponibilidad orientativa.{' '}
                 <a href="#contacto" className="font-medium underline" style={{ color: '#FF1200' }}>Consultá disponibilidad exacta</a>.
               </p>
-              <a
-                href="/Loteo Sta. Catalina.pdf"
-                target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
-              >
-                Ver plano original
-              </a>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href="/mapa-3d"
+                  className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold text-white transition-opacity hover:opacity-90"
+                  style={{ backgroundColor: '#AA1120' }}
+                >
+                  Ver en 3D →
+                </Link>
+                <a
+                  href="/Loteo Sta. Catalina.pdf"
+                  target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                >
+                  Ver plano original
+                </a>
+              </div>
             </div>
           </div>
 

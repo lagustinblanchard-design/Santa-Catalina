@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 
 const LINKS = [
   { href: '#proyecto',     label: 'El proyecto' },
@@ -61,6 +62,13 @@ export default function Navbar() {
               {link.label}
             </a>
           ))}
+          <Link
+            href="/mapa-3d"
+            className="text-sm font-medium transition-colors hover:opacity-80"
+            style={{ color: scrolled ? '#2E2A26' : 'rgba(242,236,224,0.9)' }}
+          >
+            Recorrido 3D
+          </Link>
           <a
             href="#contacto"
             className="rounded-full px-4 py-2 text-sm font-bold text-white transition-opacity hover:opacity-90"
@@ -103,6 +111,14 @@ export default function Navbar() {
               {link.label}
             </a>
           ))}
+          <Link
+            href="/mapa-3d"
+            onClick={() => setMenuOpen(false)}
+            className="block py-3 text-sm font-medium"
+            style={{ color: '#2E2A26', borderBottom: '1px solid #F2ECE0' }}
+          >
+            Recorrido 3D
+          </Link>
           <a
             href="#contacto"
             onClick={() => setMenuOpen(false)}

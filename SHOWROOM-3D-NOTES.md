@@ -5,7 +5,7 @@ Contexto técnico del showroom 3D del loteo (`/mapa-3d`), para retomar en cualqu
 ## Qué existe hoy
 
 - **`components/LotMap3D.tsx`** — showroom 3D: deck.gl standalone sobre satélite Esri (gratis, sin API key de Google). Reusa el georreferenciado ya calibrado (`svgToLngLat`, transformación conforme de 4 puntos anclada a M1-L1) y `lib/lot_geometry.json` (306 lotes).
-- **`app/mapa-3d/page.tsx`** — ruta preview aislada (`noindex`), no enlazada desde la home. La home de producción no se tocó.
+- **`app/mapa-3d/page.tsx`** — ruta indexable, enlazada desde `Navbar.tsx` («Recorrido 3D») y desde la sección de lotes de la home («Ver en 3D →», junto al mapa de Google).
 - Máquina de estados `portada → tour → free`:
   - **Portada**: logo Payé sobre satélite rotando + "Ver presentación" / "Explorar directo".
   - **Tour guiado**: 4 waypoints con `FlyToInterpolator` (intro, overview 306 lotes, disponibles con spotlight, "a 10 min del centro"), captions animadas, dots de progreso, botón Saltar. Tocar la pantalla corta el tour a modo libre.
