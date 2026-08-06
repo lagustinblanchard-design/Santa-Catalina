@@ -72,11 +72,11 @@ const STATUS_HEX: Record<LotStatus, string> = {
   NO_COMERCIALIZABLE: '#9ca3af',
 }
 const STATUS_ELEV: Record<LotStatus, number> = {
-  DISPONIBLE: 6,
-  RESERVADO: 4,
-  VENDIDO: 3,
-  FIDEICOMISO: 3,
-  NO_COMERCIALIZABLE: 2,
+  DISPONIBLE: 4,
+  RESERVADO: 3,
+  VENDIDO: 2,
+  FIDEICOMISO: 2,
+  NO_COMERCIALIZABLE: 1.5,
 }
 const STATUSES = Object.keys(STATUS_LABELS) as LotStatus[]
 
@@ -106,7 +106,7 @@ const INITIAL_VIEW_STATE = {
   longitude: -58.805462,
   latitude: -27.5302,
   zoom: 16.2,
-  pitch: 55,
+  pitch: 42,
   bearing: -18,
   minZoom: 14,
   maxZoom: 20,
