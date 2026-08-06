@@ -26,6 +26,7 @@ import { CesiumIonLoader } from '@loaders.gl/3d-tiles'
 import { type Lot } from '@/lib/lots'
 import { STATUS_LABELS, SITE, type LotStatus } from '@/lib/data'
 import GEO from '@/lib/lot_geometry.json'
+import { ORTHO_URL, ORTHO_BOUNDS } from '@/lib/ortho'
 
 // ---------- Georreferenciado (idéntico a GoogleMapsLotMap) ----------
 const REF_SVG_X = 860.5
@@ -336,6 +337,19 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
           },
         })
 
+    // Ortomosaico real del vuelo (ver lib/ortho.ts) — se dibuja sobre el satélite Esri,
+    // pero sólo cubre su propia huella de vuelo; fuera de ese rectángulo se sigue viendo
+    // Esri debajo. No tiene sentido combinarlo con la malla 3D (esa vista ya trae su
+    // propia textura real), así que se apaga en modo 'fotorrealista'.
+    const orthophoto = showMesh
+      ? null
+      : new BitmapLayer({
+          id: 'ortho-dron',
+          image: ORTHO_URL,
+          bounds: ORTHO_BOUNDS,
+          pickable: false,
+        })
+
     // Malla real capturada con dron (Cesium ion) — sólo si hay asset configurado y el
     // usuario prendió el toggle "Vista fotorrealista". Dormida (null) en el resto de los casos.
     const terrainMesh = showMesh
@@ -437,7 +451,7 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
         ]
       : []
 
-    return [base, terrainMesh, reserves, lotsLayer, ...modelLayers, ...labels].filter(Boolean)
+    return [base, orthophoto, terrainMesh, reserves, lotsLayer, ...modelLayers, ...labels].filter(Boolean)
   }, [features, filter, zoomedIn, spotlight, showMesh])
 
   if (!mounted) {
