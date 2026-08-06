@@ -115,9 +115,10 @@ function median(nums) {
   return s[Math.floor(s.length / 2)]
 }
 
-// El bbox del loteo, proyectando lot_geometry.json con la calibración de LotMap3D.tsx.
+// El bbox del loteo, proyectando lot_geometry.json con la calibración de lib/geo/calibration.ts.
 // Duplicado a propósito: este script tiene que poder correr sin levantar el bundle de Next.
-const CAL = { x: 860.5, y: 303.4, lat: -27.528473, lng: -58.808283, a: 0.06245549, b: 0.41846104 }
+// Si estos números cambian ahí, actualizar acá a mano (Node no compila el .ts standalone).
+const CAL = { x: 860.5, y: 303.4, lat: -27.5283803, lng: -58.8082423, a: 0.06351723, b: 0.42557488 }
 
 async function loteoBBox() {
   const geo = (await import('../lib/lot_geometry.json', { with: { type: 'json' } })).default

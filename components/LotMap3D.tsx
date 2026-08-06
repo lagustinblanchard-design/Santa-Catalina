@@ -27,23 +27,9 @@ import { type Lot } from '@/lib/lots'
 import { STATUS_LABELS, SITE, type LotStatus } from '@/lib/data'
 import GEO from '@/lib/lot_geometry.json'
 import { ORTHO_URL, ORTHO_BOUNDS } from '@/lib/ortho'
+import { svgToLngLat } from '@/lib/geo/calibration'
 
-// ---------- Georreferenciado (idéntico a GoogleMapsLotMap) ----------
-const REF_SVG_X = 860.5
-const REF_SVG_Y = 303.4
-const REF_LAT = -27.528473
-const REF_LNG = -58.808283
-const A = 0.06245549
-const B = 0.41846104
-const M_PER_DEG_LNG = 111320 * Math.cos((REF_LAT * Math.PI) / 180)
-
-function svgToLngLat(x: number, y: number): [number, number] {
-  const dx = x - REF_SVG_X
-  const dy = y - REF_SVG_Y
-  const dE = A * dx + B * dy
-  const dN = B * dx - A * dy
-  return [REF_LNG + dE / M_PER_DEG_LNG, REF_LAT + dN / 111320] // [lng, lat]
-}
+// ---------- Georreferenciado (ver lib/geo/calibration.ts) ----------
 
 function rectToPolygon(c: [number, number, number, number]): [number, number][] {
   const [x0, y0, x1, y1] = c

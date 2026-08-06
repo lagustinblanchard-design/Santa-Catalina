@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { setOptions, importLibrary } from '@googlemaps/js-api-loader'
 import { type Lot } from '@/lib/lots'
 import { STATUS_LABELS, type LotStatus } from '@/lib/data'
+import { svgToLngLat } from '@/lib/geo/calibration'
 
 const STATUS_COLOR: Record<LotStatus, { fill: string; stroke: string }> = {
   DISPONIBLE:         { fill: '#bbf7d0', stroke: '#16a34a' },
@@ -23,24 +24,10 @@ const STATUS_HOVER: Record<LotStatus, string> = {
 
 const STATUSES = Object.keys(STATUS_LABELS) as LotStatus[]
 
-// Georeferencing: SVG → lat/lng
-const REF_SVG_X = 860.5       // M1-L1 center x
-const REF_SVG_Y = 303.4       // M1-L1 center y
-const REF_LAT   = -27.528473
-const REF_LNG   = -58.808283
-const A =  0.06245549         // m per SVG px — four-point conformal transform
-const B =  0.41846104         // m per SVG px
-const M_PER_DEG_LNG = 111320 * Math.cos((REF_LAT * Math.PI) / 180)
-
+// Georeferencing: SVG → lat/lng (ver lib/geo/calibration.ts)
 function svgToLatLng(x: number, y: number): google.maps.LatLngLiteral {
-  const dx = x - REF_SVG_X
-  const dy = y - REF_SVG_Y
-  const dE = A * dx + B * dy
-  const dN = B * dx - A * dy
-  return {
-    lat: REF_LAT + dN / 111320,
-    lng: REF_LNG + dE / M_PER_DEG_LNG,
-  }
+  const [lng, lat] = svgToLngLat(x, y)
+  return { lat, lng }
 }
 
 function lotToPolygon(coords: [number, number, number, number]): google.maps.LatLngLiteral[] {
