@@ -135,10 +135,13 @@ export const NOTARIAL_COSTS: Array<{ concept: string; value: string | null }> = 
   { concept: 'Inscripción registral',     value: null },
 ]
 
+// Fuente: Ordenanza N.º 7403 (09/11/2023) — "Plan de Sector 2, Áreas Residenciales
+// y Mixtas", Unidad de Gestión N.º 2 del Plan Especial 2da Etapa de Urbanización
+// Predios Santa Catalina. Anexo III (Normativa de Zonificación).
 export const ZONING = [
   {
     zone: 'AI-1',
-    desc: 'Densidad media baja',
+    desc: 'Área Interior — densidad media baja',
     minSqm: '300 m²',
     minFront: '12 m',
     maxHeight: '13 m / 4 plantas',
@@ -147,7 +150,7 @@ export const ZONING = [
   },
   {
     zone: 'AI-2',
-    desc: 'Densidad baja',
+    desc: 'Área Interior — densidad baja',
     minSqm: '300 m²',
     minFront: '12 m',
     maxHeight: '10 m / 3 plantas',
@@ -156,17 +159,39 @@ export const ZONING = [
   },
   {
     zone: 'C2',
-    desc: 'Corredor densidad 2',
+    desc: 'Corredor densidad 2 — frentista a avenidas',
     minSqm: '450 m²',
     minFront: '15 m',
     maxHeight: '19 m / 6 plantas',
     fot: '4.0',
     fos: '0.70',
   },
+  {
+    zone: 'EP',
+    desc: 'Equipamiento público',
+    minSqm: '600 m²',
+    minFront: '20 m',
+    maxHeight: '19 m / 6 plantas',
+    fot: '3.6',
+    fos: '0.60',
+  },
+  {
+    zone: 'EVP',
+    desc: 'Espacio verde público — Parque Metropolitano',
+    minSqm: '—',
+    minFront: '—',
+    maxHeight: '—',
+    fot: '—',
+    fos: '—',
+  },
 ]
 
 export const PERMITTED_USES =
   'Vivienda individual y colectiva, consultorios, gastronomía, comercio minorista, oficinas, gimnasio, salud, educación, servicios.'
+
+// Usos no admitidos en toda la Unidad de Gestión 2 (Ordenanza N.º 7403, Anexo IV, 1.2).
+export const PROHIBITED_USES =
+  'Hipermercados; playas de estacionamiento para vehículos de gran porte (ómnibus, camiones); depósitos exclusivos (cuando no sean complementarios de otra actividad); cualquier actividad que manipule productos químicos, tóxicos, peligrosos, inflamables o explosivos.'
 
 export type LotStatus = 'DISPONIBLE' | 'RESERVADO' | 'VENDIDO' | 'FIDEICOMISO' | 'NO_COMERCIALIZABLE'
 

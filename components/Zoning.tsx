@@ -1,4 +1,4 @@
-import { ZONING, PERMITTED_USES } from '@/lib/data'
+import { ZONING, PERMITTED_USES, PROHIBITED_USES } from '@/lib/data'
 
 export default function Zoning() {
   return (
@@ -39,9 +39,15 @@ export default function Zoning() {
           </table>
         </div>
 
-        <div className="rounded-2xl p-6" style={{ background: '#F2ECE0', border: '1px solid #D8D2C7' }}>
-          <h3 className="mb-3 font-bold" style={{ color: '#2E2A26' }}>Usos permitidos principales</h3>
-          <p style={{ color: '#6B6660' }}>{PERMITTED_USES}</p>
+        <div className="grid gap-6 sm:grid-cols-2">
+          <div className="rounded-2xl p-6" style={{ background: '#F2ECE0', border: '1px solid #D8D2C7' }}>
+            <h3 className="mb-3 font-bold" style={{ color: '#2E2A26' }}>Usos permitidos principales</h3>
+            <p style={{ color: '#6B6660' }}>{PERMITTED_USES}</p>
+          </div>
+          <div className="rounded-2xl p-6" style={{ background: '#fef2f2', border: '1px solid #fca5a5' }}>
+            <h3 className="mb-3 font-bold" style={{ color: '#991b1b' }}>Usos no admitidos</h3>
+            <p style={{ color: '#991b1b' }}>{PROHIBITED_USES}</p>
+          </div>
         </div>
       </div>
     </section>
