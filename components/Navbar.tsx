@@ -9,6 +9,7 @@ const LINKS = [
   { href: '#lotes',        label: 'Lotes' },
   { href: '#precios',      label: 'Precios' },
   { href: '#financiacion', label: 'Financiación' },
+  { href: '#zonificacion', label: 'Uso de suelo' },
   { href: '#galeria',      label: 'Galería' },
   { href: '#contacto',     label: 'Contacto' },
 ]

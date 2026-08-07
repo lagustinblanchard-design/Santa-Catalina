@@ -1,0 +1,58 @@
+import type { ReactElement } from 'react'
+import { SERVICES, type ServiceStatus } from '@/lib/data'
+
+const ICONS: Record<string, ReactElement> = {
+  'Agua corriente': <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c-1.5 3-4.5 6-4.5 9a4.5 4.5 0 009 0c0-3-3-6-4.5-9z" />,
+  'Luz eléctrica':  <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />,
+  'Cloaca':         <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M3 14h18M5 6h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z" />,
+  'Ripio':          <path strokeLinecap="round" strokeLinejoin="round" d="M9 20H5a2 2 0 01-2-2V6a2 2 0 012-2h4m6 16h4a2 2 0 002-2V6a2 2 0 00-2-2h-4m-6 16V4m6 16V4" />,
+  'Cordón cuneta':  <path strokeLinecap="round" strokeLinejoin="round" d="M4 20h16M4 16h16M4 4h16v8H4z" />,
+}
+
+const STATUS_LABEL: Record<ServiceStatus, string> = {
+  ejecutado: 'Ejecutado',
+  en_obra: 'En obra',
+  proyectado: 'Proyectado',
+}
+
+const STATUS_COLOR: Record<ServiceStatus, string> = {
+  ejecutado: '#16a34a',
+  en_obra: '#ca8a04',
+  proyectado: '#6B6660',
+}
+
+export default function ServicesStatus() {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      {SERVICES.map((s) => (
+        <div
+          key={s.label}
+          className="flex flex-col gap-3 rounded-2xl border p-5 transition-transform hover:-translate-y-1"
+          style={{ background: '#fff', borderColor: '#D8D2C7' }}
+        >
+          <div className="flex items-center gap-3">
+            <svg className="h-6 w-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{ color: '#AA1120' }}>
+              {ICONS[s.label]}
+            </svg>
+            <span className="text-sm font-semibold" style={{ color: '#2E2A26' }}>{s.label}</span>
+          </div>
+          {s.status ? (
+            <span
+              className="w-fit rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide"
+              style={{ background: `${STATUS_COLOR[s.status]}1A`, color: STATUS_COLOR[s.status] }}
+            >
+              {STATUS_LABEL[s.status]}
+            </span>
+          ) : (
+            <span
+              className="w-fit rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide italic"
+              style={{ background: '#F2ECE0', color: '#B08968' }}
+            >
+              Por confirmar
+            </span>
+          )}
+        </div>
+      ))}
+    </div>
+  )
+}

@@ -12,6 +12,71 @@ export const SITE = {
   CONTACT_EMAIL: 'info@remaxpaye.com.ar', // ← REEMPLAZAR
 }
 
+// ---------- Servicios de infraestructura ----------
+// Estado real de ejecución de cada servicio. Todavía sin confirmar cuál está
+// terminado, en obra, o proyectado a futuro — no asumir "ejecutado" sin dato
+// real (la página no puede afirmar algo que no está verificado).
+export type ServiceStatus = 'ejecutado' | 'en_obra' | 'proyectado'
+
+export const SERVICES: Array<{ label: string; status: ServiceStatus | null }> = [
+  { label: 'Agua corriente',  status: null },
+  { label: 'Luz eléctrica',   status: null },
+  { label: 'Cloaca',          status: null },
+  { label: 'Ripio',           status: null },
+  { label: 'Cordón cuneta',   status: null },
+]
+
+// ---------- Entorno y accesos ----------
+// Movido desde components/GoogleMapsLotMap.tsx (antes hardcodeado ahí, sin
+// fuente única) — mismo contenido, ahora consumido también por #proyecto.
+export const SURROUNDINGS = {
+  travelTimes: [
+    { label: 'Centro de Corrientes', time: '10 min' },
+    { label: 'Terminal de Ómnibus', time: '7 min' },
+    { label: 'Av. Maipú (acceso principal)', time: '2 min' },
+    { label: 'Hospital Llano', time: '12 min' },
+  ],
+  nearbyServices: [
+    'Colegios primarios',
+    'Centros de salud',
+    'Supermercados',
+    'Transporte público',
+    'Plazas y espacios verdes',
+    'Bancos y cajeros',
+  ],
+}
+
+// ---------- Etapas y cronograma de obra ----------
+// PLANTILLA a completar con los datos reales del proyecto — las etapas de
+// abajo son un punto de partida habitual para un loteo, renombrar/reordenar
+// según corresponda. `status: null` se muestra en la página como "Por
+// confirmar", nunca como si la etapa ya estuviera resuelta.
+export type PhaseStatus = 'completado' | 'en_curso' | 'proyectado'
+
+export const PROJECT_PHASES: Array<{
+  label: string
+  detail: string | null
+  status: PhaseStatus | null
+}> = [
+  { label: 'Aprobación municipal',         detail: SITE.ordinance, status: 'completado' },
+  { label: 'Apertura de calles y mensura', detail: null, status: null },
+  { label: 'Infraestructura de servicios', detail: null, status: null },
+  { label: 'Escrituración',                detail: null, status: null },
+]
+
+// ---------- Escrituración y titularidad ----------
+// PLANTILLA — completar: qué se firma al reservar (boleto vs escritura),
+// cuándo se escritura, y el estado dominial del loteo.
+export const DEED_INFO: {
+  reservation: string | null
+  timing: string | null
+  titleStatus: string | null
+} = {
+  reservation: null,
+  timing: null,
+  titleStatus: null,
+}
+
 export type LotSize = '12x26' | '12x28' | '12x30' | '15x30' | '15.55x30'
 
 // Precios vigentes al 31/07/2026 (lista de precios PAYÉ). Las dos tipologías
@@ -61,10 +126,13 @@ export const FINANCING_36: Partial<Record<LotSize, {
   '15x30': { downUSD: 3000, installmentUSD: 920, availability: '9 lotes disponibles' },
 }
 
-export const NOTARIAL_COSTS = [
-  { concept: 'Honorarios escribanía',   value: '$645.000 pesos' },
-  { concept: 'Impuesto de sellos',       value: '1% (calculado al dólar oficial)' },
-  { concept: 'Honorarios inmobiliarios', value: '3% en dólares (no incluido en precio)' },
+export const NOTARIAL_COSTS: Array<{ concept: string; value: string | null }> = [
+  { concept: 'Honorarios escribanía',    value: '$645.000 pesos' },
+  { concept: 'Impuesto de sellos',        value: '1% (calculado al dólar oficial)' },
+  { concept: 'Honorarios inmobiliarios',  value: '3% en dólares (no incluido en precio)' },
+  { concept: 'Gastos de mensura',         value: null },
+  { concept: 'Tasa/certificado municipal', value: null },
+  { concept: 'Inscripción registral',     value: null },
 ]
 
 export const ZONING = [

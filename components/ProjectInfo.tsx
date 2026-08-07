@@ -1,8 +1,11 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import { SITE, LOT_TYPES } from '@/lib/data'
 import AnimateIn from './AnimateIn'
+import ProjectPhases from './project/ProjectPhases'
+import ServicesStatus from './project/ServicesStatus'
+import Surroundings from './project/Surroundings'
+import DeedInfo from './project/DeedInfo'
 
 export default function ProjectInfo() {
   return (
@@ -39,48 +42,19 @@ export default function ProjectInfo() {
           ))}
         </div>
 
+        {/* Etapas y cronograma de obra */}
+        <AnimateIn>
+          <div className="mb-16">
+            <h3 className="mb-6 text-2xl font-bold" style={{ color: '#2E2A26' }}>Etapas del desarrollo</h3>
+            <ProjectPhases />
+          </div>
+        </AnimateIn>
+
         {/* Services */}
         <AnimateIn>
           <div className="mb-16">
             <h3 className="mb-6 text-2xl font-bold" style={{ color: '#2E2A26' }}>Servicios</h3>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-              {[
-                {
-                  label: 'Agua corriente',
-                  icon: <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 3c-1.5 3-4.5 6-4.5 9a4.5 4.5 0 009 0c0-3-3-6-4.5-9z" /></svg>,
-                },
-                {
-                  label: 'Luz eléctrica',
-                  icon: <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
-                },
-                {
-                  label: 'Cloaca',
-                  icon: <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M3 14h18M5 6h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z" /></svg>,
-                },
-                {
-                  label: 'Ripio',
-                  icon: <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 20H5a2 2 0 01-2-2V6a2 2 0 012-2h4m6 16h4a2 2 0 002-2V6a2 2 0 00-2-2h-4m-6 16V4m6 16V4" /></svg>,
-                },
-                {
-                  label: 'Cordón cuneta',
-                  icon: <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4 20h16M4 16h16M4 4h16v8H4z" /></svg>,
-                },
-              ].map((s, i) => (
-                <motion.div
-                  key={s.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-60px' }}
-                  transition={{ delay: i * 0.07, duration: 0.45, ease: 'easeOut' as const }}
-                  whileHover={{ y: -3, transition: { duration: 0.2 } }}
-                  className="flex items-center gap-3 rounded-2xl border p-5 cursor-default"
-                  style={{ background: '#fff', borderColor: '#D8D2C7' }}
-                >
-                  <span style={{ color: '#AA1120' }}>{s.icon}</span>
-                  <span className="text-sm font-semibold" style={{ color: '#2E2A26' }}>{s.label}</span>
-                </motion.div>
-              ))}
-            </div>
+            <ServicesStatus />
           </div>
         </AnimateIn>
 
@@ -92,6 +66,22 @@ export default function ProjectInfo() {
             <p className="mt-2 text-sm" style={{ color: '#6B6660' }}>
               Corrientes Capital — zona de expansión urbana con acceso a servicios y vías principales.
             </p>
+          </div>
+        </AnimateIn>
+
+        {/* Entorno y accesos */}
+        <AnimateIn>
+          <div className="mb-16">
+            <h3 className="mb-6 text-2xl font-bold" style={{ color: '#2E2A26' }}>Entorno y accesos</h3>
+            <Surroundings />
+          </div>
+        </AnimateIn>
+
+        {/* Escrituración y titularidad */}
+        <AnimateIn>
+          <div className="mb-16">
+            <h3 className="mb-6 text-2xl font-bold" style={{ color: '#2E2A26' }}>Escrituración y titularidad</h3>
+            <DeedInfo />
           </div>
         </AnimateIn>
 

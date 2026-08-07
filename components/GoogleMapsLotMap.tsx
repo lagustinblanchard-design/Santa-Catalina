@@ -3,9 +3,19 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { setOptions, importLibrary } from '@googlemaps/js-api-loader'
+import type { ReactElement } from 'react'
 import { type Lot } from '@/lib/lots'
-import { STATUS_LABELS, type LotStatus } from '@/lib/data'
+import { STATUS_LABELS, SURROUNDINGS, type LotStatus } from '@/lib/data'
 import { svgToLngLat } from '@/lib/geo/calibration'
+
+// Iconos por tiempo de viaje, keyeados por label — el contenido (SURROUNDINGS)
+// vive en lib/data.ts, esto es sólo la parte visual de este componente.
+const TRAVEL_ICONS: Record<string, ReactElement> = {
+  'Centro de Corrientes': <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />,
+  'Terminal de Ómnibus': <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />,
+  'Av. Maipú (acceso principal)': <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" />,
+  'Hospital Llano': <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />,
+}
 
 const STATUS_COLOR: Record<LotStatus, { fill: string; stroke: string }> = {
   DISPONIBLE:         { fill: '#bbf7d0', stroke: '#16a34a' },
@@ -327,16 +337,11 @@ export default function GoogleMapsLotMap({ lots }: { lots: Lot[] }) {
             <div className="rounded-2xl border p-5" style={{ background: '#fff', borderColor: '#D8D2C7' }}>
               <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#8A6A47' }}>Tiempos de viaje</p>
               <div className="space-y-3">
-                {[
-                  { label: 'Centro de Corrientes', time: '10 min', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" /> },
-                  { label: 'Terminal de Ómnibus', time: '7 min', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" /> },
-                  { label: 'Av. Maipú (acceso principal)', time: '2 min', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" /> },
-                  { label: 'Hospital Llano', time: '12 min', icon: <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /> },
-                ].map(({ label, time, icon }) => (
+                {SURROUNDINGS.travelTimes.map(({ label, time }) => (
                   <div key={label} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <svg className="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{ color: '#AA1120' }}>
-                        {icon}
+                        {TRAVEL_ICONS[label]}
                       </svg>
                       <span className="text-sm" style={{ color: '#2E2A26' }}>{label}</span>
                     </div>
@@ -350,14 +355,7 @@ export default function GoogleMapsLotMap({ lots }: { lots: Lot[] }) {
             <div className="rounded-2xl border p-5" style={{ background: '#fff', borderColor: '#D8D2C7' }}>
               <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#8A6A47' }}>Servicios cercanos</p>
               <div className="grid grid-cols-2 gap-2">
-                {[
-                  'Colegios primarios',
-                  'Centros de salud',
-                  'Supermercados',
-                  'Transporte público',
-                  'Plazas y espacios verdes',
-                  'Bancos y cajeros',
-                ].map(s => (
+                {SURROUNDINGS.nearbyServices.map(s => (
                   <div key={s} className="flex items-center gap-2">
                     <svg className="h-3.5 w-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} style={{ color: '#16a34a' }}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />

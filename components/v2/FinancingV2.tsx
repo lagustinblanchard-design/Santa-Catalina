@@ -185,8 +185,8 @@ export default function FinancingV2() {
                 <p style={{ fontFamily: JOSEFIN, fontSize: '0.65rem', color: '#888', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
                   {item.concept}
                 </p>
-                <p style={{ fontFamily: CINZEL, fontSize: '0.9rem', fontWeight: 500, color: '#F5F0EB' }}>
-                  {item.value}
+                <p style={{ fontFamily: CINZEL, fontSize: item.value ? '0.9rem' : '0.75rem', fontWeight: 500, fontStyle: item.value ? 'normal' : 'italic', color: item.value ? '#F5F0EB' : '#8A6A47' }}>
+                  {item.value ?? 'Por confirmar'}
                 </p>
               </div>
             ))}

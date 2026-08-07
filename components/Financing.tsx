@@ -178,7 +178,11 @@ export default function Financing() {
             {NOTARIAL_COSTS.map((item) => (
               <div key={item.concept} className="rounded-xl p-4" style={{ background: '#F2ECE0' }}>
                 <p className="text-sm" style={{ color: '#6B6660' }}>{item.concept}</p>
-                <p className="mt-1 font-semibold" style={{ color: '#2E2A26' }}>{item.value}</p>
+                {item.value ? (
+                  <p className="mt-1 font-semibold" style={{ color: '#2E2A26' }}>{item.value}</p>
+                ) : (
+                  <p className="mt-1 text-sm font-semibold italic" style={{ color: '#B08968' }}>Por confirmar</p>
+                )}
               </div>
             ))}
           </div>
