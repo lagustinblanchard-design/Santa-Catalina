@@ -51,6 +51,9 @@ export default function ServicesStatus() {
               Por confirmar
             </span>
           )}
+          {s.detail && (
+            <p className="text-xs" style={{ color: '#6B6660' }}>{s.detail}</p>
+          )}
         </div>
       ))}
     </div>

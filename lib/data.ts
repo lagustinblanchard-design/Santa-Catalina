@@ -13,17 +13,17 @@ export const SITE = {
 }
 
 // ---------- Servicios de infraestructura ----------
-// Estado real de ejecución de cada servicio. Todavía sin confirmar cuál está
-// terminado, en obra, o proyectado a futuro — no asumir "ejecutado" sin dato
-// real (la página no puede afirmar algo que no está verificado).
+// Estado real de ejecución de cada servicio, según el reporte de avance de
+// obra de Payé Desarrollos (avance-2026-07.pdf, julio 2026). Luz eléctrica
+// no aparece en ese reporte — sigue sin confirmar, no asumir "ejecutado".
 export type ServiceStatus = 'ejecutado' | 'en_obra' | 'proyectado'
 
-export const SERVICES: Array<{ label: string; status: ServiceStatus | null }> = [
-  { label: 'Agua corriente',  status: null },
-  { label: 'Luz eléctrica',   status: null },
-  { label: 'Cloaca',          status: null },
-  { label: 'Ripio',           status: null },
-  { label: 'Cordón cuneta',   status: null },
+export const SERVICES: Array<{ label: string; status: ServiceStatus | null; detail: string | null }> = [
+  { label: 'Agua corriente',  status: 'en_obra', detail: '90% ejecutado' },
+  { label: 'Luz eléctrica',   status: null,      detail: null },
+  { label: 'Cloaca',          status: 'en_obra', detail: '90% ejecutado' },
+  { label: 'Ripio',           status: 'en_obra', detail: 'Apertura de calles en ejecución — sector oeste (jul. 2026)' },
+  { label: 'Cordón cuneta',   status: 'en_obra', detail: '7 de 14 manzanas ejecutadas (Mz 8–14 y Reserva Municipal 2)' },
 ]
 
 // ---------- Entorno y accesos ----------
@@ -60,7 +60,7 @@ export const PROJECT_PHASES: Array<{
 }> = [
   { label: 'Aprobación municipal',         detail: SITE.ordinance, status: 'completado' },
   { label: 'Apertura de calles y mensura', detail: null, status: null },
-  { label: 'Infraestructura de servicios', detail: null, status: null },
+  { label: 'Infraestructura de servicios', detail: 'Agua y cloaca 90% ejecutadas; cordón cuneta en 7 de 14 manzanas (jul. 2026)', status: 'en_curso' },
   { label: 'Escrituración',                detail: null, status: null },
 ]
 
