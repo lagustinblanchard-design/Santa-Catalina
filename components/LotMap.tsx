@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { STATUS_COLORS, STATUS_LABELS, type LotStatus } from '@/lib/data'
+import { SITE, STATUS_COLORS, STATUS_LABELS, type LotStatus } from '@/lib/data'
 
 const STATUSES = Object.keys(STATUS_LABELS) as LotStatus[]
 
@@ -38,7 +38,7 @@ export default function LotMap() {
               type="application/pdf"
               className="w-full"
               style={{ height: '720px' }}
-              aria-label="Plano del loteo Predios Santa Catalina"
+              aria-label={`Plano del loteo ${SITE.name}`}
             >
               {/* Fallback if browser can't render PDF */}
               <div className="flex flex-col items-center justify-center py-16 text-center text-gray-500">

@@ -73,9 +73,9 @@ export default function Hero() {
         </motion.div>
 
         <motion.h1 {...fadeUp(0.25)} className="mb-4 text-5xl font-black tracking-tight md:text-7xl" style={{ letterSpacing: '-0.025em' }}>
-          Extensión Urbana
+          DISTRITO PAYÉ
           <br />
-          <span style={{ color: '#AA1120' }}>Santa Catalina</span>
+          <span style={{ color: '#AA1120' }}>SANTA CATALINA</span>
         </motion.h1>
 
         <motion.p {...fadeUp(0.4)} className="mb-2 text-xl font-semibold text-white/90 md:text-2xl">

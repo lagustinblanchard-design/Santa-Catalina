@@ -28,6 +28,9 @@ import { STATUS_LABELS, SITE, type LotStatus } from '@/lib/data'
 import GEO from '@/lib/lot_geometry.json'
 import { ORTHO_URL, ORTHO_BOUNDS } from '@/lib/ortho'
 import { svgToLngLat } from '@/lib/geo/calibration'
+import { FeatherExtension } from '@/lib/geo/feather-extension'
+
+const featherExtension = new FeatherExtension()
 
 // ---------- Georreferenciado (ver lib/geo/calibration.ts) ----------
 
@@ -88,20 +91,27 @@ type DuplexModel = { lotId: string; url: string; heading?: number; sizeScale?: n
 const MODELS: DuplexModel[] = []
 
 // ---------- Vista ----------
+// zoom/pitch recalibrados contra la huella real del ortomosaico (788 x 492 m): a mayor
+// pitch, más pantalla ocupa el satélite de fondo, así que la regla es vista amplia = pitch
+// bajo, y pitch alto sólo cuando la cámara ya está encima de la imagen de dron. minZoom
+// 15.3 (~4.9 km de ancho) corta el alejamiento al vacío plano pero conserva el centro de
+// Corrientes; maxZoom 19.5 empareja el tope de zoom con la resolución real del ortomosaico
+// (19.2 cm/px) para no acercarse más allá de lo que el dato entrega nítido.
 const INITIAL_VIEW_STATE = {
   longitude: -58.805462,
   latitude: -27.5302,
-  zoom: 16.2,
-  pitch: 42,
+  zoom: 17.1,
+  pitch: 40,
   bearing: -18,
-  minZoom: 14,
-  maxZoom: 20,
+  minZoom: 15.3,
+  maxZoom: 19.5,
 }
 
-// Arranque del vuelo cinemático: mismo centro, en picada desde arriba.
+// Arranque del vuelo cinemático: mismo centro, en picada desde arriba. Cenital a propósito
+// — sin horizonte no hay plano lejano feo que fugue, aunque el ortomosaico sea chico en cuadro.
 const START_VIEW_STATE = {
   ...INITIAL_VIEW_STATE,
-  zoom: 13.6,
+  zoom: 15.8,
   pitch: 0,
   bearing: 40,
 }
@@ -217,23 +227,28 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
 
   // Guion del recorrido guiado: cada parada = encuadre + texto + (opcional) spotlight de estado.
   const WAYPOINTS = useMemo<Waypoint[]>(() => {
-    const base = { minZoom: 14, maxZoom: 20 }
+    const base = { minZoom: INITIAL_VIEW_STATE.minZoom, maxZoom: INITIAL_VIEW_STATE.maxZoom }
     return [
       {
-        view: { ...base, longitude: INITIAL_VIEW_STATE.longitude, latitude: INITIAL_VIEW_STATE.latitude, zoom: 15.3, pitch: 35, bearing: 28 },
-        title: 'Predios Santa Catalina', sub: 'Corrientes Capital · Ord. N.º 7403', duration: 4200,
+        view: { ...base, longitude: INITIAL_VIEW_STATE.longitude, latitude: INITIAL_VIEW_STATE.latitude, zoom: 16.4, pitch: 20, bearing: 28 },
+        title: SITE.name, sub: 'Corrientes Capital · Ord. N.º 7403', duration: 4200,
       },
       {
-        view: { ...base, ...INITIAL_VIEW_STATE },
-        title: '14 manzanas · 306 lotes', sub: 'Segunda preventa', duration: 4200,
+        // Encuadre calculado para que los 306 lotes (693 m de ancho) entren completos:
+        // a zoom 17.3 la vista mide ~1240 m de ancho, el loteo ocupa ~56% del cuadro.
+        view: { ...base, ...INITIAL_VIEW_STATE, zoom: 17.3, pitch: 35 },
+        title: '14 manzanas · 306 lotes', sub: SITE.stage, duration: 4200,
       },
       {
-        view: { ...base, longitude: dispCenter[0], latitude: dispCenter[1], zoom: 17, pitch: 52, bearing: 8 },
+        view: { ...base, longitude: dispCenter[0], latitude: dispCenter[1], zoom: 17.9, pitch: 50, bearing: 8 },
         title: `${counts.DISPONIBLE} lotes disponibles`, sub: 'Desde USD 16.450 · financiación en cuotas',
         spotlight: 'DISPONIBLE' as LotStatus, duration: 4800,
       },
       {
-        view: { ...base, longitude: INITIAL_VIEW_STATE.longitude, latitude: INITIAL_VIEW_STATE.latitude, zoom: 16.6, pitch: 63, bearing: -55 },
+        // El mensaje acá es el contexto urbano, así que el pitch se mantiene bajo a
+        // propósito (antes 63°, el más alto de todos) para no exponer el satélite plano
+        // justo en la parada que más depende de él.
+        view: { ...base, longitude: INITIAL_VIEW_STATE.longitude, latitude: INITIAL_VIEW_STATE.latitude, zoom: 16.2, pitch: 30, bearing: -55 },
         title: 'A 10 minutos del centro', sub: 'Escuelas, salud y transporte cerca', duration: 4800,
       },
     ]
@@ -302,6 +317,10 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
 
   const showMesh = HAS_TERRAIN_MESH && photoMode === 'fotorrealista'
 
+  // Cuánto plano lejano expone el pitch actual — alimenta la bruma de horizonte.
+  // Cenital (pitch <= 10) no tiene horizonte visible; a partir de ahí crece hasta pitch 55.
+  const horizonHaze = Math.min(1, Math.max(0, ((viewState.pitch ?? 0) - 10) / 45))
+
   const layers = useMemo(() => {
     // Satélite Esri — capa base en modo disponibilidad, o fallback si no hay malla real todavía.
     const base = showMesh
@@ -310,7 +329,14 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
           id: 'esri-satellite',
           data: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
           minZoom: 0,
-          maxZoom: 19,
+          // 19 dejaba huecos rosa/malva en el horizonte lejano (se veía el <div> de cielo
+          // detrás): @deck.gl/geo-layers, con pitch <= 60, fija la selección de tiles en
+          // maxZoom sin permitir tiles más gruesos de respaldo (tile-2d-traversal.js:146),
+          // así que el horizonte necesitaría una cantidad impracticable de tiles z19.
+          // 17 ≈ 1,06 m/px, casi 1:1 con la vista por defecto (zoom 17,1) — nítido donde se
+          // ve, y 16x menos tiles que z19 para cubrir el horizonte (verificar con capturas
+          // que el hueco no vuelva; si vuelve, ver SHOWROOM-3D-NOTES.md para el plan B).
+          maxZoom: 17,
           tileSize: 256,
           renderSubLayers: (props) => {
             // @ts-expect-error tile.bbox existe en modo geoespacial
@@ -319,6 +345,15 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
               data: undefined,
               image: props.data,
               bounds: [west, south, east, north],
+              // El satélite es el entorno, no el producto: algo desaturado para no competir
+              // con el ortomosaico del dron. Antes llevaba tintColor cálido — pero tintColor
+              // sólo puede oscurecer (es multiplicativo) y el satélite YA es ~2x más oscuro
+              // que el dron (medido: dron RGB 103,102,85 vs Esri 52,64,34) — el tinte
+              // agrandaba la diferencia en vez de cerrarla, así que se sacó. 0.8 y 0.6 fueron
+              // demasiado agresivos para cuando el satélite era "piso de maqueta" bajo
+              // volúmenes 3D (revertidos — ver SHOWROOM-3D-NOTES.md); sin esos volúmenes el
+              // entorno puede leerse más natural. 0.35 sigue apagándolo sin perder textura.
+              desaturate: 0.35,
             })
           },
         })
@@ -334,6 +369,9 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
           image: ORTHO_URL,
           bounds: ORTHO_BOUNDS,
           pickable: false,
+          // Difumina el borde para que no corte duro contra el satélite de abajo
+          // (ver lib/geo/feather-extension.ts).
+          extensions: [featherExtension],
         })
 
     // Malla real capturada con dron (Cesium ion) — sólo si hay asset configurado y el
@@ -373,8 +411,12 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
       getElevation: (d) => STATUS_ELEV[d.status] + (showMesh ? TERRAIN_BASE_ELEV : 0),
       getFillColor: (d) => {
         const [r, g, b] = STATUS_RGB[d.status]
-        // En vista fotorrealista los lotes van translúcidos para no tapar la malla.
-        const base = showMesh ? 90 : 210
+        // Antes 210 (82% opaco): el color de estado tapaba casi del todo el ortomosaico
+        // de abajo, así que el loteo se leía como una calcomanía sólida contra el resto
+        // de Corrientes sin overlay. Más translúcido deja ver la textura real debajo del
+        // color y suaviza ese contraste. En vista fotorrealista sigue aún más translúcido
+        // para no tapar la malla.
+        const base = showMesh ? 90 : 130
         return [r, g, b, isDim(d.status) ? (showMesh ? 15 : 40) : base]
       },
       getLineColor: (d) => {
@@ -456,6 +498,22 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
         style={{ background: 'linear-gradient(180deg, #2b2440 0%, #7a4a5a 45%, #d98a5f 75%, #f0b878 100%)' }}
       />
 
+      {/* Bruma atmosférica: crece con el pitch, que es cuando más plano lejano entra al
+          cuadro (en cenital no hay horizonte, así que no molesta). */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          opacity: horizonHaze,
+          background:
+            'linear-gradient(180deg,' +
+            ' rgba(240,184,120,0.60) 0%,' +
+            ' rgba(217,138,95,0.30) 16%,' +
+            ' rgba(217,138,95,0.11) 32%,' +
+            ' rgba(217,138,95,0.00) 52%)',
+          transition: 'opacity 400ms ease-out',
+        }}
+      />
+
       <DeckGL
         ref={deckRef as never}
         views={new MapView({ repeat: true })}
@@ -483,10 +541,11 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
         style={{ position: 'absolute', width: '100%', height: '100%' }}
       />
 
-      {/* Viñeta cinemática (oscurece bordes, foco al centro) */}
+      {/* Viñeta cinemática (oscurece bordes, foco al centro) — entibiada para no cortar
+          contra la bruma cálida de arriba con un borde frío. */}
       <div
         className="pointer-events-none absolute inset-0"
-        style={{ boxShadow: 'inset 0 0 180px 40px rgba(0,0,0,0.45)' }}
+        style={{ boxShadow: 'inset 0 0 200px 50px rgba(60,30,20,0.42)' }}
       />
 
       {/* Título + filtros (arriba izq.) — sólo en modo libre */}
@@ -594,9 +653,9 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
           <p className="text-xs font-bold uppercase tracking-[0.3em]" style={{ color: '#FF4230' }}>
             Recorrido virtual
           </p>
-          <h1 className="mt-2 text-4xl font-black text-white drop-shadow-lg md:text-5xl">Predios Santa Catalina</h1>
+          <h1 className="mt-2 text-4xl font-black text-white drop-shadow-lg md:text-5xl">{SITE.name}</h1>
           <p className="mt-3 max-w-md text-sm text-white/80 md:text-base">
-            Corrientes Capital · 306 lotes · Segunda preventa
+            Corrientes Capital · 306 lotes · {SITE.stage}
           </p>
           <button
             onClick={startTour}

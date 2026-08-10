@@ -56,6 +56,105 @@ Para un video/reel pulido tipo el de `joan.urbania3d` (DOCTA) + posible experien
 9. Exportar: **Video** (Export → Movie, motor Lumen) para redes, y **Presenter** (Export → Presenter) para reuniones de venta.
 10. Path Tracer sólo si se quiere una imagen fija de máxima calidad más adelante.
 
+## Calidad visual del entorno (fondo Esri) — diagnóstico medido, no repetir el análisis
+
+El dron sólo cubre 788 x 492 m (el loteo mide 693 x 406 m); todo lo demás en el tour es
+satélite Esri plano y sin iluminar. Medido antes del fix: en la portada (zoom 13.6) el
+ortomosaico ocupaba **5%** del cuadro, en la vista principal (zoom 16.2) **30%**, en el
+waypoint más cercano (zoom 17) **52%** — el resto era Esri.
+
+**Descartado con evidencia, no reintentar:**
+- *Datos de elevación/terreno* — Corrientes es la llanura del Paraná, es plano de verdad.
+- *Extruir edificios de OpenStreetMap* — Overpass sobre 2x3 km alrededor del predio devolvió
+  **15 edificios**. No hay dato que extruir.
+
+**Fix aplicado (código, sin assets nuevos ni API keys):**
+- `desaturate: 0.45` + `tintColor: [225, 190, 165]` en el `BitmapLayer` de `esri-satellite`
+  (`renderSubLayers`) — el satélite pasa a leerse como telón atmosférico, no como protagonista.
+- Reencuadre completo de cámara: `minZoom` 14→15.3 (tope ~4.9 km, corta el vacío plano
+  conservando el centro de Corrientes), `maxZoom` 20→19.5 (empareja con la resolución real
+  del ortomosaico, 19.2 cm/px, evita el borroneo por acercarse más de lo que el dato entrega).
+  Los 4 waypoints del tour se reajustaron zoom/pitch para que el ortomosaico domine el cuadro
+  en las paradas cercanas, y quede en pitch bajo en las paradas amplias (menos pitch = menos
+  plano lejano feo expuesto).
+- Bruma de horizonte reactiva al `pitch` (`horizonHaze` en `LotMap3D.tsx`) + viñeta entibiada,
+  reemplazando la viñeta fría original.
+- `FeatherExtension` (`lib/geo/feather-extension.ts`) — desvanece el borde del *rectángulo*
+  de `bounds` del `ortho-dron` vía `DECKGL_FILTER_COLOR`. Queda como red de seguridad extra,
+  pero **no alcanza la costura real** — ver el punto siguiente.
+- **La costura visible no era el rectángulo, era el canal alfa de la imagen.** Confirmado con
+  una captura real del usuario + muestreo de píxeles: el alfa de `public/ortho-2607.webp`
+  tenía un escalón de **1 píxel** (0→255) exactamente en el borde real del vuelo, que cae bien
+  *adentro* del margen de 39-56 m del rectángulo — ahí es donde `FeatherExtension` nunca llega,
+  porque sólo opera sobre el borde del rectángulo, no sobre la forma real. Fix: difuminado
+  offline del canal alfa (no del RGB, para no perder nitidez) con `sharp` — `blur(30)` sobre el
+  canal alfa extraído, recombinado con el RGB original, re-encodeado a WebP. Sin Docker/GDAL:
+  el archivo fuente (`ortho-2607.webp`) ya tiene el alfa real embebido, no hace falta el GeoTIFF
+  de 259 MB para esto. Bounds sin cambios (mismas dimensiones de imagen). Backup del original
+  en el scratchpad de la sesión por si hay que comparar o revertir.
+  **Lección:** si se re-exporta el ortomosaico en el futuro (Fase 2, mayor resolución), hornear
+  este mismo difuminado de alfa en ese paso — no asumir que el `FeatherExtension` en shader lo
+  cubre, porque no cubre la huella real, sólo el rectángulo de `bounds`.
+
+## Volúmenes de contexto (edificios) — dos rondas hasta llegar a algo honesto y sin bugs
+
+- **Por qué:** con la costura del ortomosaico ya arreglada, la queja pasó a ser color/textura —
+  a la izquierda foto de dron nítida y verde, a la derecha satélite Esri chato y oscuro (medido:
+  dron RGB 103,102,85 vs Esri 52,64,34 — Esri es ~2x más oscuro, y el `tintColor` cálido que
+  había antes sólo puede oscurecer más, nunca aclarar — estaba agrandando la brecha).
+- **Ronda 1:** volúmenes de edificios reales como maqueta (`edificios-contexto`,
+  `SolidPolygonLayer`) + satélite bajado a piso casi monocromo. Datos de
+  microsoft/GlobalMLBuildingFootprints (CDLA-Permissive-2.0), horneados por
+  `scripts/fetch-buildings.mjs` a `public/edificios-corrientes.json` (14.821 edificios, 1,7 MB /
+  0,43 MB gzip). OSM tenía sólo 15 edificios en la misma zona — inservible, de ahí la elección.
+- **Causa raíz encontrada del hueco rosa/malva en el horizonte** (antes documentado como "sin
+  resolver"): **`node_modules/@deck.gl/geo-layers/dist/tileset-2d/tile-2d-traversal.js:146`** —
+  `const minZ = viewport.pitch <= 60 ? maxZ : 0`. Con nuestro pitch (40-55, siempre ≤60), la
+  librería fija la selección de tiles en `maxZoom` sin permitir tiles más gruesos de respaldo;
+  el horizonte lejano necesitaría una cantidad impracticable de tiles z19 y la mayoría no llega
+  a pedirse, dejando ver el `<div>` de cielo detrás del canvas. Confirmado que NO era el
+  `desaturate` (idéntico a 0.8 y a 0.6) ni tiles caídos (sin requests fallidos). **Fix:** bajar
+  `maxZoom` de la capa `esri-satellite` (19→15) — con tiles más grandes, el horizonte se cubre
+  con muchos menos, y como el satélite ya es sólo telón desaturado, perder nitidez lejana no
+  cuesta nada.
+- **Ronda 2, feedback del usuario:** "se nota que no son edificios reales/precisos" — no era el
+  bug, era que TODOS los volúmenes eran bloques idénticos de 3 m, patrón repetido y genérico.
+  El dataset no trae altura (0% de los registros) — inventar una altura específica por edificio
+  sería fabricar un dato, así que en vez de eso: `SolidPolygonLayer` → `PolygonLayer` con altura
+  variable en un RANGO chico (2.5-4 m, según el tamaño real de cada huella vía
+  `footprintAreaM2`), tono ±8% por hash determinístico del índice (`hash01`), y contorno
+  (`getLineColor`/`stroked`). Sigue siendo convención de maqueta, no relevamiento — documentado
+  en el propio código, no sólo acá.
+- **Ronda 3 — revertido por completo.** El usuario mandó una captura: *"PREFIERO QUE SEA UN MAPA
+  PLANO 2D A QUE SE VEA ASI"*. El problema no era la monotonía (lo de la Ronda 2) — era la
+  **geometría**. En ese barrio, `GlobalMLBuildingFootprints` trae huellas de manzana entera y
+  tiras de vivienda contigua, no casas sueltas; extruidas quedan como tiras largas marrones sin
+  relación con las casas reales de la foto satelital debajo. Más variación (altura/tono/contorno)
+  sobre geometría equivocada no arregla nada — se sacó la capa entera, `edificios-contexto`,
+  `scripts/fetch-buildings.mjs` y `public/edificios-corrientes.json`, todo borrado.
+  **Lección para no repetir:** cantidad de registros no es lo que importa (14.821 de Microsoft
+  vs 15 de OSM) — hay que mirar la geometría real superpuesta al satélite ANTES de extruir, no
+  sólo contar cuántos hay.
+  Con los volúmenes afuera, el satélite volvió a ser protagonista visual (ya no "piso detrás de
+  algo"), así que se le devolvió nitidez: `maxZoom` de `esri-satellite` 15→**17** (1,06 m/px,
+  casi 1:1 con la vista por defecto; 16× menos tiles que z19 para el horizonte, así que el hueco
+  rosa de la Ronda 1 no debería volver — probado en la vista general sin que reaparezca) y
+  `desaturate` 0.6→**0.35** (ya no necesita aplanarse tanto para no competir con nada). Si el
+  hueco volviera a aparecer en algún ángulo no probado, la Nota 2 de esta sección tiene la causa
+  raíz exacta y un plan B (plano de suelo neutro bajo los tiles) sin necesidad de re-investigar.
+
+**Pendiente opcional, no iniciado:**
+- *Ortomosaico de mayor resolución* — el TIFF fuente (`vuelo-santa-catalina/full-run/…`) es
+  15628x9561 px @ 5 cm/px; el WebP publicado es 4096 px @ 19.2 cm/px (4x menos). Sólo vale la
+  pena si se quiere subir el `maxZoom` por encima de 19.5. Requiere Docker + GDAL del
+  contenedor `opendronemap/odm` (recordar: `docker run -v` siempre desde PowerShell, nunca
+  Git-Bash — MSYS rompe las rutas).
+- *Google Photorealistic 3D Tiles* — **verificar cobertura de superficie real en Google Earth
+  sobre el predio antes de escribir código.** El terreno global no ayuda (ya es plano); lo que
+  aportaría es la malla de superficie (edificios/árboles), que cubre ~2500 ciudades — Corrientes
+  es ciudad media y el predio está en zona de expansión (campo + PROCREAR), así que es probable
+  que quede fuera de cobertura. Sin cobertura de superficie se vería igual que hoy, pagando.
+
 ## Gotchas ya resueltos (no repetir)
 
 - **Iluminación sobreexpuesta**: `DirectionalLight` con `intensity: 2.4` + specular casi blanco + `_shadow: true` dejaba TODOS los lotes blancos (bug real, encontrado con captura). Fix: `intensity: 1.0`, sin `_shadow` (la sombra proyectada de deck.gl es experimental y frágil). No subir la intensidad de nuevo sin verificar con screenshot.

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Montserrat } from 'next/font/google'
+import { SITE } from '@/lib/data'
 import './globals.css'
 
 const montserrat = Montserrat({
@@ -17,11 +18,11 @@ const SITE_URL =
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: 'Predios Santa Catalina — Segunda Preventa | RE/MAX PAYÉ',
+  title: `${SITE.name} — ${SITE.stage} | RE/MAX PAYÉ`,
   description:
     'Lotes residenciales y mixtos en Corrientes Capital. 14 manzanas, financiación en pesos y dólares. Comercializado por RE/MAX PAYÉ.',
   openGraph: {
-    title: 'Predios Santa Catalina — Segunda Preventa',
+    title: `${SITE.name} — ${SITE.stage}`,
     description: 'Lotes residenciales y mixtos en Corrientes Capital. Financiación disponible.',
     type: 'website',
   },

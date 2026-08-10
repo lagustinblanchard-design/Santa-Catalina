@@ -1,0 +1,68 @@
+{
+  "_fuente": "avance-2026-07.pdf — Payé Desarrollos, reporte de avance de obra. Fuente única de verdad: actualizar SOLO este archivo cada mes y re-renderizar con scripts/avance-images/build.mjs.",
+  "mes": "2026-07",
+  "titulo": "Julio 2026",
+  "proyecto": "Barrio Santa Catalina",
+  "desarrollador": "PAYÉ",
+  "desarrolladorSufijo": "DESARROLLOS",
+  "totalManzanas": 14,
+
+  "footer": {
+    "lema": "Seguimos construyendo tu barrio.",
+    "credito": "Desarrollos Payé · RE/MAX Payé — Corrientes"
+  },
+
+  "vial": {
+    "kicker": "INFRAESTRUCTURA VIAL",
+    "titulo": "Apertura de calles y cordón cuneta",
+    "bajada": "Estado de la obra vial del barrio. En verde, las manzanas con cordón cuneta ya ejecutado; y el trazado vial (apertura de calles y enripiado) del sector oeste del loteo.",
+    "cordonCuneta": {
+      "label": "Cordón cuneta",
+      "estado": "7 manzanas ejecutadas",
+      "manzanas": [8, 9, 10, 11, 12, 13, 14],
+      "reservas": ["Reserva Municipal 2"],
+      "detalle": "Cordón cuneta terminado en las manzanas 8, 9, 10, 11, 12, 13 y 14, y en la Reserva Municipal 2."
+    },
+    "aperturaCalles": {
+      "label": "Apertura de calles",
+      "estado": "En ejecución",
+      "detalle": "Aperturas en marcha en el sector oeste del barrio.",
+      "_sectorNota": "Qué corredores de calle se traman en el plano. Valores: oeste | este | todos. El PDF dice 'sector oeste' en el texto — verificar contra el plano del reporte antes de publicar.",
+      "sector": "oeste"
+    },
+    "referencias": {
+      "manzana": "Manzana con cordón cuneta ejecutado",
+      "trazadoTitulo": "TRAZADO VIAL",
+      "apertura": "Apertura de calles",
+      "enripiado": "Enripiado",
+      "obraEnAvance": "Obra en avance"
+    }
+  },
+
+  "redes": {
+    "kicker": "REDES SANITARIAS",
+    "titulo": "Agua corriente y cloaca",
+    "bajada": "Las redes de agua corriente y cloaca recorren las calles del barrio. Ambas se encuentran ejecutadas en un 90%.",
+    "agua": {
+      "label": "Agua corriente",
+      "pct": 90,
+      "leyenda": ["Ejecutado", "Pendiente", "Conexión"]
+    },
+    "cloaca": {
+      "label": "Red cloacal",
+      "pct": 90,
+      "leyenda": ["Ejecutado", "Pendiente", "Boca de registro"]
+    },
+    "pie": "Esquema del recorrido de las redes sobre el plano de lotes del barrio. Los círculos indican las bocas de registro; el tramo punteado, el 10% de la red aún en ejecución."
+  },
+
+  "resumen": {
+    "kicker": "AVANCE DE OBRA",
+    "tarjetas": [
+      { "label": "Cordón cuneta", "valor": "7", "unidad": "de 14 manzanas" },
+      { "label": "Agua corriente", "valor": "90", "unidad": "%" },
+      { "label": "Red cloacal", "valor": "90", "unidad": "%" },
+      { "label": "Apertura de calles", "valor": "En ejecución", "unidad": "sector oeste" }
+    ]
+  }
+}

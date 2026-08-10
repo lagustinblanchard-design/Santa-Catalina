@@ -175,14 +175,12 @@ export default function Financing() {
         <div className="mt-10 rounded-3xl p-8 shadow-sm" style={{ background: '#fff', border: '1px solid #D8D2C7' }}>
           <h3 className="mb-6 text-xl font-bold" style={{ color: '#2E2A26' }}>Costos adicionales</h3>
           <div className="grid gap-4 sm:grid-cols-3">
-            {NOTARIAL_COSTS.map((item) => (
+            {/* Sólo se muestran los costos ya confirmados — los que siguen en null en
+                NOTARIAL_COSTS (lib/data.ts) no se publican como "Por confirmar". */}
+            {NOTARIAL_COSTS.filter((item) => item.value).map((item) => (
               <div key={item.concept} className="rounded-xl p-4" style={{ background: '#F2ECE0' }}>
                 <p className="text-sm" style={{ color: '#6B6660' }}>{item.concept}</p>
-                {item.value ? (
-                  <p className="mt-1 font-semibold" style={{ color: '#2E2A26' }}>{item.value}</p>
-                ) : (
-                  <p className="mt-1 text-sm font-semibold italic" style={{ color: '#B08968' }}>Por confirmar</p>
-                )}
+                <p className="mt-1 font-semibold" style={{ color: '#2E2A26' }}>{item.value}</p>
               </div>
             ))}
           </div>

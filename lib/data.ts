@@ -1,29 +1,29 @@
 export const SITE = {
-  name: 'Predios Santa Catalina',
+  name: 'Distrito Payé',
   tagline: 'Segunda Preventa — Corrientes Capital',
   developer: 'PAYÉ',
   broker: 'RE/MAX PAYÉ',
   ordinance: 'Ord. N.º 7403',
   location: 'Junto a viviendas del PROCREAR, zona de expansión urbana de Corrientes',
-  stage: 'Segunda Preventa',
+  stage: 'Etapa 1 de 3',
   totalBlocks: 14,
   WA_NUMBER: '+5493794000000', // ← REEMPLAZAR con número real
-  WA_MESSAGE: 'Hola, me interesa información sobre Predios Santa Catalina.',
-  CONTACT_EMAIL: 'info@remaxpaye.com.ar', // ← REEMPLAZAR
+  WA_MESSAGE: 'Hola, me interesa información sobre Santa Catalina.',
+  CONTACT_EMAIL: 'paye@remax.com.ar',
 }
 
 // ---------- Servicios de infraestructura ----------
 // Estado real de ejecución de cada servicio, según el reporte de avance de
-// obra de Payé Desarrollos (avance-2026-07.pdf, julio 2026). Luz eléctrica
-// no aparece en ese reporte — sigue sin confirmar, no asumir "ejecutado".
+// obra de Payé Desarrollos (avance-2026-07.pdf, julio 2026). Luz eléctrica no
+// aparece en ese reporte — dato aparte, confirmado directamente por el usuario.
 export type ServiceStatus = 'ejecutado' | 'en_obra' | 'proyectado'
 
 export const SERVICES: Array<{ label: string; status: ServiceStatus | null; detail: string | null }> = [
-  { label: 'Agua corriente',  status: 'en_obra', detail: '90% ejecutado' },
-  { label: 'Luz eléctrica',   status: null,      detail: null },
-  { label: 'Cloaca',          status: 'en_obra', detail: '90% ejecutado' },
-  { label: 'Ripio',           status: 'en_obra', detail: 'Apertura de calles en ejecución — sector oeste (jul. 2026)' },
-  { label: 'Cordón cuneta',   status: 'en_obra', detail: '7 de 14 manzanas ejecutadas (Mz 8–14 y Reserva Municipal 2)' },
+  { label: 'Agua corriente',  status: 'en_obra',    detail: '90% ejecutado' },
+  { label: 'Luz eléctrica',   status: 'proyectado', detail: 'Esperando aprobación de DPEC' },
+  { label: 'Cloaca',          status: 'en_obra',    detail: '90% ejecutado' },
+  { label: 'Ripio',           status: 'en_obra',    detail: 'Apertura de calles en ejecución — sector oeste (jul. 2026)' },
+  { label: 'Cordón cuneta',   status: 'en_obra',    detail: '7 de 14 manzanas ejecutadas (Mz 8–14 y Reserva Municipal 2)' },
 ]
 
 // ---------- Entorno y accesos ----------
@@ -59,20 +59,20 @@ export const PROJECT_PHASES: Array<{
   status: PhaseStatus | null
 }> = [
   { label: 'Aprobación municipal',         detail: SITE.ordinance, status: 'completado' },
-  { label: 'Apertura de calles y mensura', detail: null, status: null },
+  { label: 'Apertura de calles y mensura', detail: 'Mensura aprobada por el Catastro de la Provincia de Corrientes; apertura de calles en ejecución (ver Servicios)', status: 'en_curso' },
   { label: 'Infraestructura de servicios', detail: 'Agua y cloaca 90% ejecutadas; cordón cuneta en 7 de 14 manzanas (jul. 2026)', status: 'en_curso' },
   { label: 'Escrituración',                detail: null, status: null },
 ]
 
 // ---------- Escrituración y titularidad ----------
-// PLANTILLA — completar: qué se firma al reservar (boleto vs escritura),
-// cuándo se escritura, y el estado dominial del loteo.
+// `reservation` confirmado por el usuario. `timing`/`titleStatus` siguen
+// pendientes — no inventar cuándo se escritura ni el estado dominial.
 export const DEED_INFO: {
   reservation: string | null
   timing: string | null
   titleStatus: string | null
 } = {
-  reservation: null,
+  reservation: 'Cesión de derechos',
   timing: null,
   titleStatus: null,
 }

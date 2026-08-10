@@ -69,10 +69,10 @@ export default async function Image() {
           </div>
 
           <div style={{ display: 'flex', fontSize: 72, fontWeight: 800, color: '#fff', lineHeight: 1.05 }}>
-            Extensión Urbana
+            DISTRITO PAYÉ
           </div>
           <div style={{ display: 'flex', fontSize: 72, fontWeight: 800, color: '#FF4230', lineHeight: 1.05, marginBottom: 24 }}>
-            Santa Catalina
+            SANTA CATALINA
           </div>
 
           <div style={{ display: 'flex', fontSize: 30, color: 'rgba(242,236,224,0.92)' }}>

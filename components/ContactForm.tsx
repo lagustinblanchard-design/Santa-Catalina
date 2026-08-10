@@ -150,7 +150,7 @@ export default function ContactForm() {
                   <p>Ordenanza N.º 7403</p>
                 </div>
                 <div>
-                  <p className="font-medium" style={{ color: '#2E2A26' }}>Etapa: Segunda Preventa</p>
+                  <p className="font-medium" style={{ color: '#2E2A26' }}>Etapa: {SITE.stage}</p>
                   <p>Precios actualizados mayo 2026</p>
                 </div>
               </div>
