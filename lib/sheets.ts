@@ -36,7 +36,7 @@ function parseCSV(text: string): string[][] {
 
 async function fetchManzana(mz: number): Promise<Record<string, LotStatus>> {
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=MZ+${mz}`
-  const res = await fetch(url, { next: { revalidate: 300 } })
+  const res = await fetch(url, { cache: 'no-store' })
   if (!res.ok) return {}
 
   const statuses: Record<string, LotStatus> = {}

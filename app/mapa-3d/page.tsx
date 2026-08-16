@@ -7,6 +7,9 @@ export const metadata = {
   title: 'Recorrido 3D · Loteo Santa Catalina',
 }
 
+// Disponibilidad de lotes: siempre en vivo, sin caché de página ni de datos.
+export const dynamic = 'force-dynamic'
+
 export default async function Mapa3DPreview() {
   let lots = LOTS
   try {

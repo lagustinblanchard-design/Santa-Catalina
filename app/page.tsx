@@ -12,6 +12,9 @@ import WhatsAppButton from '@/components/WhatsAppButton'
 import { LOTS, applyStatuses } from '@/lib/lots'
 import { fetchLotStatuses } from '@/lib/sheets'
 
+// Disponibilidad de lotes: siempre en vivo, sin caché de página ni de datos.
+export const dynamic = 'force-dynamic'
+
 export default async function Home() {
   let lots = LOTS
   try {
