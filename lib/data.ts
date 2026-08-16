@@ -65,16 +65,15 @@ export const PROJECT_PHASES: Array<{
 ]
 
 // ---------- Escrituración y titularidad ----------
-// `reservation` confirmado por el usuario. `timing`/`titleStatus` siguen
-// pendientes — no inventar cuándo se escritura ni el estado dominial.
+// Confirmado por el usuario, sin datos inventados.
 export const DEED_INFO: {
   reservation: string | null
   timing: string | null
   titleStatus: string | null
 } = {
   reservation: 'Cesión de derechos',
-  timing: null,
-  titleStatus: null,
+  timing: 'Al entregarse los lotes, en el acto de amojonamiento — la empresa notifica a cada cliente cuando esto suceda.',
+  titleStatus: 'Escrituran los clientes que ya tengan libre de deuda emitido por la desarrolladora, presentando cesión de derechos, acta de amojonamiento y libre de deuda.',
 }
 
 export type LotSize = '12x26' | '12x28' | '12x30' | '15x30' | '15.55x30'
@@ -126,13 +125,11 @@ export const FINANCING_36: Partial<Record<LotSize, {
   '15x30': { downUSD: 3000, installmentUSD: 920, availability: '9 lotes disponibles' },
 }
 
+// Confirmado por el usuario: los gastos de la operación son únicamente estos 3.
 export const NOTARIAL_COSTS: Array<{ concept: string; value: string | null }> = [
   { concept: 'Honorarios escribanía',    value: '$645.000 pesos' },
   { concept: 'Impuesto de sellos',        value: '1% (calculado al dólar oficial)' },
   { concept: 'Honorarios inmobiliarios',  value: '3% en dólares (no incluido en precio)' },
-  { concept: 'Gastos de mensura',         value: null },
-  { concept: 'Tasa/certificado municipal', value: null },
-  { concept: 'Inscripción registral',     value: null },
 ]
 
 // Fuente: Ordenanza N.º 7403 (09/11/2023) — "Plan de Sector 2, Áreas Residenciales
