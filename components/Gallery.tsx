@@ -28,7 +28,17 @@ const VIDEOS: GalleryItem[] = Array.from({ length: 4 }, (_, i) => {
   return { kind: 'video', src: `/gallery/dron-video-${n}.mp4`, poster: `/gallery/dron-video-${n}-poster.jpg`, alt: DRONE_VIDEO_ALT }
 })
 
-const ITEMS: GalleryItem[] = [...PHOTOS, ...VIDEOS]
+// Reel de 10s del recorrido 3D (/mapa-3d?reel=1) — cámara sobre el ortomosaico real con
+// 2 textos de avance de obra reales (SITE.stage y PROJECT_PHASES), no de venta. Capturado
+// con Playwright + recordVideo, recortado a 10.000s exactos con ffmpeg.
+const REEL: GalleryItem = {
+  kind: 'video',
+  src: '/gallery/dron-reel-01.mp4',
+  poster: '/gallery/dron-reel-01-poster.jpg',
+  alt: 'Recorrido 3D — avance de obra (Etapa 1 de 3, dron 29/07/2026)',
+}
+
+const ITEMS: GalleryItem[] = [...PHOTOS, ...VIDEOS, REEL]
 
 export default function Gallery() {
   const [active, setActive] = useState(0)

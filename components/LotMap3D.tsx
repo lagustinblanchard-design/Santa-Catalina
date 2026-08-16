@@ -24,7 +24,7 @@ import { TileLayer, Tile3DLayer } from '@deck.gl/geo-layers'
 import { ScenegraphLayer } from '@deck.gl/mesh-layers'
 import { CesiumIonLoader } from '@loaders.gl/3d-tiles'
 import { type Lot } from '@/lib/lots'
-import { STATUS_LABELS, SITE, type LotStatus } from '@/lib/data'
+import { STATUS_LABELS, SITE, PROJECT_PHASES, type LotStatus } from '@/lib/data'
 import GEO from '@/lib/lot_geometry.json'
 import { ORTHO_URL, ORTHO_BOUNDS } from '@/lib/ortho'
 import { svgToLngLat } from '@/lib/geo/calibration'
@@ -153,15 +153,43 @@ type LotFeature = {
 
 type Waypoint = {
   view: MapViewState
-  title: string
-  sub: string
+  title?: string
+  sub?: string
   spotlight?: LotStatus
   duration: number
 }
 
+// Guion del reel de 10s para redes/WhatsApp (?reel=1) — mismo patrón que WAYPOINTS pero
+// centrado en avance de obra, no en venta. El texto no se redacta a mano: sale de SITE.stage
+// y de PROJECT_PHASES (misma fuente que la sección #proyecto de la home), así que si el
+// avance se actualiza el mes que viene, el próximo reel sale con el dato nuevo solo.
+const PROGRESS_CAPTION_OBRA = (
+  PROJECT_PHASES.find((p) => p.label === 'Infraestructura de servicios')?.detail ?? ''
+)
+  .split(';')[0]
+  .trim()
+
+const PROGRESS_WAYPOINTS: Waypoint[] = (() => {
+  const base = { minZoom: INITIAL_VIEW_STATE.minZoom, maxZoom: INITIAL_VIEW_STATE.maxZoom }
+  const { longitude, latitude } = INITIAL_VIEW_STATE
+  // Duraciones más largas que el diseño original (3000/3000/3200): en la práctica, varios
+  // segundos del reel transcurren "invisibles" mientras cargan las texturas (satélite Esri +
+  // ortomosaico), así que la ventana con contenido limpio (ya cargado, antes de que termine
+  // el reel) queda más corta que la duración interna. Medido con capturas: quedaba en ~8,2s
+  // limpios sobre 10,4s internos — se estira acá para asegurar 10s limpios reales.
+  return [
+    { view: { ...base, longitude, latitude, zoom: 16.8, pitch: 42, bearing: -10 }, duration: 4200 },
+    { view: { ...base, longitude, latitude, zoom: 18.0, pitch: 55, bearing: -25 }, title: SITE.stage, duration: 4000 },
+    // Duración larga a propósito: para cuando se llega acá todo ya está cargado hace rato,
+    // así que estirar este último paso da margen de sobra sin arriesgar el arranque (medido:
+    // con 4200 el modo libre ya aparecía a los ~15s, muy pegado a la ventana de 10s limpios).
+    { view: { ...base, longitude, latitude, zoom: 17.6, pitch: 48, bearing: 35 }, title: PROGRESS_CAPTION_OBRA, duration: 7500 },
+  ]
+})()
+
 export default function LotMap3D({ lots }: { lots: Lot[] }) {
   const [mounted, setMounted] = useState(false)
-  const [mode, setMode] = useState<'portada' | 'tour' | 'free'>('portada')
+  const [mode, setMode] = useState<'portada' | 'tour' | 'free' | 'reel'>('portada')
   const [tourStep, setTourStep] = useState(0)
   const [filter, setFilter] = useState<LotStatus | 'ALL'>('ALL')
   const [selected, setSelected] = useState<LotFeature | null>(null)
@@ -185,6 +213,19 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
   }, [mode])
 
   useEffect(() => setMounted(true), [])
+
+  // Disparador del reel de 10s (?reel=1) para el script de captura con Playwright — salta
+  // la portada y arranca directo. Usa window.location.search en vez de useSearchParams
+  // para no forzar un Suspense boundary en /mapa-3d (hoy es una ruta estática con ISR).
+  // ?reel=1 no se linkea desde ningún lado de la UI, es sólo para la captura.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (new URLSearchParams(window.location.search).get('reel') !== '1') return
+    setSelected(null)
+    setTourStep(0)
+    setMode('reel')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const features = useMemo<LotFeature[]>(() => {
     return lots
@@ -254,20 +295,23 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
     ]
   }, [dispCenter, counts])
 
-  // Driver del tour: al entrar en modo tour, secuencia TODAS las paradas con un único timer
-  // encadenado (no un efecto por paso — eso se re-ejecutaba y adelantaba el tiempo).
+  // 'reel' usa el guion de avance de obra (PROGRESS_WAYPOINTS); 'tour' usa el de venta.
+  const activeWaypoints = mode === 'reel' ? PROGRESS_WAYPOINTS : WAYPOINTS
+
+  // Driver del tour/reel: al entrar en modo tour o reel, secuencia TODAS las paradas con un
+  // único timer encadenado (no un efecto por paso — eso se re-ejecutaba y adelantaba el tiempo).
   useEffect(() => {
-    if (mode !== 'tour') return
+    if (mode !== 'tour' && mode !== 'reel') return
     let cancelled = false
     let timer: ReturnType<typeof setTimeout>
     const run = (step: number) => {
       if (cancelled) return
-      if (step >= WAYPOINTS.length) {
+      if (step >= activeWaypoints.length) {
         setMode('free')
         lastInteractionRef.current = Date.now()
         return
       }
-      const wp = WAYPOINTS[step]
+      const wp = activeWaypoints[step]
       setTourStep(step)
       setViewState(flyTo(wp.view, wp.duration))
       timer = setTimeout(() => run(step + 1), wp.duration + 400)
@@ -277,7 +321,7 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
       cancelled = true
       clearTimeout(timer)
     }
-  }, [mode, WAYPOINTS])
+  }, [mode, activeWaypoints])
 
   // Rotación automática: lenta en modo libre (tras inactividad, sin lote abierto) y en la portada.
   useEffect(() => {
@@ -311,8 +355,9 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
     setViewState(flyTo(INITIAL_VIEW_STATE, 1600))
   }
 
-  // Durante el tour el "spotlight" del waypoint manda; fuera del tour manda el filtro del usuario.
-  const spotlight: LotStatus | null = mode === 'tour' ? WAYPOINTS[tourStep]?.spotlight ?? null : null
+  // Durante el tour/reel el "spotlight" del waypoint manda; fuera manda el filtro del usuario.
+  const spotlight: LotStatus | null =
+    mode === 'tour' || mode === 'reel' ? activeWaypoints[tourStep]?.spotlight ?? null : null
   const isDim = (s: LotStatus) => (spotlight ? s !== spotlight : filter !== 'ALL' && s !== filter)
 
   const showMesh = HAS_TERRAIN_MESH && photoMode === 'fotorrealista'
@@ -623,15 +668,17 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
         </button>
       )}
 
-      {/* Caption del tour + progreso (abajo centro) */}
-      {mode === 'tour' && WAYPOINTS[tourStep] && (
+      {/* Caption del tour/reel + progreso (abajo centro) */}
+      {(mode === 'tour' || mode === 'reel') && activeWaypoints[tourStep]?.title && (
         <div className="pointer-events-none absolute inset-x-0 bottom-14 z-20 flex flex-col items-center gap-3 px-6">
           <div key={tourStep} className="lot3d-caption rounded-2xl bg-black/55 px-6 py-4 text-center backdrop-blur-md">
-            <p className="text-xl font-black text-white">{WAYPOINTS[tourStep].title}</p>
-            <p className="mt-1 text-sm text-white/75">{WAYPOINTS[tourStep].sub}</p>
+            <p className="text-xl font-black text-white">{activeWaypoints[tourStep].title}</p>
+            {activeWaypoints[tourStep].sub && (
+              <p className="mt-1 text-sm text-white/75">{activeWaypoints[tourStep].sub}</p>
+            )}
           </div>
           <div className="flex gap-1.5">
-            {WAYPOINTS.map((_, i) => (
+            {activeWaypoints.map((_, i) => (
               <span
                 key={i}
                 className="h-1.5 rounded-full transition-all"
