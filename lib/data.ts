@@ -61,7 +61,7 @@ export const PROJECT_PHASES: Array<{
   { label: 'Aprobación municipal',         detail: SITE.ordinance, status: 'completado' },
   { label: 'Apertura de calles y mensura', detail: 'Mensura aprobada por el Catastro de la Provincia de Corrientes; apertura de calles en ejecución (ver Servicios)', status: 'en_curso' },
   { label: 'Infraestructura de servicios', detail: 'Agua y cloaca 90% ejecutadas; cordón cuneta en 7 de 14 manzanas (jul. 2026)', status: 'en_curso' },
-  { label: 'Escrituración',                detail: null, status: null },
+  { label: 'Escrituración',                detail: 'Documentos necesarios: cesión de derechos, acta de amojonamiento y libre de deuda', status: 'proyectado' },
 ]
 
 // ---------- Escrituración y titularidad ----------

@@ -36,7 +36,14 @@ function parseCSV(text: string): string[][] {
 
 async function fetchManzana(mz: number): Promise<Record<string, LotStatus>> {
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=MZ+${mz}`
-  const res = await fetch(url, { cache: 'no-store' })
+  let res: Response
+  try {
+    // Timeout corto: si Sheets se cuelga para esta manzana, no debe trabar la página
+    // entera — se resuelve como {} y esa manzana cae al dato hardcodeado de fallback.
+    res = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(6000) })
+  } catch {
+    return {}
+  }
   if (!res.ok) return {}
 
   const statuses: Record<string, LotStatus> = {}
