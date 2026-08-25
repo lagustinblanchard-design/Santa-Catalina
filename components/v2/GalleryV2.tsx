@@ -2,6 +2,9 @@
 
 import Image from 'next/image'
 import { useState } from 'react'
+import { motion } from 'motion/react'
+import { DURATION, EASE_OUT } from '@/lib/motion'
+import SectionLabel from './SectionLabel'
 
 const CINZEL  = "var(--font-cinzel), 'Cinzel', serif"
 const JOSEFIN = "var(--font-josefin), 'Josefin Sans', sans-serif"
@@ -17,12 +20,7 @@ export default function GalleryV2() {
     <section id="galeria" style={{ background: '#111', padding: '7rem 1.5rem' }}>
       <div style={{ maxWidth: 1152, margin: '0 auto' }}>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '3rem' }}>
-          <div style={{ width: 32, height: 1, background: '#FF1200' }} />
-          <span style={{ fontFamily: JOSEFIN, fontSize: '0.58rem', letterSpacing: '0.3em', color: '#FF1200', textTransform: 'uppercase' }}>
-            Galería
-          </span>
-        </div>
+        <SectionLabel>Galería</SectionLabel>
 
         <h2 style={{ fontFamily: CINZEL, fontSize: 'clamp(2rem, 5vw, 4rem)', fontWeight: 700, color: '#F5F0EB', marginBottom: '3rem' }}>
           Fotos del desarrollo
@@ -51,14 +49,16 @@ export default function GalleryV2() {
             {PHOTOS.length > 1 && (
               <div style={{ display: 'flex', gap: '2px', overflowX: 'auto', paddingBottom: '0.5rem' }}>
                 {PHOTOS.map((photo, i) => (
-                  <button key={i} onClick={() => setActive(i)} style={{
+                  <motion.button key={i} onClick={() => setActive(i)} style={{
                     position: 'relative', flexShrink: 0, width: 120, height: 72,
                     overflow: 'hidden', border: 'none', cursor: 'pointer',
                     outline: active === i ? '2px solid #FF1200' : 'none',
                     opacity: active === i ? 1 : 0.5, transition: 'opacity 0.2s',
-                  }}>
+                  }}
+                  whileTap={{ scale: 0.95, transition: { duration: DURATION.press, ease: EASE_OUT } }}
+                  >
                     <Image src={photo.src} alt={photo.alt} fill className="object-cover" sizes="120px" />
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             )}

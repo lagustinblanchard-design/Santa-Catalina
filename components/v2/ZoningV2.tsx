@@ -1,4 +1,5 @@
 import { ZONING, PERMITTED_USES } from '@/lib/data'
+import SectionLabel from './SectionLabel'
 
 const CINZEL  = "var(--font-cinzel), 'Cinzel', serif"
 const JOSEFIN = "var(--font-josefin), 'Josefin Sans', sans-serif"
@@ -8,12 +9,7 @@ export default function ZoningV2() {
     <section id="zonificacion" style={{ background: '#0C0C0C', padding: '7rem 1.5rem' }}>
       <div style={{ maxWidth: 1152, margin: '0 auto' }}>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '3rem' }}>
-          <div style={{ width: 32, height: 1, background: '#FF1200' }} />
-          <span style={{ fontFamily: JOSEFIN, fontSize: '0.58rem', letterSpacing: '0.3em', color: '#FF1200', textTransform: 'uppercase' }}>
-            Normativa
-          </span>
-        </div>
+        <SectionLabel>Normativa</SectionLabel>
 
         <h2 style={{ fontFamily: CINZEL, fontSize: 'clamp(2rem, 5vw, 4rem)', fontWeight: 700, color: '#F5F0EB', marginBottom: '0.5rem' }}>
           Zonificación

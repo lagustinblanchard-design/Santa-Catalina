@@ -1,4 +1,9 @@
+'use client'
+
+import { motion } from 'motion/react'
 import { SITE, LOT_TYPES } from '@/lib/data'
+import { EASE_OUT, DURATION } from '@/lib/motion'
+import SectionLabel from './SectionLabel'
 
 const CINZEL  = "var(--font-cinzel), 'Cinzel', serif"
 const JOSEFIN = "var(--font-josefin), 'Josefin Sans', sans-serif"
@@ -15,13 +20,7 @@ export default function ProjectInfoV2() {
     <section id="proyecto" style={{ background: '#161616', padding: '7rem 1.5rem' }}>
       <div style={{ maxWidth: 1152, margin: '0 auto' }}>
 
-        {/* Label */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '3rem' }}>
-          <div style={{ width: 32, height: 1, background: '#FF1200' }} />
-          <span style={{ fontFamily: JOSEFIN, fontSize: '0.58rem', letterSpacing: '0.3em', color: '#FF1200', textTransform: 'uppercase' }}>
-            El proyecto
-          </span>
-        </div>
+        <SectionLabel>El proyecto</SectionLabel>
 
         <h2 style={{ fontFamily: CINZEL, fontSize: 'clamp(2rem, 5vw, 4rem)', fontWeight: 700, color: '#F5F0EB', letterSpacing: '-0.02em', marginBottom: '4rem' }}>
           Predios Santa Catalina
@@ -31,10 +30,17 @@ export default function ProjectInfoV2() {
           Sistema de gestión y desarrollo inmobiliario comercializado por <span style={{ color: '#F5F0EB' }}>RE/MAX PAYÉ</span> en Corrientes Capital.
         </p>
 
-        {/* Facts */}
+        {/* Facts — stagger decorativo (60ms), no bloquea nada */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '1px', marginBottom: '4rem' }}>
-          {facts.map(f => (
-            <div key={f.num} style={{ background: '#0C0C0C', padding: '2rem 1.5rem' }}>
+          {facts.map((f, i) => (
+            <motion.div
+              key={f.num}
+              style={{ background: '#0C0C0C', padding: '2rem 1.5rem' }}
+              initial={{ opacity: 0, transform: 'translateY(12px)' }}
+              whileInView={{ opacity: 1, transform: 'translateY(0px)' }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: DURATION.reveal, delay: i * 0.06, ease: EASE_OUT }}
+            >
               <p style={{ fontFamily: CINZEL, fontSize: '0.7rem', color: '#FF1200', letterSpacing: '0.15em', marginBottom: '1.25rem' }}>
                 {f.num}
               </p>
@@ -44,7 +50,7 @@ export default function ProjectInfoV2() {
               <p style={{ fontFamily: CINZEL, fontSize: '1.05rem', fontWeight: 600, color: '#F5F0EB' }}>
                 {f.value}
               </p>
-            </div>
+            </motion.div>
           ))}
         </div>
 

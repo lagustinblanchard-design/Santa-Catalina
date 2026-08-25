@@ -1,10 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'motion/react'
+import { EASE_OUT, DURATION } from '@/lib/motion'
 
 const LINKS = [
   { href: '#proyecto', label: 'Proyecto' },
   { href: '#lotes',    label: 'Lotes' },
+  { href: '/mapa-3d',  label: 'Recorrido 3D' },
   { href: '#precios',  label: 'Precios' },
   { href: '#financiacion', label: 'Financiación' },
   { href: '#galeria',  label: 'Galería' },
@@ -48,29 +51,28 @@ export default function NavbarV2() {
         {/* Desktop */}
         <div className="hidden md:flex" style={{ alignItems: 'center', gap: '2rem' }}>
           {LINKS.map(l => (
-            <a key={l.href} href={l.href} style={{
+            <motion.a key={l.href} href={l.href} style={{
               fontFamily: JOSEFIN, fontSize: '0.65rem', letterSpacing: '0.15em',
               textTransform: 'uppercase', color: '#666', textDecoration: 'none',
-              transition: 'color 0.2s',
             }}
-            onMouseEnter={e => (e.currentTarget.style.color = '#f5f0eb')}
-            onMouseLeave={e => (e.currentTarget.style.color = '#666')}
-            >{l.label}</a>
+            whileHover={{ color: '#f5f0eb', transition: { duration: DURATION.hover, ease: EASE_OUT } }}
+            >{l.label}</motion.a>
           ))}
-          <a href="#contacto" style={{
+          <motion.a href="#contacto" style={{
             fontFamily: JOSEFIN, fontSize: '0.65rem', letterSpacing: '0.15em',
             textTransform: 'uppercase', background: '#FF1200', color: '#fff',
-            padding: '0.6rem 1.4rem', textDecoration: 'none', transition: 'opacity 0.2s',
+            padding: '0.6rem 1.4rem', textDecoration: 'none',
           }}
-          onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
-          onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
-          >Consultar</a>
+          whileHover={{ opacity: 0.85, transition: { duration: DURATION.hover, ease: EASE_OUT } }}
+          whileTap={{ scale: 0.97, transition: { duration: DURATION.press, ease: EASE_OUT } }}
+          >Consultar</motion.a>
         </div>
 
         {/* Mobile button */}
-        <button className="md:hidden" onClick={() => setOpen(!open)}
+        <motion.button className="md:hidden" onClick={() => setOpen(!open)}
           style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8 }}
           aria-label="Menú"
+          whileTap={{ scale: 0.9, transition: { duration: DURATION.press, ease: EASE_OUT } }}
         >
           <svg width={22} height={22} fill="none" viewBox="0 0 24 24" stroke="#aaa" strokeWidth={1.5}>
             {open
@@ -78,27 +80,36 @@ export default function NavbarV2() {
               : <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
             }
           </svg>
-        </button>
+        </motion.button>
       </div>
 
-      {/* Mobile menu */}
-      {open && (
-        <div style={{ background: '#080808', borderTop: '1px solid #1a1a1a', padding: '1.5rem' }}>
-          {LINKS.map(l => (
-            <a key={l.href} href={l.href} onClick={() => setOpen(false)} style={{
-              display: 'block', fontFamily: JOSEFIN, fontSize: '0.7rem',
-              letterSpacing: '0.15em', textTransform: 'uppercase', color: '#666',
-              textDecoration: 'none', padding: '0.85rem 0', borderBottom: '1px solid #1a1a1a',
-            }}>{l.label}</a>
-          ))}
-          <a href="#contacto" onClick={() => setOpen(false)} style={{
-            display: 'block', marginTop: '1rem', fontFamily: JOSEFIN, fontSize: '0.7rem',
-            letterSpacing: '0.15em', textTransform: 'uppercase',
-            background: '#FF1200', color: '#fff', textDecoration: 'none',
-            padding: '0.9rem 1.5rem', textAlign: 'center',
-          }}>Consultar ahora</a>
-        </div>
-      )}
+      {/* Mobile menu — barrido con clip-path (no height, que es propiedad de layout) para
+          que la salida se anime igual que la entrada; antes desaparecía de golpe. */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            style={{ background: '#080808', borderTop: '1px solid #1a1a1a', padding: '1.5rem', overflow: 'hidden' }}
+            initial={{ clipPath: 'inset(0 0 100% 0)' }}
+            animate={{ clipPath: 'inset(0 0 0% 0)' }}
+            exit={{ clipPath: 'inset(0 0 100% 0)' }}
+            transition={{ duration: DURATION.panel, ease: EASE_OUT }}
+          >
+            {LINKS.map(l => (
+              <a key={l.href} href={l.href} onClick={() => setOpen(false)} style={{
+                display: 'block', fontFamily: JOSEFIN, fontSize: '0.7rem',
+                letterSpacing: '0.15em', textTransform: 'uppercase', color: '#666',
+                textDecoration: 'none', padding: '0.85rem 0', borderBottom: '1px solid #1a1a1a',
+              }}>{l.label}</a>
+            ))}
+            <a href="#contacto" onClick={() => setOpen(false)} style={{
+              display: 'block', marginTop: '1rem', fontFamily: JOSEFIN, fontSize: '0.7rem',
+              letterSpacing: '0.15em', textTransform: 'uppercase',
+              background: '#FF1200', color: '#fff', textDecoration: 'none',
+              padding: '0.9rem 1.5rem', textAlign: 'center',
+            }}>Consultar ahora</a>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   )
 }
