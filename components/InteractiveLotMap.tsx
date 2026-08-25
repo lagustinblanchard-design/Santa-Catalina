@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
+import Link from 'next/link'
 import { type Lot } from '@/lib/lots'
 import { STATUS_LABELS, type LotStatus } from '@/lib/data'
 import GEO from '@/lib/lot_geometry.json'
@@ -323,16 +324,25 @@ export default function InteractiveLotMap({ lots }: { lots: Lot[] }) {
             Disponibilidad orientativa — la real se actualiza desde Google Drive.{' '}
             <a href="#contacto" className="font-medium underline" style={{ color: '#FF1200' }}>Consultá disponibilidad exacta</a>.
           </p>
-          <a
-            href="/Loteo Sta. Catalina.pdf"
-            target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
-          >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
-            Ver plano original
-          </a>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/mapa-3d"
+              className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold text-white transition-opacity hover:opacity-90"
+              style={{ backgroundColor: '#AA1120' }}
+            >
+              Ver en 3D →
+            </Link>
+            <a
+              href="/Loteo Sta. Catalina.pdf"
+              target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+              Ver plano de Mensura
+            </a>
+          </div>
         </div>
 
       </div>

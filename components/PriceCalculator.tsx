@@ -1,15 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { PRICES, FINANCING_12, FINANCING_18, FINANCING_36, LOT_TYPES, type LotSize } from '@/lib/data'
+import { PRICES, FINANCING_12, FINANCING_36, LOT_TYPES, type LotSize } from '@/lib/data'
 
-type Modality = 'contado' | '12_pesos' | '12_usd' | '18_usd' | '36_usd'
+type Modality = 'contado' | '12_pesos' | '12_usd' | '36_usd'
 
 const MODALITY_LABELS: Record<Modality, string> = {
   contado:    'Contado (5% desc.)',
   '12_pesos': 'Financiado 12 cuotas — Pesos',
   '12_usd':   'Financiado 12 cuotas — USD',
-  '18_usd':   'Financiado 18 cuotas — USD (Mixto)',
   '36_usd':   'Financiado 36 cuotas — USD',
 }
 
@@ -25,7 +24,6 @@ export default function PriceCalculator() {
 
   const price = PRICES[size]
   const fin12 = FINANCING_12[size]
-  const fin18 = FINANCING_18[size]
   const fin36 = FINANCING_36[size]
 
   const rowStyle = { borderBottom: '1px solid #D8D2C7', paddingBottom: '0.75rem', marginBottom: '0.75rem' }
@@ -104,38 +102,6 @@ export default function PriceCalculator() {
             <span className="text-2xl font-black" style={{ color: '#AA1120' }}>
               {fmt(fin12.downUSD + fin12.installmentUSD * 12)}
             </span>
-          </div>
-        </div>
-      )
-    }
-
-    if (modality === '18_usd') {
-      if (!fin18) {
-        return (
-          <div className="rounded-xl p-4 text-center" style={{ background: '#fefce8', border: '1px solid #fde047', color: '#854d0e' }}>
-            <p className="font-semibold">No disponible para esta tipología</p>
-            <p className="text-sm mt-1">Los 18 cuotas es sólo para lotes mixtos.</p>
-          </div>
-        )
-      }
-      return (
-        <div>
-          <div className="flex items-center justify-between" style={rowStyle}>
-            <span style={{ color: '#6B6660' }}>Entrega (30%)</span>
-            <span className="font-semibold" style={{ color: '#2E2A26' }}>{fmt(fin18.downUSD)}</span>
-          </div>
-          <div className="flex items-center justify-between" style={rowStyle}>
-            <span style={{ color: '#6B6660' }}>18 cuotas de</span>
-            <span className="font-semibold" style={{ color: '#2E2A26' }}>{fmt(fin18.installmentUSD)}</span>
-          </div>
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-lg font-bold" style={{ color: '#2E2A26' }}>Total financiado</span>
-            <span className="text-2xl font-black" style={{ color: '#AA1120' }}>
-              {fmt(fin18.downUSD + fin18.installmentUSD * 18)}
-            </span>
-          </div>
-          <div className="rounded-xl p-3 text-sm" style={{ background: '#fefce8', border: '1px solid #fde047', color: '#854d0e' }}>
-            <strong>Disponibilidad:</strong> {fin18.availability}. Confirmá antes de ofrecer al cliente.
           </div>
         </div>
       )

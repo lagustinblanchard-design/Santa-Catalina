@@ -1,15 +1,17 @@
 'use client'
 
 import { useState } from 'react'
-import { PRICES, FINANCING_12, FINANCING_18, FINANCING_36, LOT_TYPES, type LotSize } from '@/lib/data'
+import { motion, AnimatePresence } from 'motion/react'
+import { PRICES, FINANCING_12, FINANCING_36, LOT_TYPES, type LotSize } from '@/lib/data'
+import { EASE_OUT, DURATION } from '@/lib/motion'
+import SectionLabel from './SectionLabel'
 
-type Modality = 'contado' | '12_pesos' | '12_usd' | '18_usd' | '36_usd'
+type Modality = 'contado' | '12_pesos' | '12_usd' | '36_usd'
 
 const MODALITY_LABELS: Record<Modality, string> = {
   contado:    'Contado · 5% desc.',
   '12_pesos': '12 cuotas · Pesos',
   '12_usd':   '12 cuotas · USD',
-  '18_usd':   '18 cuotas · USD (Mixto)',
   '36_usd':   '36 cuotas · USD',
 }
 
@@ -26,7 +28,6 @@ export default function PriceCalculatorV2() {
 
   const price = PRICES[size]
   const fin12 = FINANCING_12[size]
-  const fin18 = FINANCING_18[size]
   const fin36 = FINANCING_36[size]
 
   function Row({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
@@ -77,23 +78,6 @@ export default function PriceCalculatorV2() {
         </>
       )
     }
-    if (modality === '18_usd') {
-      if (!fin18) return (
-        <div style={{ padding: '1.5rem', border: '1px solid #2a2000', background: '#141000', fontFamily: JOSEFIN, fontSize: '0.75rem', color: '#cc8800', letterSpacing: '0.05em' }}>
-          No disponible para esta tipología — 18 cuotas es sólo para lotes mixtos.
-        </div>
-      )
-      return (
-        <>
-          <Row label="Entrega (30%)" value={fmt(fin18.downUSD)} />
-          <Row label="18 cuotas de" value={fmt(fin18.installmentUSD)} />
-          <Row label="Total financiado" value={fmt(fin18.downUSD + fin18.installmentUSD * 18)} highlight />
-          <div style={{ marginTop: '1rem', padding: '0.75rem 1rem', border: '1px solid #2a2000', background: '#141000', fontFamily: JOSEFIN, fontSize: '0.65rem', color: '#cc8800', letterSpacing: '0.1em' }}>
-            Disponibilidad: {fin18.availability} — Confirmar antes de ofrecer
-          </div>
-        </>
-      )
-    }
     if (modality === '36_usd') {
       if (!fin36) return (
         <div style={{ padding: '1.5rem', border: '1px solid #2a2000', background: '#141000', fontFamily: JOSEFIN, fontSize: '0.75rem', color: '#cc8800', letterSpacing: '0.05em' }}>
@@ -118,12 +102,7 @@ export default function PriceCalculatorV2() {
     <section id="precios" style={{ background: '#0C0C0C', padding: '7rem 1.5rem' }}>
       <div style={{ maxWidth: 1152, margin: '0 auto' }}>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '3rem' }}>
-          <div style={{ width: 32, height: 1, background: '#FF1200' }} />
-          <span style={{ fontFamily: JOSEFIN, fontSize: '0.58rem', letterSpacing: '0.3em', color: '#FF1200', textTransform: 'uppercase' }}>
-            Precios
-          </span>
-        </div>
+        <SectionLabel>Precios</SectionLabel>
 
         <h2 style={{ fontFamily: CINZEL, fontSize: 'clamp(2rem, 5vw, 4rem)', fontWeight: 700, color: '#F5F0EB', marginBottom: '4rem' }}>
           Calculadora de precios
@@ -143,7 +122,7 @@ export default function PriceCalculatorV2() {
                   border: 'none', cursor: 'pointer', padding: '1rem 0.5rem',
                   color: size === key ? '#fff' : '#aaa',
                   fontFamily: CINZEL, fontSize: '0.75rem', fontWeight: 600,
-                  transition: 'all 0.15s',
+                  transition: 'background-color 150ms, color 150ms',
                 }}>
                   <div>{LOT_TYPES[key].dims}</div>
                   <div style={{ fontSize: '0.55rem', marginTop: '0.3rem', opacity: 0.7, fontFamily: JOSEFIN }}>
@@ -168,7 +147,7 @@ export default function PriceCalculatorV2() {
                   cursor: 'pointer', padding: '0.875rem 1.25rem',
                   color: modality === key ? '#F5F0EB' : '#999',
                   fontFamily: JOSEFIN, fontSize: '0.75rem', letterSpacing: '0.1em',
-                  textAlign: 'left', transition: 'all 0.15s',
+                  textAlign: 'left', transition: 'background-color 150ms, border-left-color 150ms, color 150ms',
                 }}>
                   {MODALITY_LABELS[key]}
                 </button>
@@ -176,9 +155,21 @@ export default function PriceCalculatorV2() {
             </div>
           </div>
 
-          {/* Result */}
+          {/* Result — antes reemplazaba el bloque entero de golpe en cada click; el número
+              rojo grande (el que importa) aparecía sin transición. mode="wait" secuencia
+              salida→entrada (nunca se superponen), el blur es puro acabado del cruce. */}
           <div style={{ background: '#111', border: '1px solid #1a1a1a', padding: '2rem' }}>
-            {renderResult()}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`${size}-${modality}`}
+                initial={{ opacity: 0, y: 8, filter: 'blur(2px)' }}
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, y: -8, filter: 'blur(2px)' }}
+                transition={{ duration: DURATION.panel, ease: EASE_OUT }}
+              >
+                {renderResult()}
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           <p style={{ fontFamily: JOSEFIN, fontSize: '0.58rem', color: '#777', letterSpacing: '0.1em', textAlign: 'center', marginTop: '1.5rem' }}>

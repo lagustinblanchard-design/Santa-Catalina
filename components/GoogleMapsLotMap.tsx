@@ -265,7 +265,7 @@ export default function GoogleMapsLotMap({ lots }: { lots: Lot[] }) {
             <div className="flex gap-2">
               {([
                 { id: 'satellite', label: 'Satélite' },
-                { id: 'hybrid',    label: 'Híbrido' },
+                { id: 'hybrid',    label: 'Geolocalización' },
                 { id: 'roadmap',   label: 'Mapa' },
               ] as const).map(({ id, label }) => (
                 <button
@@ -316,7 +316,7 @@ export default function GoogleMapsLotMap({ lots }: { lots: Lot[] }) {
                   target="_blank" rel="noopener noreferrer"
                   className="flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
                 >
-                  Ver plano original
+                  Ver plano de Mensura
                 </a>
               </div>
             </div>

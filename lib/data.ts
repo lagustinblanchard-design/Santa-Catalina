@@ -6,7 +6,9 @@ export const SITE = {
   ordinance: 'Ord. N.º 7403',
   location: 'Junto a viviendas del PROCREAR, zona de expansión urbana de Corrientes',
   stage: 'Etapa 1 de 3',
-  totalBlocks: 14,
+  // 14 manzanas numeradas + las 2 reservas municipales, que también
+  // cuentan como manzana (confirmado por el owner).
+  totalBlocks: 16,
   WA_NUMBER: '+5493794000000', // ← REEMPLAZAR con número real
   WA_MESSAGE: 'Hola, me interesa información sobre Santa Catalina.',
   CONTACT_EMAIL: 'paye@remax.com.ar',
@@ -18,12 +20,17 @@ export const SITE = {
 // aparece en ese reporte — dato aparte, confirmado directamente por el usuario.
 export type ServiceStatus = 'ejecutado' | 'en_obra' | 'proyectado'
 
-export const SERVICES: Array<{ label: string; status: ServiceStatus | null; detail: string | null }> = [
-  { label: 'Agua corriente',  status: 'en_obra',    detail: '90% ejecutado' },
-  { label: 'Luz eléctrica',   status: 'proyectado', detail: 'Esperando aprobación de DPEC' },
-  { label: 'Cloaca',          status: 'en_obra',    detail: '90% ejecutado' },
-  { label: 'Ripio',           status: 'en_obra',    detail: 'Apertura de calles en ejecución — sector oeste (jul. 2026)' },
-  { label: 'Cordón cuneta',   status: 'en_obra',    detail: '7 de 14 manzanas ejecutadas (Mz 8–14 y Reserva Municipal 2)' },
+// Capa del mapa de avance de obra (ver components/project/AvanceObraMap.tsx) que
+// se resalta al clickear cada servicio. null = sin datos de avance para ese
+// servicio (hoy sólo Luz eléctrica, que no aparece en el reporte de obra).
+export type AvanceLayerId = 'agua' | 'cloaca' | 'cordon' | 'ripio'
+
+export const SERVICES: Array<{ label: string; status: ServiceStatus | null; detail: string | null; layer: AvanceLayerId | null }> = [
+  { label: 'Agua corriente',  status: 'en_obra',    detail: '90% ejecutado', layer: 'agua' },
+  { label: 'Luz eléctrica',   status: 'proyectado', detail: 'Esperando aprobación de DPEC', layer: null },
+  { label: 'Cloaca',          status: 'en_obra',    detail: '90% ejecutado', layer: 'cloaca' },
+  { label: 'Ripio',           status: 'en_obra',    detail: 'Apertura de calles en ejecución — sector oeste (jul. 2026)', layer: 'ripio' },
+  { label: 'Cordón cuneta',   status: 'en_obra',    detail: '8 de 16 manzanas ejecutadas (Mz 8–14 y Reserva Municipal 2)', layer: 'cordon' },
 ]
 
 // ---------- Entorno y accesos ----------
@@ -31,7 +38,7 @@ export const SERVICES: Array<{ label: string; status: ServiceStatus | null; deta
 // fuente única) — mismo contenido, ahora consumido también por #proyecto.
 export const SURROUNDINGS = {
   travelTimes: [
-    { label: 'Centro de Corrientes', time: '10 min' },
+    { label: 'Centro de Corrientes', time: '15 min' },
     { label: 'Terminal de Ómnibus', time: '7 min' },
     { label: 'Av. Maipú (acceso principal)', time: '2 min' },
     { label: 'Hospital Llano', time: '12 min' },
@@ -59,8 +66,8 @@ export const PROJECT_PHASES: Array<{
   status: PhaseStatus | null
 }> = [
   { label: 'Aprobación municipal',         detail: SITE.ordinance, status: 'completado' },
-  { label: 'Apertura de calles y mensura', detail: 'Mensura aprobada por el Catastro de la Provincia de Corrientes; apertura de calles en ejecución (ver Servicios)', status: 'en_curso' },
-  { label: 'Infraestructura de servicios', detail: 'Agua y cloaca 90% ejecutadas; cordón cuneta en 7 de 14 manzanas (jul. 2026)', status: 'en_curso' },
+  { label: 'Apertura de calles y mensura', detail: 'Mensura aprobada por el Catastro de la Provincia de Corrientes; apertura de calles completada', status: 'completado' },
+  { label: 'Infraestructura de servicios', detail: 'Agua y cloaca 90% ejecutadas; cordón cuneta en 8 de 16 manzanas (jul. 2026)', status: 'en_curso' },
   { label: 'Escrituración',                detail: 'Documentos necesarios: cesión de derechos, acta de amojonamiento y libre de deuda', status: 'proyectado' },
 ]
 
@@ -81,11 +88,11 @@ export type LotSize = '12x26' | '12x28' | '12x30' | '15x30' | '15.55x30'
 // Precios vigentes al 31/07/2026 (lista de precios PAYÉ). Las dos tipologías
 // "Mixto" son lotes distintos (450 m² y 466,5 m²), no una sola con dos nombres.
 export const LOT_TYPES: Record<LotSize, { label: string; dims: string; sqm: number; use: string }> = {
-  '12x26':    { label: 'Residencial chico',   dims: '12 × 26 m',    sqm: 312,   use: 'Vivienda' },
-  '12x28':    { label: 'Residencial mediano', dims: '12 × 28 m',    sqm: 336,   use: 'Vivienda' },
-  '12x30':    { label: 'Residencial grande',  dims: '12 × 30 m',    sqm: 360,   use: 'Vivienda' },
-  '15x30':    { label: 'Mixto chico',         dims: '15 × 30 m',    sqm: 450,   use: 'Vivienda + Comercio' },
-  '15.55x30': { label: 'Mixto grande',        dims: '15,55 × 30 m', sqm: 466.5, use: 'Vivienda + Comercio' },
+  '12x26':    { label: 'Residencial chico',   dims: '12 × 26 m',    sqm: 312,   use: 'Vivienda/ Comercio minorista' },
+  '12x28':    { label: 'Residencial mediano', dims: '12 × 28 m',    sqm: 336,   use: 'Vivienda/ Comercio minorista' },
+  '12x30':    { label: 'Residencial grande',  dims: '12 × 30 m',    sqm: 360,   use: 'Vivienda/ Comercio minorista' },
+  '15x30':    { label: 'Mixto chico',         dims: '15 × 30 m',    sqm: 450,   use: 'Vivienda + Comercio Mediano' },
+  '15.55x30': { label: 'Mixto grande',        dims: '15,55 × 30 m', sqm: 466.5, use: 'Vivienda + Comercio Mediano' },
 }
 
 // El 5% de descuento al contado aplica a las 5 tipologías.
@@ -105,14 +112,6 @@ export const FINANCING_12: Partial<Record<LotSize, {
   '12x26': { downPesos: 8236800, installmentPesos: 1601600, downUSD: 5150, installmentUSD: 1000 },
   '12x28': { downPesos: 8870400, installmentPesos: 1724800, downUSD: 5550, installmentUSD: 1080 },
   '12x30': { downPesos: 9504000, installmentPesos: 1848000, downUSD: 5940, installmentUSD: 1150 },
-}
-
-// Opción 2 — 18 cuotas en USD, 30% de entrega. Sólo Mixto (residencial no tiene esta opción).
-export const FINANCING_18: Partial<Record<LotSize, {
-  downUSD: number; installmentUSD: number; availability: string
-}>> = {
-  '15x30':    { downUSD: 7425, installmentUSD: 960,  availability: '9 lotes disponibles' },
-  '15.55x30': { downUSD: 7695, installmentUSD: 1500, availability: '4 lotes disponibles' },
 }
 
 // Opción 3 — 36 cuotas en USD

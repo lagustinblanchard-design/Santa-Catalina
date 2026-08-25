@@ -1,6 +1,6 @@
 import { Fragment } from 'react'
 import AnimateIn from './AnimateIn'
-import { FINANCING_12, FINANCING_18, FINANCING_36, LOT_TYPES, NOTARIAL_COSTS, type LotSize } from '@/lib/data'
+import { FINANCING_12, FINANCING_36, LOT_TYPES, NOTARIAL_COSTS, SITE, type LotSize } from '@/lib/data'
 
 const SIZES = Object.keys(LOT_TYPES) as LotSize[]
 
@@ -130,45 +130,23 @@ export default function Financing() {
           </div>
         </div>
 
-        {/* Opción 3 — 18 cuotas (sólo Mixto) */}
-        <div className="mt-8 rounded-3xl p-8 shadow-sm" style={{ background: '#fff', border: '1px solid #D8D2C7' }}>
-          <div className="mb-6">
-            <span className="rounded-full px-3 py-1 text-xs font-bold uppercase text-white" style={{ backgroundColor: '#8A6A47' }}>
-              Opción 3
-            </span>
-            <h3 className="mt-3 text-2xl font-bold" style={{ color: '#2E2A26' }}>18 cuotas</h3>
-            <p style={{ color: '#6B6660' }}>30% de entrega + 18 cuotas mensuales en USD — sólo lotes mixtos</p>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr style={{ borderBottom: '1px solid #D8D2C7' }}>
-                  <th className="pb-3 text-left font-semibold" style={{ color: '#6B6660' }}>Lote</th>
-                  <th className="pb-3 text-left font-semibold" style={{ color: '#6B6660' }}>Entrega</th>
-                  <th className="pb-3 text-left font-semibold" style={{ color: '#6B6660' }}>Cuota</th>
-                  <th className="pb-3 text-left font-semibold" style={{ color: '#6B6660' }}>Disponibilidad</th>
-                </tr>
-              </thead>
-              <tbody>
-                {SIZES.filter(s => FINANCING_18[s]).map((size) => {
-                  const f = FINANCING_18[size]!
-                  return (
-                    <tr key={size} style={{ borderBottom: '1px solid #F2ECE0' }}>
-                      <td className="py-3 font-medium" style={{ color: '#2E2A26' }}>{LOT_TYPES[size].dims}</td>
-                      <td className="py-3" style={{ color: '#2E2A26' }}>{fmt(f.downUSD)}</td>
-                      <td className="py-3" style={{ color: '#2E2A26' }}>{fmt(f.installmentUSD)}</td>
-                      <td className="py-3">
-                        <span className="rounded-full px-2 py-0.5 text-xs font-medium" style={{ background: '#f0fdf4', color: '#166534' }}>
-                          {f.availability}
-                        </span>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+        {/* Financiación personalizada — vía de escape para lo que no entra en las opciones fijas */}
+        <div className="mt-8 rounded-3xl p-8 text-center shadow-sm" style={{ background: '#fff', border: '1px solid #D8D2C7' }}>
+          <span className="rounded-full px-3 py-1 text-xs font-bold uppercase text-white" style={{ backgroundColor: '#AA1120' }}>
+            Financiación a medida
+          </span>
+          <h3 className="mt-3 text-2xl font-bold" style={{ color: '#2E2A26' }}>
+            Para consultar una financiación personalizada contacte un asesor
+          </h3>
+          <a
+            href={`https://wa.me/${SITE.WA_NUMBER.replace(/\D/g, '')}?text=${encodeURIComponent('Hola, quiero consultar una financiación personalizada para un lote en Santa Catalina.')}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-6 inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
+            style={{ backgroundColor: '#25D366' }}
+          >
+            Hablar con un asesor
+          </a>
         </div>
 
         {/* Notarial costs */}
