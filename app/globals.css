@@ -12,6 +12,16 @@
   --color-background: #ffffff;
   --color-foreground: #2E2A26;
   --font-sans: var(--font-montserrat), Arial, Helvetica, sans-serif;
+
+  /* Tokens de motion — compartidos entre CSS y lib/motion.ts (Motion/JS). Curvas
+     mas fuertes que el ease default del browser; ease-in-out para movimiento en
+     pantalla, ease-out para entradas/salidas. Duraciones en ms, UI bajo 300ms. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --duration-press: 160ms;
+  --duration-hover: 200ms;
+  --duration-panel: 280ms;
+  --duration-reveal: 700ms;
 }
 
 html {
@@ -24,8 +34,13 @@ body {
   font-family: var(--font-montserrat), Arial, Helvetica, sans-serif;
 }
 
-/* Respeta la preferencia del sistema: neutraliza scroll suave, animate-bounce (Tailwind),
-   framer-motion y la rotación automática de cámara en /mapa-3d (ver LotMap3D.tsx). */
+/* Respeta la preferencia del sistema: recorta scroll suave y las @keyframes de movimiento
+   (animate-bounce de Tailwind, las del showroom en LotMap3D.tsx). Las transiciones de
+   opacidad/color quedan vivas a propósito — ayudan a leer el cambio de estado, no son el
+   movimiento que este ajuste busca reducir (ver AUDIT.md: "reduced motion no es cero").
+   Motion respeta la preferencia por su cuenta vía <MotionConfig reducedMotion="user">
+   (ver app/v2/layout.tsx); la rotación de cámara de /mapa-3d se gatea en el propio
+   componente con matchMedia (ver LotMap3D.tsx) — ninguna de las dos corre por CSS. */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -33,7 +48,6 @@ body {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
 }

@@ -16,19 +16,22 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { motion, AnimatePresence } from 'motion/react'
 import { DeckGL } from '@deck.gl/react'
-import { MapView, LightingEffect, AmbientLight, DirectionalLight, FlyToInterpolator } from '@deck.gl/core'
+import type { DeckGLRef } from '@deck.gl/react'
+import { MapView, LightingEffect, AmbientLight, DirectionalLight, FlyToInterpolator, LinearInterpolator } from '@deck.gl/core'
 import type { MapViewState } from '@deck.gl/core'
 import { PolygonLayer, BitmapLayer, TextLayer } from '@deck.gl/layers'
 import { TileLayer, Tile3DLayer } from '@deck.gl/geo-layers'
 import { ScenegraphLayer } from '@deck.gl/mesh-layers'
 import { CesiumIonLoader } from '@loaders.gl/3d-tiles'
 import { type Lot } from '@/lib/lots'
-import { STATUS_LABELS, SITE, PROJECT_PHASES, type LotStatus } from '@/lib/data'
+import { STATUS_LABELS, SITE, PROJECT_PHASES, SURROUNDINGS, type LotStatus } from '@/lib/data'
 import GEO from '@/lib/lot_geometry.json'
 import { ORTHO_URL, ORTHO_BOUNDS } from '@/lib/ortho'
 import { svgToLngLat } from '@/lib/geo/calibration'
 import { FeatherExtension } from '@/lib/geo/feather-extension'
+import { EASE_OUT, DURATION } from '@/lib/motion'
 
 const featherExtension = new FeatherExtension()
 
@@ -46,6 +49,30 @@ function centroid(c: [number, number, number, number]): [number, number] {
 const LOTS_GEO = GEO.lots as unknown as Record<string, [number, number, number, number]>
 
 // ---------- Estilos ----------
+// Vocabulario tipográfico de /v2 (Fase 5.2): Cinzel para títulos/números, Josefin en
+// caja alta para microetiquetas. Cinzel/Josefin cargan en app/layout.tsx (raíz) — /mapa-3d
+// es ruta hermana de app/v2/, no hija, así que necesitaba subir las fuentes ahí primero.
+const CINZEL = "var(--font-cinzel), 'Cinzel', serif"
+const JOSEFIN = "var(--font-josefin), 'Josefin Sans', sans-serif"
+
+// Chip de filtro/toggle en el vocabulario de v2: bordes rectos, hairline de 1px, único
+// acento #FF1200 — reemplaza el rounded-full + bg-black/40 heredado de v1.
+function chipStyle(active: boolean): React.CSSProperties {
+  return {
+    fontFamily: JOSEFIN,
+    fontSize: '0.65rem',
+    letterSpacing: '0.1em',
+    textTransform: 'uppercase',
+    padding: '0.45rem 0.9rem',
+    backdropFilter: 'blur(6px)',
+    cursor: 'pointer',
+    background: active ? '#FF1200' : 'rgba(12,12,12,0.55)',
+    color: active ? '#fff' : '#ccc',
+    border: active ? '1px solid #FF1200' : '1px solid rgba(255,255,255,0.2)',
+    transition: 'background-color 150ms, border-color 150ms, color 150ms',
+  }
+}
+
 const STATUS_RGB: Record<LotStatus, [number, number, number]> = {
   DISPONIBLE: [22, 163, 74],
   RESERVADO: [202, 138, 4],
@@ -120,12 +147,35 @@ const INTRO_DURATION_MS = 4200
 const IDLE_MS = 3200 // sin interacción → retoma la rotación automática
 const ROTATE_DEG_PER_SEC = 2.4 // vuelta completa cada ~150s
 const LABEL_MIN_ZOOM = 16.4 // etiquetas de lote sólo al acercarse
+const HOLD_MS = 400 // margen entre el fin de un vuelo y el próximo — ver startHoldDrift
+// ~11m de margen a esta latitud — separa "misma posición, sólo cambia zoom/pitch/bearing"
+// de un salto real de centro, para elegir el interpolador (ver isSameCenter/flyCamera).
+const SAME_CENTER_EPS = 0.0001
 
-function flyTo(view: MapViewState, durationMs = INTRO_DURATION_MS): MapViewState {
+// Ease-in-out cúbico — misma familia que --ease-in-out de app/globals.css (fuerte,
+// simétrico). deck.gl pide una función (t)=>number para transitionEasing, no un string
+// CSS, así que no se reusa el token literal, pero el carácter del movimiento es el mismo.
+function easeInOutCubic(t: number): number {
+  return t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2
+}
+
+function isSameCenter(a: MapViewState, b: MapViewState): boolean {
+  return Math.abs(a.longitude - b.longitude) < SAME_CENTER_EPS && Math.abs(a.latitude - b.latitude) < SAME_CENTER_EPS
+}
+
+// FlyToInterpolator (arco de Van Wijk) sólo tiene sentido cuando el centro se traslada
+// — sin traslación, el arco degenera. Las paradas que comparten centro (sólo cambia
+// zoom/pitch/bearing) usan LinearInterpolator con un ease-in-out cúbico: desplazamiento
+// deliberado, no un vuelo. El easing sólo se aplica ahí — sobre FlyToInterpolator alteraría
+// su propia curva interna (curve/speed), ya afinada.
+function flyTo(view: MapViewState, durationMs = INTRO_DURATION_MS, translates = true): MapViewState {
   return {
     ...view,
     transitionDuration: durationMs,
-    transitionInterpolator: new FlyToInterpolator({ curve: 1.3, speed: 0.9 }),
+    transitionInterpolator: translates
+      ? new FlyToInterpolator({ curve: 1.3, speed: 0.9 })
+      : new LinearInterpolator({ transitionProps: ['zoom', 'pitch', 'bearing'] }),
+    transitionEasing: translates ? undefined : easeInOutCubic,
   }
 }
 
@@ -193,12 +243,18 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
   const [tourStep, setTourStep] = useState(0)
   const [filter, setFilter] = useState<LotStatus | 'ALL'>('ALL')
   const [selected, setSelected] = useState<LotFeature | null>(null)
-  const [viewState, setViewState] = useState<MapViewState>(START_VIEW_STATE)
+  // La posición de cámara ya NO vive en React state — antes cada tick de rotación
+  // automática y cada frame de vuelo llamaba setViewState, re-renderizando este
+  // componente (10 bloques de overlay) hasta 60 veces por segundo. Ahora vive en un ref
+  // y se empuja al canvas con deck.setProps directo (ver flyCamera/viewStateRef más abajo);
+  // React sólo se entera cuando algo derivado (zoomedIn, la bruma) cruza un umbral.
   const [zoomedIn, setZoomedIn] = useState(false)
+  const [hazeOpacity, setHazeOpacity] = useState(0)
   // Toggle entre el mapa de disponibilidad (satélite Esri) y la malla real del dron.
   // Sin malla cargada (HAS_TERRAIN_MESH=false) queda fijo en 'disponibilidad'.
   const [photoMode, setPhotoMode] = useState<'disponibilidad' | 'fotorrealista'>('disponibilidad')
-  const deckRef = useRef<unknown>(null)
+  const deckRef = useRef<DeckGLRef>(null)
+  const viewStateRef = useRef<MapViewState>(START_VIEW_STATE)
 
   // Estado de la cámara cinemática vive en refs (no re-render) para que el loop de
   // rAF pueda leerlo cada frame sin reiniciarse cuando cambian filter/selected/mode.
@@ -211,6 +267,56 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
   useEffect(() => {
     modeRef.current = mode
   }, [mode])
+
+  // prefers-reduced-motion: antes ni el comentario de globals.css (falso — ese bloque CSS
+  // nunca llega a esta cámara) ni el código lo respetaban. reducedMotionRef espeja el
+  // estado para que el loop de rotación y flyCamera lo lean sin re-suscribirse.
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+  const reducedMotionRef = useRef(false)
+  useEffect(() => {
+    reducedMotionRef.current = prefersReducedMotion
+  }, [prefersReducedMotion])
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    setPrefersReducedMotion(mq.matches)
+    const handler = () => setPrefersReducedMotion(mq.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+
+  // Mueve la cámara de forma imperativa (sin setState): actualiza el ref y lo empuja al
+  // canvas con deck.setProps. Con reduced-motion, salta directo al encuadre final sin
+  // vuelo — ni FlyToInterpolator ni LinearInterpolator entran en el objeto.
+  const flyCamera = (view: MapViewState, durationMs?: number) => {
+    const target = reducedMotionRef.current
+      ? { ...view }
+      : flyTo(view, durationMs, !isSameCenter(view, viewStateRef.current))
+    viewStateRef.current = target
+    deckRef.current?.deck?.setProps({ viewState: target })
+  }
+
+  // Sostiene un drift lento de bearing durante el margen entre paradas del tour (HOLD_MS)
+  // para que la cámara nunca se congele en seco — sin tocar ninguna duración calibrada
+  // del guion. Con reduced-motion no hace nada (la cámara se queda quieta, como corresponde).
+  const startHoldDrift = (ms: number): (() => void) => {
+    if (reducedMotionRef.current) return () => {}
+    let raf = 0
+    const startT = performance.now()
+    let lastT = startT
+    const tick = (t: number) => {
+      const dt = (t - lastT) / 1000
+      lastT = t
+      viewStateRef.current = {
+        ...viewStateRef.current,
+        bearing: ((viewStateRef.current.bearing ?? 0) + ROTATE_DEG_PER_SEC * dt) % 360,
+      }
+      deckRef.current?.deck?.setProps({ viewState: viewStateRef.current })
+      if (t - startT < ms) raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }
 
   useEffect(() => setMounted(true), [])
 
@@ -278,7 +384,7 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
         // Encuadre calculado para que los 306 lotes (693 m de ancho) entren completos:
         // a zoom 17.3 la vista mide ~1240 m de ancho, el loteo ocupa ~56% del cuadro.
         view: { ...base, ...INITIAL_VIEW_STATE, zoom: 17.3, pitch: 35 },
-        title: '14 manzanas · 306 lotes', sub: SITE.stage, duration: 4200,
+        title: `${SITE.totalBlocks} manzanas · 306 lotes`, sub: SITE.stage, duration: 4200,
       },
       {
         view: { ...base, longitude: dispCenter[0], latitude: dispCenter[1], zoom: 17.9, pitch: 50, bearing: 8 },
@@ -290,7 +396,7 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
         // propósito (antes 63°, el más alto de todos) para no exponer el satélite plano
         // justo en la parada que más depende de él.
         view: { ...base, longitude: INITIAL_VIEW_STATE.longitude, latitude: INITIAL_VIEW_STATE.latitude, zoom: 16.2, pitch: 30, bearing: -55 },
-        title: 'A 10 minutos del centro', sub: 'Escuelas, salud y transporte cerca', duration: 4800,
+        title: `A ${SURROUNDINGS.travelTimes.find(t => t.label === 'Centro de Corrientes')?.time.split(' ')[0]} minutos del centro`, sub: 'Escuelas, salud y transporte cerca', duration: 4800,
       },
     ]
   }, [dispCenter, counts])
@@ -300,10 +406,13 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
 
   // Driver del tour/reel: al entrar en modo tour o reel, secuencia TODAS las paradas con un
   // único timer encadenado (no un efecto por paso — eso se re-ejecutaba y adelantaba el tiempo).
+  // La cámara (flyCamera) y el drift del hold corren fuera de React — sólo setTourStep()
+  // re-renderiza, y sólo para cambiar el caption/los dots, no la posición de la cámara.
   useEffect(() => {
     if (mode !== 'tour' && mode !== 'reel') return
     let cancelled = false
     let timer: ReturnType<typeof setTimeout>
+    let stopDrift: (() => void) | null = null
     const run = (step: number) => {
       if (cancelled) return
       if (step >= activeWaypoints.length) {
@@ -313,17 +422,30 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
       }
       const wp = activeWaypoints[step]
       setTourStep(step)
-      setViewState(flyTo(wp.view, wp.duration))
-      timer = setTimeout(() => run(step + 1), wp.duration + 400)
+      flyCamera(wp.view, wp.duration)
+      timer = setTimeout(() => {
+        if (cancelled) return
+        // Hold: la cámara ya llegó, pero no se congela en seco — deriva suave hasta que
+        // arranca la próxima parada. Ninguna duración del guion cambia por esto.
+        stopDrift = startHoldDrift(HOLD_MS)
+        timer = setTimeout(() => {
+          stopDrift?.()
+          stopDrift = null
+          run(step + 1)
+        }, HOLD_MS)
+      }, wp.duration)
     }
     run(0)
     return () => {
       cancelled = true
       clearTimeout(timer)
+      stopDrift?.()
     }
   }, [mode, activeWaypoints])
 
-  // Rotación automática: lenta en modo libre (tras inactividad, sin lote abierto) y en la portada.
+  // Rotación automática: lenta en modo libre (tras inactividad, sin lote abierto) y en la
+  // portada. Corre fuera de React (deck.setProps directo vía viewStateRef) — antes esto
+  // renderizaba el árbol completo de overlays hasta 60 veces por segundo mientras rotaba.
   useEffect(() => {
     let raf = 0
     let lastT = performance.now()
@@ -332,10 +454,14 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
       lastT = t
       const m = modeRef.current
       const idle = Date.now() - lastInteractionRef.current > IDLE_MS
-      const rotate = m === 'portada' || (m === 'free' && idle && !selectedRef.current)
+      const rotate = !reducedMotionRef.current && (m === 'portada' || (m === 'free' && idle && !selectedRef.current))
       if (rotate) {
         const speed = m === 'portada' ? 1.1 : ROTATE_DEG_PER_SEC
-        setViewState((v) => ({ ...v, bearing: ((v.bearing ?? 0) + speed * dt) % 360 }))
+        viewStateRef.current = {
+          ...viewStateRef.current,
+          bearing: ((viewStateRef.current.bearing ?? 0) + speed * dt) % 360,
+        }
+        deckRef.current?.deck?.setProps({ viewState: viewStateRef.current })
       }
       raf = requestAnimationFrame(tick)
     }
@@ -352,7 +478,7 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
     setMode('free')
     setTourStep(0)
     lastInteractionRef.current = Date.now()
-    setViewState(flyTo(INITIAL_VIEW_STATE, 1600))
+    flyCamera(INITIAL_VIEW_STATE, 1600)
   }
 
   // Durante el tour/reel el "spotlight" del waypoint manda; fuera manda el filtro del usuario.
@@ -362,9 +488,8 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
 
   const showMesh = HAS_TERRAIN_MESH && photoMode === 'fotorrealista'
 
-  // Cuánto plano lejano expone el pitch actual — alimenta la bruma de horizonte.
-  // Cenital (pitch <= 10) no tiene horizonte visible; a partir de ahí crece hasta pitch 55.
-  const horizonHaze = Math.min(1, Math.max(0, ((viewState.pitch ?? 0) - 10) / 45))
+  // hazeOpacity ya viene derivado y throttleado del pitch en onViewStateChange (ver
+  // <DeckGL> más abajo) — no se recalcula acá para no depender de un viewState en React.
 
   const layers = useMemo(() => {
     // Satélite Esri — capa base en modo disponibilidad, o fallback si no hay malla real todavía.
@@ -485,6 +610,10 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
         getLineColor: [filter, spotlight],
         getElevation: [showMesh],
       },
+      // Cuando cambia el filtro o el spotlight del tour, el color salta de un frame al
+      // otro. Transición de atributo nativa de deck.gl (GPU, sin costo de React) — 600ms,
+      // el mismo orden de magnitud que --duration-panel/--duration-reveal del resto del sitio.
+      transitions: { getFillColor: 600, getLineColor: 600 },
     })
 
     // Dúplex glTF — solo si hay modelos cargados
@@ -548,7 +677,7 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
       <div
         className="pointer-events-none absolute inset-0"
         style={{
-          opacity: horizonHaze,
+          opacity: hazeOpacity,
           background:
             'linear-gradient(180deg,' +
             ' rgba(240,184,120,0.60) 0%,' +
@@ -560,9 +689,9 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
       />
 
       <DeckGL
-        ref={deckRef as never}
+        ref={deckRef}
         views={new MapView({ repeat: true })}
-        viewState={viewState}
+        initialViewState={START_VIEW_STATE}
         onViewStateChange={({ viewState: vs, interactionState }) => {
           const { isDragging, isPanning, isRotating, isZooming } = interactionState
           if (isDragging || isPanning || isRotating || isZooming) {
@@ -573,11 +702,21 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
               setTourStep(0)
             }
           }
+          viewStateRef.current = vs as MapViewState
+          // Eco manual: una vez que cualquier deck.setProps({viewState}) explícito ocurrió
+          // (tour, reencuadrar, rotación), deck.gl deja de auto-aplicar los cambios de
+          // interacción por su cuenta (sólo lo hace mientras nunca se le pasó viewState
+          // como prop controlada). Repetirlo aquí es gratis cuando no hace falta y
+          // necesario cuando sí — no pasa por React, así que no re-renderiza.
+          deckRef.current?.deck?.setProps({ viewState: vs })
           setZoomedIn((prev) => {
             const next = vs.zoom >= LABEL_MIN_ZOOM
             return prev === next ? prev : next
           })
-          setViewState(vs)
+          // Bruma de horizonte, throttleada a pasos de 1/50 (basta para que el ojo no note
+          // la cuantización, y evita recalcular el estado de React en cada frame de vuelo).
+          const nextHaze = Math.round(Math.min(1, Math.max(0, ((vs.pitch ?? 0) - 10) / 45)) * 50) / 50
+          setHazeOpacity((prev) => (prev === nextHaze ? prev : nextHaze))
         }}
         controller={{ dragRotate: true, touchRotate: true, inertia: 300 }}
         effects={[lightingEffect]}
@@ -596,31 +735,25 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
       {/* Título + filtros (arriba izq.) — sólo en modo libre */}
       {mode === 'free' && (
         <div className="pointer-events-none absolute left-4 top-4 z-10 flex max-w-[calc(100%-2rem)] flex-col gap-3">
-          <div className="pointer-events-auto rounded-2xl bg-black/55 px-4 py-3 text-white backdrop-blur-md">
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: '#FF4230' }}>
+          <div
+            className="pointer-events-auto px-4 py-3 text-white backdrop-blur-md"
+            style={{ background: 'rgba(12,12,12,0.72)', border: '1px solid rgba(255,255,255,0.12)' }}
+          >
+            <p style={{ fontFamily: JOSEFIN, fontSize: '0.6rem', letterSpacing: '0.3em', color: '#FF1200', textTransform: 'uppercase' }}>
               Loteo en 3D
             </p>
-            <p className="text-lg font-black leading-tight">Barrio Santa Catalina</p>
+            <p style={{ fontFamily: CINZEL, fontSize: '1.15rem', fontWeight: 700, lineHeight: 1.15, marginTop: '0.2rem' }}>
+              Barrio Santa Catalina
+            </p>
           </div>
           <div className="pointer-events-auto flex flex-wrap gap-2">
-            <button
-              onClick={() => setFilter('ALL')}
-              className={`rounded-full border px-3 py-1.5 text-xs font-semibold backdrop-blur-md transition-colors ${
-                filter === 'ALL' ? 'border-white bg-white text-gray-900' : 'border-white/30 bg-black/40 text-white hover:bg-black/60'
-              }`}
-            >
-              Todos <span className="tabular-nums opacity-70">{lots.length}</span>
+            <button onClick={() => setFilter('ALL')} style={chipStyle(filter === 'ALL')}>
+              Todos <span style={{ opacity: 0.7 }} className="tabular-nums">{lots.length}</span>
             </button>
             {STATUSES.filter((s) => counts[s] > 0).map((s) => (
-              <button
-                key={s}
-                onClick={() => setFilter((p) => (p === s ? 'ALL' : s))}
-                className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold backdrop-blur-md transition-colors ${
-                  filter === s ? 'border-white bg-white text-gray-900' : 'border-white/30 bg-black/40 text-white hover:bg-black/60'
-                }`}
-              >
-                <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: STATUS_HEX[s] }} />
-                {STATUS_LABELS[s]} <span className="tabular-nums opacity-70">{counts[s]}</span>
+              <button key={s} onClick={() => setFilter((p) => (p === s ? 'ALL' : s))} style={chipStyle(filter === s)} className="flex items-center gap-1.5">
+                <span className="inline-block h-2 w-2" style={{ backgroundColor: STATUS_HEX[s] }} />
+                {STATUS_LABELS[s]} <span style={{ opacity: 0.7 }} className="tabular-nums">{counts[s]}</span>
               </button>
             ))}
           </div>
@@ -633,56 +766,72 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
           {HAS_TERRAIN_MESH && (
             <button
               onClick={() => setPhotoMode((p) => (p === 'disponibilidad' ? 'fotorrealista' : 'disponibilidad'))}
-              className={`rounded-full border px-3 py-1.5 text-xs font-semibold backdrop-blur-md transition-colors ${
-                photoMode === 'fotorrealista'
-                  ? 'border-white bg-white text-gray-900'
-                  : 'border-white/30 bg-black/40 text-white hover:bg-black/60'
-              }`}
+              style={chipStyle(photoMode === 'fotorrealista')}
             >
               🛰 Vista real (dron)
             </button>
           )}
-          <button
-            onClick={startTour}
-            className="rounded-full border border-white/30 bg-black/40 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md transition-colors hover:bg-black/60"
-          >
-            ▶ Recorrido
-          </button>
+          <button onClick={startTour} style={chipStyle(false)}>▶ Recorrido</button>
           <button
             onClick={() => {
               lastInteractionRef.current = Date.now()
-              setViewState(flyTo(INITIAL_VIEW_STATE, 1800))
+              flyCamera(INITIAL_VIEW_STATE, 1800)
             }}
-            className="rounded-full border border-white/30 bg-black/40 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md transition-colors hover:bg-black/60"
+            style={chipStyle(false)}
           >
             Reencuadrar
           </button>
         </div>
       )}
       {mode === 'tour' && (
-        <button
-          onClick={skipToFree}
-          className="absolute right-4 top-4 z-20 rounded-full border border-white/30 bg-black/40 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-md transition-colors hover:bg-black/60"
-        >
+        <button onClick={skipToFree} className="absolute right-4 top-4 z-20" style={chipStyle(false)}>
           Saltar ⏭
         </button>
       )}
 
-      {/* Caption del tour/reel + progreso (abajo centro) */}
-      {(mode === 'tour' || mode === 'reel') && activeWaypoints[tourStep]?.title && (
+      {/* Caption del tour/reel + progreso (abajo centro). El contenedor queda montado todo
+          el tour/reel (no sólo cuando hay título) para que AnimatePresence pueda animar la
+          SALIDA del caption — si el contenedor entero se desmonta con él, no hay salida que
+          animar. Efecto secundario menor y deliberado: los dots ya se ven desde la primera
+          parada del reel, aunque esa parada no tenga título (antes no se veía nada ahí). */}
+      {(mode === 'tour' || mode === 'reel') && (
         <div className="pointer-events-none absolute inset-x-0 bottom-14 z-20 flex flex-col items-center gap-3 px-6">
-          <div key={tourStep} className="lot3d-caption rounded-2xl bg-black/55 px-6 py-4 text-center backdrop-blur-md">
-            <p className="text-xl font-black text-white">{activeWaypoints[tourStep].title}</p>
-            {activeWaypoints[tourStep].sub && (
-              <p className="mt-1 text-sm text-white/75">{activeWaypoints[tourStep].sub}</p>
+          <AnimatePresence mode="wait">
+            {activeWaypoints[tourStep]?.title && (
+              <motion.div
+                key={tourStep}
+                className="px-6 py-4 text-center backdrop-blur-md"
+                style={{ background: 'rgba(12,12,12,0.72)', border: '1px solid rgba(255,255,255,0.12)' }}
+                initial={{ opacity: 0, transform: 'translateY(12px)' }}
+                animate={{ opacity: 1, transform: 'translateY(0px)' }}
+                exit={{ opacity: 0, transform: 'translateY(-12px)' }}
+                transition={{ duration: DURATION.panel, ease: EASE_OUT }}
+              >
+                <p style={{ fontFamily: CINZEL, fontSize: '1.35rem', fontWeight: 700, color: '#fff' }}>
+                  {activeWaypoints[tourStep].title}
+                </p>
+                {activeWaypoints[tourStep].sub && (
+                  <p style={{ fontFamily: JOSEFIN, fontSize: '0.8rem', color: 'rgba(255,255,255,0.75)', marginTop: '0.25rem' }}>
+                    {activeWaypoints[tourStep].sub}
+                  </p>
+                )}
+              </motion.div>
             )}
-          </div>
+          </AnimatePresence>
           <div className="flex gap-1.5">
             {activeWaypoints.map((_, i) => (
+              // scaleX en vez de width: la pastilla activa/inactiva es la misma caja de 20px,
+              // sólo se achica desde la izquierda — no anima una propiedad de layout.
               <span
                 key={i}
-                className="h-1.5 rounded-full transition-all"
-                style={{ width: i === tourStep ? 20 : 6, background: i === tourStep ? '#fff' : 'rgba(255,255,255,0.4)' }}
+                className="h-1.5 rounded-full"
+                style={{
+                  width: 20,
+                  transform: `scaleX(${i === tourStep ? 1 : 0.3})`,
+                  transformOrigin: 'left',
+                  transition: 'transform 200ms ease-out, background-color 200ms ease-out',
+                  background: i === tourStep ? '#fff' : 'rgba(255,255,255,0.4)',
+                }}
               />
             ))}
           </div>
@@ -691,72 +840,75 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
 
       {/* Portada (cover) */}
       {mode === 'portada' && (
-        <div
-          className="lot3d-portada absolute inset-0 z-30 flex flex-col items-center justify-center px-6 text-center"
+        <motion.div
+          className="absolute inset-0 z-30 flex flex-col items-center justify-center px-6 text-center"
           style={{ background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.65) 100%)' }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, ease: EASE_OUT }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-paye.png" alt="Payé" className="mb-6 h-16 w-auto drop-shadow-2xl" />
-          <p className="text-xs font-bold uppercase tracking-[0.3em]" style={{ color: '#FF4230' }}>
+          <p style={{ fontFamily: JOSEFIN, fontSize: '0.7rem', letterSpacing: '0.3em', color: '#FF1200', textTransform: 'uppercase' }}>
             Recorrido virtual
           </p>
-          <h1 className="mt-2 text-4xl font-black text-white drop-shadow-lg md:text-5xl">{SITE.name}</h1>
-          <p className="mt-3 max-w-md text-sm text-white/80 md:text-base">
+          <h1
+            className="mt-2 text-4xl drop-shadow-lg md:text-5xl"
+            style={{ fontFamily: CINZEL, fontWeight: 700, color: '#F5F0EB', textTransform: 'uppercase' }}
+          >
+            {SITE.name}
+          </h1>
+          <p style={{ fontFamily: JOSEFIN, fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)', marginTop: '0.75rem', maxWidth: 420 }}>
             Corrientes Capital · 306 lotes · {SITE.stage}
           </p>
-          <button
+          <motion.button
             onClick={startTour}
-            className="mt-8 flex items-center gap-2 rounded-full px-7 py-3 text-sm font-bold text-white shadow-xl transition-transform hover:scale-105"
-            style={{ background: '#dc2626' }}
+            className="mt-8 flex items-center gap-2 px-7 py-3 text-white"
+            style={{ fontFamily: JOSEFIN, fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', background: '#FF1200' }}
+            whileHover={{ opacity: 0.85, transition: { duration: DURATION.hover, ease: EASE_OUT } }}
+            whileTap={{ scale: 0.97, transition: { duration: DURATION.press, ease: EASE_OUT } }}
           >
             ▶ Ver presentación
-          </button>
+          </motion.button>
           <button
             onClick={skipToFree}
-            className="mt-4 text-xs font-semibold text-white/60 underline underline-offset-2 hover:text-white/90"
+            className="mt-4 underline underline-offset-2 hover:text-white/90"
+            style={{ fontFamily: JOSEFIN, fontSize: '0.7rem', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.6)' }}
           >
             Explorar el mapa directo
           </button>
-        </div>
+        </motion.div>
       )}
-
-      {/* Animaciones de la capa showroom */}
-      <style>{`
-        @keyframes lot3dCaptionIn { from { opacity: 0; transform: translateY(12px) } to { opacity: 1; transform: translateY(0) } }
-        .lot3d-caption { animation: lot3dCaptionIn 0.6s ease both }
-        @keyframes lot3dPortadaIn { from { opacity: 0 } to { opacity: 1 } }
-        .lot3d-portada { animation: lot3dPortadaIn 0.8s ease both }
-      `}</style>
 
       {/* Ficha del lote seleccionado (abajo izq.) */}
       {selected && (
-        <div className="absolute bottom-4 left-4 z-10 w-64 overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <div className="absolute bottom-4 left-4 z-10 w-64 overflow-hidden" style={{ background: '#111', border: '1px solid #1a1a1a' }}>
           <div className="flex items-center justify-between px-4 py-3" style={{ background: STATUS_HEX[selected.status] }}>
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-white/75">
+              <p style={{ fontFamily: JOSEFIN, fontSize: '0.6rem', letterSpacing: '0.15em', color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase' }}>
                 Manzana {selected.block} · Lote {selected.lot}
               </p>
-              <p className="text-sm font-black text-white">{STATUS_LABELS[selected.status]}</p>
+              <p style={{ fontFamily: CINZEL, fontSize: '0.9rem', fontWeight: 700, color: '#fff' }}>{STATUS_LABELS[selected.status]}</p>
             </div>
-            <button onClick={() => setSelected(null)} className="text-white/80 hover:text-white" aria-label="Cerrar">
+            <button onClick={() => setSelected(null)} style={{ color: 'rgba(255,255,255,0.8)' }} aria-label="Cerrar">
               ✕
             </button>
           </div>
-          <div className="space-y-2 px-4 py-3">
+          <div className="flex flex-col gap-2 px-4 py-3">
             <div className="flex gap-2">
-              <div className="flex-1 rounded-lg bg-gray-50 px-3 py-2">
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Medidas</p>
-                <p className="text-sm font-bold text-gray-800">{selected.dims} m</p>
+              <div className="flex-1 px-3 py-2" style={{ background: '#0C0C0C' }}>
+                <p style={{ fontFamily: JOSEFIN, fontSize: '0.55rem', letterSpacing: '0.1em', color: '#888', textTransform: 'uppercase' }}>Medidas</p>
+                <p style={{ fontFamily: CINZEL, fontSize: '0.85rem', fontWeight: 600, color: '#F5F0EB' }}>{selected.dims} m</p>
               </div>
-              <div className="flex-1 rounded-lg bg-gray-50 px-3 py-2">
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Superficie</p>
-                <p className="text-sm font-bold text-gray-800">{selected.sqm} m²</p>
+              <div className="flex-1 px-3 py-2" style={{ background: '#0C0C0C' }}>
+                <p style={{ fontFamily: JOSEFIN, fontSize: '0.55rem', letterSpacing: '0.1em', color: '#888', textTransform: 'uppercase' }}>Superficie</p>
+                <p style={{ fontFamily: CINZEL, fontSize: '0.85rem', fontWeight: 600, color: '#F5F0EB' }}>{selected.sqm} m²</p>
               </div>
             </div>
             {selected.status === 'DISPONIBLE' && selected.price && (
-              <div className="rounded-lg border border-red-100 bg-red-50/60 px-3 py-2">
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Precio contado</p>
-                <p className="text-lg font-black" style={{ color: '#dc2626' }}>
+              <div className="px-3 py-2" style={{ border: '1px solid rgba(255,18,0,0.3)', background: 'rgba(255,18,0,0.08)' }}>
+                <p style={{ fontFamily: JOSEFIN, fontSize: '0.55rem', letterSpacing: '0.1em', color: '#888', textTransform: 'uppercase' }}>Precio contado</p>
+                <p style={{ fontFamily: CINZEL, fontSize: '1.3rem', fontWeight: 700, color: '#FF1200' }}>
                   USD {selected.price.toLocaleString('es-AR')}
                 </p>
               </div>
@@ -768,8 +920,8 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block rounded-lg py-2 text-center text-xs font-bold text-white"
-                style={{ background: '#dc2626' }}
+                className="block py-2 text-center"
+                style={{ fontFamily: JOSEFIN, fontSize: '0.7rem', letterSpacing: '0.1em', textTransform: 'uppercase', background: '#FF1200', color: '#fff' }}
               >
                 Consultar por WhatsApp →
               </a>

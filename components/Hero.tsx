@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { SITE } from '@/lib/data'
 
 const fadeUp = (delay = 0) => ({
@@ -111,7 +111,7 @@ export default function Hero() {
           style={{ borderColor: 'rgba(242,236,224,0.15)' }}
         >
           {[
-            { value: '14', label: 'Manzanas', color: '#AA1120' },
+            { value: String(SITE.totalBlocks), label: 'Manzanas', color: '#AA1120' },
             { value: '312–520', label: 'm² por lote', color: '#fff' },
             { value: 'USD', label: 'Financiación disponible', color: '#fff' },
           ].map(({ value, label, color }, i) => (

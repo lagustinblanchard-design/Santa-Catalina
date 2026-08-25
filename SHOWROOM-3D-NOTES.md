@@ -14,6 +14,63 @@ Contexto técnico del showroom 3D del loteo (`/mapa-3d`), para retomar en cualqu
 - **Iluminación "hora dorada"**: `DirectionalLight` cálida + `AmbientLight` fría tenue, cielo gradiente + viñeta.
 - **Etiquetas de lote** (número) sólo al acercar zoom.
 
+## Arquitectura de cámara — reescrita para sacarla del ciclo de render de React
+
+Antes, `viewState` vivía en `useState`: cada tick de la rotación automática y cada frame
+de un `flyTo` llamaba `setViewState`, re-renderizando el componente completo (10 bloques
+de overlay) hasta 60 veces por segundo. Medible con el profiler de React DevTools.
+
+**Fix:** `viewState` ya no es estado de React. Vive en `viewStateRef` (un `useRef`) y se
+empuja al canvas con `deckRef.current.deck.setProps({ viewState })` — directo sobre la
+instancia de `Deck`, sin pasar por React. `<DeckGL>` usa `initialViewState` (modo
+"uncontrolled" de deck.gl), no `viewState` controlado.
+
+- `flyCamera(view, durationMs)` — reemplaza todos los `setViewState(flyTo(...))` de antes.
+  Elige `FlyToInterpolator` (arco de Van Wijk) sólo cuando el centro se traslada; si dos
+  paradas comparten centro (`isSameCenter`, ~11m de margen), usa `LinearInterpolator` +
+  un ease-in-out cúbico — el arco de Van Wijk degenera sin traslación.
+- El loop de rotación automática y `startHoldDrift` (drift suave durante el margen entre
+  paradas del tour, `HOLD_MS = 400`) escriben `viewStateRef.current` y llaman
+  `deck.setProps` directo, en un `requestAnimationFrame` — cero `setState`.
+- El `onViewStateChange` de `<DeckGL>` sigue existiendo, pero ya NO llama `setViewState`:
+  actualiza `viewStateRef`, hace un eco defensivo a `deck.setProps` (necesario una vez que
+  cualquier `setProps({viewState})` explícito ocurrió — ver comentario en el código,
+  `Deck._onViewStateChange` deja de auto-aplicar en ese caso), y deriva `zoomedIn` y
+  `hazeOpacity` (bruma de horizonte) como estado de React, pero throttleados: sólo
+  cuando el valor redondeado cambia, así que no re-renderizan en cada frame.
+- **`prefers-reduced-motion`** ahora sí se respeta acá (antes el comentario de
+  `globals.css` decía que sí pero era falso — ninguna regla CSS llega a esta cámara,
+  que corre en JS/WebGL): sin rotación automática, sin drift, `flyCamera` salta directo
+  al encuadre final sin transición.
+- **Si algo de esto se toca:** no reintroducir `setViewState`/`useState<MapViewState>`
+  para la posición de cámara sin volver a leer esta sección — es la causa raíz que se
+  arregló, no un detalle de implementación intercambiable.
+
+**Pendiente de verificar interactivamente** (no se pudo en la sesión que hizo este
+cambio — sin Playwright/chromium-cli instalado en esa máquina): que arrastrar/rotar con
+el mouse siga andando bien tras el cambio a modo "uncontrolled", y medir con el profiler
+que la rotación automática ya no dispara commits de React. Verificado sin navegador real:
+`tsc --noEmit` y `next build` limpios, y un dev server con un navegador real adjunto (vía
+la extensión de VS Code) mostrando compilaciones limpias y consola sin errores nuevos.
+
+## Overlay del showroom — pasado al vocabulario de /v2
+
+El chrome de UI (título, filtros, controles, caption del tour, portada, ficha del lote)
+usaba el vocabulario de v1 (`rounded-full`, `bg-black/40`, `font-black`, Tailwind puro).
+Se llevó a la gramática de `/v2`: Cinzel para títulos/números (`CINZEL` const, arriba del
+archivo), Josefin en caja alta para microetiquetas (`JOSEFIN` const), bordes rectos con
+hairline de 1px en vez de píldoras redondeadas, `#FF1200` como único acento (antes
+mezclaba `#FF4230`/`#dc2626`/`#AA1120`). Los chips de filtro/toggle comparten un helper,
+`chipStyle(active)`, para no repetir el mismo objeto de estilo seis veces.
+
+Cinzel/Josefin cargaban sólo en `app/v2/layout.tsx`, acotadas a ese subárbol — `/mapa-3d`
+es ruta hermana, no hija, así que no las recibía. Se subieron a `app/layout.tsx` (raíz);
+`app/v2/layout.tsx` ahora sólo consume las variables, no vuelve a cargar las fuentes.
+
+`/mapa-3d` dejó de ser un callejón sin salida desde `/v2`: `NavbarV2.tsx` (`LINKS`) y
+`InteractiveLotMap.tsx` (usado sólo por `app/v2/page.tsx`) ahora enlazan a él, replicando
+el patrón `Ver en 3D →` que ya existía en `GoogleMapsLotMap.tsx` (v1).
+
 ## Terreno fotorrealista (malla de dron) — hook dormido, ya implementado
 
 Plan completo (capturas, specs de vuelo) en `~/.claude/plans/para-el-terreno-fotorrealista-tranquil-newell.md` de la máquina donde se escribió — si no lo tenés a mano, acá el resumen:
