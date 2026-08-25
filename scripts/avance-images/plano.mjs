@@ -5,6 +5,15 @@
  * components/InteractiveLotMap.tsx, cuyo comentario aclara que el viewBox
  * "matches PDF coordinate space". Por eso el plano acá es idéntico al del
  * PDF de avance: no se redibuja nada a mano.
+ *
+ * Las constantes VB, PALETTE, BLOCK_LETTER, RESERVAS y GRID de este archivo
+ * están duplicadas a propósito en lib/plano.ts, de donde las toma el mapa de
+ * avance interactivo del sitio (components/project/AvanceObraMap.tsx). Este
+ * script es Node ESM plano y corre fuera del build de Next, así que no puede
+ * importar un .ts. La duplicación es tolerable porque la geometría está
+ * congelada por el plano de mensura aprobado (ver lib/geo/calibration.ts). Si
+ * algún día se desincroniza, mover los literales a un JSON compartido y
+ * leerlo con readFileSync acá, igual que ya se hace con lot_geometry.json.
  */
 
 import { readFileSync } from 'node:fs'
@@ -169,9 +178,17 @@ export function planoRed({ color }) {
     `<rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" rx="4" fill="${P.neutralFill}" stroke="${P.neutralStroke}" stroke-width="1.2" stroke-dasharray="10 6"/>`
   ).join('')
 
-  const vLines = colGaps.map(g =>
-    `<line x1="${mid(g)}" y1="${top}" x2="${mid(g)}" y2="${bottom}" stroke="${color}" stroke-width="7" stroke-linecap="round"/>`
-  ).join('')
+  // La red sanitaria cubre TODAS las calles del loteo, incluidas la fila de
+  // reservas y la fila Mz 11 / Mz 4 — confirmado por el owner. Fin de la fila
+  // de manzanas numeradas (1-3): las columnas exteriores se funden en un solo
+  // bloque ancho después de acá, así que esas dos líneas divisorias no siguen
+  // de largo — sólo el corredor central (real en toda la altura) sí.
+  // Espejo de lib/plano.ts:RED_V.
+  const fila3Fondo = rowGaps[2][0]
+  const vLines = colGaps.map((g, i) => {
+    const y2 = i === 1 ? bottom : fila3Fondo
+    return `<line x1="${mid(g)}" y1="${top}" x2="${mid(g)}" y2="${y2}" stroke="${color}" stroke-width="7" stroke-linecap="round"/>`
+  }).join('')
 
   const hLines = rowGaps.map(g =>
     `<line x1="${left}" y1="${mid(g)}" x2="${right}" y2="${mid(g)}" stroke="${color}" stroke-width="7" stroke-linecap="round"/>`
@@ -182,23 +199,45 @@ export function planoRed({ color }) {
     <line x1="${left}" y1="${top}" x2="${left}" y2="${bottom}" stroke="${color}" stroke-width="7" stroke-linecap="round"/>
     <line x1="${left}" y1="${bottom}" x2="${right}" y2="${bottom}" stroke="${color}" stroke-width="7" stroke-linecap="round"/>`
 
-  // Tramo pendiente (el 10% restante): el lateral este, punteado.
-  const pending = `<line x1="${right}" y1="${top}" x2="${right}" y2="${bottom}" stroke="${color}" stroke-width="7" stroke-dasharray="16 14" stroke-linecap="round" opacity="0.5"/>`
+  // Tramo pendiente (10%): sólo entre la manzana 3 y la Reserva Municipal 1,
+  // no todo el borde este. Espejo de lib/plano.ts:RED_BORDE_ESTE.
+  const pendienteInicio = rowGaps[1][1] // techo de la Mz 3
+  const pendienteFin = rowGaps[3][0]    // piso de la Reserva Municipal 1
+  const esteSegmentos = [
+    { y1: top, y2: pendienteInicio, pendiente: false },
+    { y1: pendienteInicio, y2: pendienteFin, pendiente: true },
+    { y1: pendienteFin, y2: bottom, pendiente: false },
+  ]
+  const pending = esteSegmentos.map(seg =>
+    `<line x1="${right}" y1="${seg.y1}" x2="${right}" y2="${seg.y2}" stroke="${color}" stroke-width="7" stroke-linecap="round"` +
+    (seg.pendiente ? ` stroke-dasharray="16 14" opacity="0.5"` : '') + `/>`
+  ).join('')
 
-  // Bocas de registro / conexiones en cada cruce.
-  const nodes = []
-  for (const g of colGaps) for (const r of rowGaps) nodes.push([mid(g), mid(r)])
-  for (const g of colGaps) { nodes.push([mid(g), top]); nodes.push([mid(g), bottom]) }
-  for (const r of rowGaps) { nodes.push([left, mid(r)]); nodes.push([right, mid(r)]) }
+  // Bocas de registro: sólo en los extremos del tramo pendiente (Mz 3 y
+  // Reserva Municipal 1). Espejo de lib/plano.ts:RED_NODOS.
+  const nodes = [pendienteInicio, pendienteFin].map((y) => [right, y])
   const nodesSvg = nodes
     .map(([cx, cy]) => `<circle cx="${cx}" cy="${cy}" r="9" fill="#fff" stroke="${color}" stroke-width="4"/>`)
+    .join('')
+
+  // Cortes puntuales sin agua ni cloaca — confirmados por el owner sobre una
+  // captura anotada a mano. Espejo de lib/plano.ts:RED_CORTES.
+  const corteAncho = 22
+  const cortes = [
+    { x: right, y: mid(rowGaps[0]) },           // borde este, entre Mz 1 y Mz 2
+    { x: right, y: mid(rowGaps[1]) },           // borde este, entre Mz 2 y Mz 3
+    { x: left, y: mid(rowGaps[3]) },            // borde oeste, junto a Mz 11
+    { x: mid(colGaps[1]), y: mid(rowGaps[3]) }, // corredor central, entre Mz 11 y Mz 4
+  ]
+  const cortesSvg = cortes
+    .map(p => `<line x1="${p.x}" y1="${p.y - corteAncho}" x2="${p.x}" y2="${p.y + corteAncho}" stroke="${P.paper}" stroke-width="9" stroke-linecap="round"/>`)
     .join('')
 
   return `<svg viewBox="${VB.x} ${VB.y} ${VB.w} ${VB.h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
     <rect x="${VB.x}" y="${VB.y}" width="${VB.w}" height="${VB.h}" fill="${P.paper}"/>
     ${bloques}
     ${reservasSvg}
-    ${perimeter}${vLines}${hLines}${pending}${nodesSvg}
+    ${perimeter}${vLines}${hLines}${pending}${nodesSvg}${cortesSvg}
   </svg>`
 }
 

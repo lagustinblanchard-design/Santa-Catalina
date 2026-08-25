@@ -1,5 +1,9 @@
+'use client'
+
 import type { ReactElement } from 'react'
+import { useState } from 'react'
 import { SERVICES, type ServiceStatus } from '@/lib/data'
+import AvanceObraPanel from './AvanceObraPanel'
 
 const ICONS: Record<string, ReactElement> = {
   'Agua corriente': <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c-1.5 3-4.5 6-4.5 9a4.5 4.5 0 009 0c0-3-3-6-4.5-9z" />,
@@ -22,40 +26,63 @@ const STATUS_COLOR: Record<ServiceStatus, string> = {
 }
 
 export default function ServicesStatus() {
+  const [selected, setSelected] = useState<string | null>(null)
+  const active = SERVICES.find((s) => s.label === selected) ?? null
+
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-      {SERVICES.map((s) => (
-        <div
-          key={s.label}
-          className="flex flex-col gap-3 rounded-2xl border p-5 transition-transform hover:-translate-y-1"
-          style={{ background: '#fff', borderColor: '#D8D2C7' }}
-        >
-          <div className="flex items-center gap-3">
-            <svg className="h-6 w-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{ color: '#AA1120' }}>
-              {ICONS[s.label]}
-            </svg>
-            <span className="text-sm font-semibold" style={{ color: '#2E2A26' }}>{s.label}</span>
-          </div>
-          {s.status ? (
-            <span
-              className="w-fit rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide"
-              style={{ background: `${STATUS_COLOR[s.status]}1A`, color: STATUS_COLOR[s.status] }}
+    <div onKeyDown={(e) => { if (e.key === 'Escape') setSelected(null) }}>
+      <p className="mb-4 text-sm" style={{ color: '#6B6660' }}>
+        Tocá un servicio para ver el mapa de avance de obra.
+      </p>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        {SERVICES.map((s) => {
+          const isSelected = s.label === selected
+          return (
+            <button
+              key={s.label}
+              type="button"
+              aria-pressed={isSelected}
+              aria-controls="avance-mapa"
+              onClick={() => setSelected((prev) => (prev === s.label ? null : s.label))}
+              className="flex h-full w-full cursor-pointer flex-col gap-3 rounded-2xl border p-5 text-left transition-transform hover:-translate-y-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{
+                background: '#fff',
+                borderColor: isSelected ? '#AA1120' : '#D8D2C7',
+                boxShadow: isSelected ? '0 0 0 3px rgba(170, 17, 32, 0.12)' : undefined,
+                outlineColor: '#AA1120',
+              }}
             >
-              {STATUS_LABEL[s.status]}
-            </span>
-          ) : (
-            <span
-              className="w-fit rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide italic"
-              style={{ background: '#F2ECE0', color: '#B08968' }}
-            >
-              Por confirmar
-            </span>
-          )}
-          {s.detail && (
-            <p className="text-xs" style={{ color: '#6B6660' }}>{s.detail}</p>
-          )}
-        </div>
-      ))}
+              <div className="flex items-center gap-3">
+                <svg className="h-6 w-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{ color: '#AA1120' }}>
+                  {ICONS[s.label]}
+                </svg>
+                <span className="text-sm font-semibold" style={{ color: '#2E2A26' }}>{s.label}</span>
+              </div>
+              {s.status ? (
+                <span
+                  className="w-fit rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide"
+                  style={{ background: `${STATUS_COLOR[s.status]}1A`, color: STATUS_COLOR[s.status] }}
+                >
+                  {STATUS_LABEL[s.status]}
+                </span>
+              ) : (
+                <span
+                  className="w-fit rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide italic"
+                  style={{ background: '#F2ECE0', color: '#B08968' }}
+                >
+                  Por confirmar
+                </span>
+              )}
+              {s.detail && (
+                <p className="text-xs" style={{ color: '#6B6660' }}>{s.detail}</p>
+              )}
+            </button>
+          )
+        })}
+      </div>
+
+      {active && <AvanceObraPanel service={active} onClose={() => setSelected(null)} />}
     </div>
   )
 }
