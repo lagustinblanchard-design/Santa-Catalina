@@ -7,6 +7,7 @@ import FinancingV2 from '@/components/v2/FinancingV2'
 import ZoningV2 from '@/components/v2/ZoningV2'
 import GalleryV2 from '@/components/v2/GalleryV2'
 import ContactFormV2 from '@/components/v2/ContactFormV2'
+import ChatWidgetV2 from '@/components/v2/ChatWidgetV2'
 import WhatsAppButton from '@/components/WhatsAppButton'
 import { LOTS, applyStatuses } from '@/lib/lots'
 import { fetchLotStatuses } from '@/lib/sheets'
@@ -55,7 +56,8 @@ export default async function HomeV2() {
           Precios en USD. Sujeto a disponibilidad. Honorarios no incluidos.
         </p>
       </footer>
-      <WhatsAppButton />
+      <WhatsAppButton isRaised />
+      <ChatWidgetV2 />
     </>
   )
 }
