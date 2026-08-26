@@ -18,6 +18,10 @@ export const metadata = {
   robots: { index: false, follow: true },
 }
 
+// Disponibilidad de lotes: siempre en vivo, sin caché de página ni de datos
+// (mismo fix que app/page.tsx y app/mapa-3d/page.tsx).
+export const dynamic = 'force-dynamic'
+
 export default async function HomeV2() {
   let lots = LOTS
   try {
