@@ -16,6 +16,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import Link from 'next/link'
 import { motion, AnimatePresence } from 'motion/react'
 import { DeckGL } from '@deck.gl/react'
 import type { DeckGLRef } from '@deck.gl/react'
@@ -49,17 +50,17 @@ function centroid(c: [number, number, number, number]): [number, number] {
 const LOTS_GEO = GEO.lots as unknown as Record<string, [number, number, number, number]>
 
 // ---------- Estilos ----------
-// Vocabulario tipográfico de /v2 (Fase 5.2): Cinzel para títulos/números, Josefin en
-// caja alta para microetiquetas. Cinzel/Josefin cargan en app/layout.tsx (raíz) — /mapa-3d
-// es ruta hermana de app/v2/, no hija, así que necesitaba subir las fuentes ahí primero.
-const CINZEL = "var(--font-cinzel), 'Cinzel', serif"
-const JOSEFIN = "var(--font-josefin), 'Josefin Sans', sans-serif"
+// Tipografía del recorrido 3D: Helvetica Bold en todo el chrome de overlay (títulos,
+// microetiquetas, botones) — reemplaza el par Cinzel/Josefin heredado de /v2 a pedido
+// del owner. Es system font (sin @next/font de por medio), así que no hay costo de carga.
+const HELVETICA = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
 // Chip de filtro/toggle en el vocabulario de v2: bordes rectos, hairline de 1px, único
 // acento #FF1200 — reemplaza el rounded-full + bg-black/40 heredado de v1.
 function chipStyle(active: boolean): React.CSSProperties {
   return {
-    fontFamily: JOSEFIN,
+    fontFamily: HELVETICA,
+    fontWeight: 700,
     fontSize: '0.65rem',
     letterSpacing: '0.1em',
     textTransform: 'uppercase',
@@ -732,31 +733,41 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
         style={{ boxShadow: 'inset 0 0 200px 50px rgba(60,30,20,0.42)' }}
       />
 
-      {/* Título + filtros (arriba izq.) — sólo en modo libre */}
-      {mode === 'free' && (
-        <div className="pointer-events-none absolute left-4 top-4 z-10 flex max-w-[calc(100%-2rem)] flex-col gap-3">
-          <div
-            className="pointer-events-auto px-4 py-3 text-white backdrop-blur-md"
-            style={{ background: 'rgba(12,12,12,0.72)', border: '1px solid rgba(255,255,255,0.12)' }}
-          >
-            <p style={{ fontFamily: JOSEFIN, fontSize: '0.6rem', letterSpacing: '0.3em', color: '#FF1200', textTransform: 'uppercase' }}>
-              Loteo en 3D
-            </p>
-            <p style={{ fontFamily: CINZEL, fontSize: '1.15rem', fontWeight: 700, lineHeight: 1.15, marginTop: '0.2rem' }}>
-              Barrio Santa Catalina
-            </p>
-          </div>
-          <div className="pointer-events-auto flex flex-wrap gap-2">
-            <button onClick={() => setFilter('ALL')} style={chipStyle(filter === 'ALL')}>
-              Todos <span style={{ opacity: 0.7 }} className="tabular-nums">{lots.length}</span>
-            </button>
-            {STATUSES.filter((s) => counts[s] > 0).map((s) => (
-              <button key={s} onClick={() => setFilter((p) => (p === s ? 'ALL' : s))} style={chipStyle(filter === s)} className="flex items-center gap-1.5">
-                <span className="inline-block h-2 w-2" style={{ backgroundColor: STATUS_HEX[s] }} />
-                {STATUS_LABELS[s]} <span style={{ opacity: 0.7 }} className="tabular-nums">{counts[s]}</span>
-              </button>
-            ))}
-          </div>
+      {/* Volver al sitio + título/filtros (arriba izq.). El botón de volver queda montado en
+          todos los modos salvo 'reel' (esa vista es sólo para la captura automática con
+          Playwright — ver el useEffect de ?reel=1 más arriba — y debe quedar limpia de UI).
+          z-40 para quedar por encima de la portada (z-30), así también se puede salir desde ahí. */}
+      {mode !== 'reel' && (
+        <div className="pointer-events-none absolute left-4 top-4 z-40 flex max-w-[calc(100%-2rem)] flex-col gap-3">
+          <Link href="/" className="pointer-events-auto w-fit" style={chipStyle(false)}>
+            ← Volver al sitio
+          </Link>
+          {mode === 'free' && (
+            <>
+              <div
+                className="pointer-events-auto px-4 py-3 text-white backdrop-blur-md"
+                style={{ background: 'rgba(12,12,12,0.72)', border: '1px solid rgba(255,255,255,0.12)' }}
+              >
+                <p style={{ fontFamily: HELVETICA, fontWeight: 700, fontSize: '0.6rem', letterSpacing: '0.3em', color: '#FF1200', textTransform: 'uppercase' }}>
+                  Loteo en 3D
+                </p>
+                <p style={{ fontFamily: HELVETICA, fontSize: '1.15rem', fontWeight: 700, lineHeight: 1.15, marginTop: '0.2rem' }}>
+                  Barrio Santa Catalina
+                </p>
+              </div>
+              <div className="pointer-events-auto flex flex-wrap gap-2">
+                <button onClick={() => setFilter('ALL')} style={chipStyle(filter === 'ALL')}>
+                  Todos <span style={{ opacity: 0.7 }} className="tabular-nums">{lots.length}</span>
+                </button>
+                {STATUSES.filter((s) => counts[s] > 0).map((s) => (
+                  <button key={s} onClick={() => setFilter((p) => (p === s ? 'ALL' : s))} style={chipStyle(filter === s)} className="flex items-center gap-1.5">
+                    <span className="inline-block h-2 w-2" style={{ backgroundColor: STATUS_HEX[s] }} />
+                    {STATUS_LABELS[s]} <span style={{ opacity: 0.7 }} className="tabular-nums">{counts[s]}</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       )}
 
@@ -807,11 +818,11 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
                 exit={{ opacity: 0, transform: 'translateY(-12px)' }}
                 transition={{ duration: DURATION.panel, ease: EASE_OUT }}
               >
-                <p style={{ fontFamily: CINZEL, fontSize: '1.35rem', fontWeight: 700, color: '#fff' }}>
+                <p style={{ fontFamily: HELVETICA, fontSize: '1.35rem', fontWeight: 700, color: '#fff' }}>
                   {activeWaypoints[tourStep].title}
                 </p>
                 {activeWaypoints[tourStep].sub && (
-                  <p style={{ fontFamily: JOSEFIN, fontSize: '0.8rem', color: 'rgba(255,255,255,0.75)', marginTop: '0.25rem' }}>
+                  <p style={{ fontFamily: HELVETICA, fontWeight: 700, fontSize: '0.8rem', color: 'rgba(255,255,255,0.75)', marginTop: '0.25rem' }}>
                     {activeWaypoints[tourStep].sub}
                   </p>
                 )}
@@ -849,22 +860,22 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-paye.png" alt="Payé" className="mb-6 h-16 w-auto drop-shadow-2xl" />
-          <p style={{ fontFamily: JOSEFIN, fontSize: '0.7rem', letterSpacing: '0.3em', color: '#FF1200', textTransform: 'uppercase' }}>
+          <p style={{ fontFamily: HELVETICA, fontWeight: 700, fontSize: '0.7rem', letterSpacing: '0.3em', color: '#FF1200', textTransform: 'uppercase' }}>
             Recorrido virtual
           </p>
           <h1
             className="mt-2 text-4xl drop-shadow-lg md:text-5xl"
-            style={{ fontFamily: CINZEL, fontWeight: 700, color: '#F5F0EB', textTransform: 'uppercase' }}
+            style={{ fontFamily: HELVETICA, fontWeight: 700, color: '#F5F0EB', textTransform: 'uppercase' }}
           >
             {SITE.name}
           </h1>
-          <p style={{ fontFamily: JOSEFIN, fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)', marginTop: '0.75rem', maxWidth: 420 }}>
+          <p style={{ fontFamily: HELVETICA, fontWeight: 700, fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)', marginTop: '0.75rem', maxWidth: 420 }}>
             Corrientes Capital · 306 lotes · {SITE.stage}
           </p>
           <motion.button
             onClick={startTour}
             className="mt-8 flex items-center gap-2 px-7 py-3 text-white"
-            style={{ fontFamily: JOSEFIN, fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', background: '#FF1200' }}
+            style={{ fontFamily: HELVETICA, fontWeight: 700, fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', background: '#FF1200' }}
             whileHover={{ opacity: 0.85, transition: { duration: DURATION.hover, ease: EASE_OUT } }}
             whileTap={{ scale: 0.97, transition: { duration: DURATION.press, ease: EASE_OUT } }}
           >
@@ -873,7 +884,7 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
           <button
             onClick={skipToFree}
             className="mt-4 underline underline-offset-2 hover:text-white/90"
-            style={{ fontFamily: JOSEFIN, fontSize: '0.7rem', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.6)' }}
+            style={{ fontFamily: HELVETICA, fontWeight: 700, fontSize: '0.7rem', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.6)' }}
           >
             Explorar el mapa directo
           </button>
@@ -885,10 +896,10 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
         <div className="absolute bottom-4 left-4 z-10 w-64 overflow-hidden" style={{ background: '#111', border: '1px solid #1a1a1a' }}>
           <div className="flex items-center justify-between px-4 py-3" style={{ background: STATUS_HEX[selected.status] }}>
             <div>
-              <p style={{ fontFamily: JOSEFIN, fontSize: '0.6rem', letterSpacing: '0.15em', color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase' }}>
+              <p style={{ fontFamily: HELVETICA, fontWeight: 700, fontSize: '0.6rem', letterSpacing: '0.15em', color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase' }}>
                 Manzana {selected.block} · Lote {selected.lot}
               </p>
-              <p style={{ fontFamily: CINZEL, fontSize: '0.9rem', fontWeight: 700, color: '#fff' }}>{STATUS_LABELS[selected.status]}</p>
+              <p style={{ fontFamily: HELVETICA, fontSize: '0.9rem', fontWeight: 700, color: '#fff' }}>{STATUS_LABELS[selected.status]}</p>
             </div>
             <button onClick={() => setSelected(null)} style={{ color: 'rgba(255,255,255,0.8)' }} aria-label="Cerrar">
               ✕
@@ -897,18 +908,18 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
           <div className="flex flex-col gap-2 px-4 py-3">
             <div className="flex gap-2">
               <div className="flex-1 px-3 py-2" style={{ background: '#0C0C0C' }}>
-                <p style={{ fontFamily: JOSEFIN, fontSize: '0.55rem', letterSpacing: '0.1em', color: '#888', textTransform: 'uppercase' }}>Medidas</p>
-                <p style={{ fontFamily: CINZEL, fontSize: '0.85rem', fontWeight: 600, color: '#F5F0EB' }}>{selected.dims} m</p>
+                <p style={{ fontFamily: HELVETICA, fontWeight: 700, fontSize: '0.55rem', letterSpacing: '0.1em', color: '#888', textTransform: 'uppercase' }}>Medidas</p>
+                <p style={{ fontFamily: HELVETICA, fontSize: '0.85rem', fontWeight: 700, color: '#F5F0EB' }}>{selected.dims} m</p>
               </div>
               <div className="flex-1 px-3 py-2" style={{ background: '#0C0C0C' }}>
-                <p style={{ fontFamily: JOSEFIN, fontSize: '0.55rem', letterSpacing: '0.1em', color: '#888', textTransform: 'uppercase' }}>Superficie</p>
-                <p style={{ fontFamily: CINZEL, fontSize: '0.85rem', fontWeight: 600, color: '#F5F0EB' }}>{selected.sqm} m²</p>
+                <p style={{ fontFamily: HELVETICA, fontWeight: 700, fontSize: '0.55rem', letterSpacing: '0.1em', color: '#888', textTransform: 'uppercase' }}>Superficie</p>
+                <p style={{ fontFamily: HELVETICA, fontSize: '0.85rem', fontWeight: 700, color: '#F5F0EB' }}>{selected.sqm} m²</p>
               </div>
             </div>
             {selected.status === 'DISPONIBLE' && selected.price && (
               <div className="px-3 py-2" style={{ border: '1px solid rgba(255,18,0,0.3)', background: 'rgba(255,18,0,0.08)' }}>
-                <p style={{ fontFamily: JOSEFIN, fontSize: '0.55rem', letterSpacing: '0.1em', color: '#888', textTransform: 'uppercase' }}>Precio contado</p>
-                <p style={{ fontFamily: CINZEL, fontSize: '1.3rem', fontWeight: 700, color: '#FF1200' }}>
+                <p style={{ fontFamily: HELVETICA, fontWeight: 700, fontSize: '0.55rem', letterSpacing: '0.1em', color: '#888', textTransform: 'uppercase' }}>Precio contado</p>
+                <p style={{ fontFamily: HELVETICA, fontSize: '1.3rem', fontWeight: 700, color: '#FF1200' }}>
                   USD {selected.price.toLocaleString('es-AR')}
                 </p>
               </div>
@@ -921,7 +932,7 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block py-2 text-center"
-                style={{ fontFamily: JOSEFIN, fontSize: '0.7rem', letterSpacing: '0.1em', textTransform: 'uppercase', background: '#FF1200', color: '#fff' }}
+                style={{ fontFamily: HELVETICA, fontWeight: 700, fontSize: '0.7rem', letterSpacing: '0.1em', textTransform: 'uppercase', background: '#FF1200', color: '#fff' }}
               >
                 Consultar por WhatsApp →
               </a>
