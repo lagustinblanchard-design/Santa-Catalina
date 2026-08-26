@@ -9,7 +9,7 @@ export const SITE = {
   // 14 manzanas numeradas + las 2 reservas municipales, que también
   // cuentan como manzana (confirmado por el owner).
   totalBlocks: 16,
-  WA_NUMBER: '+5493794000000', // ← REEMPLAZAR con número real
+  WA_NUMBER: '+5493794778546',
   WA_MESSAGE: 'Hola, me interesa información sobre Santa Catalina.',
   CONTACT_EMAIL: 'paye@remax.com.ar',
 }
