@@ -151,7 +151,7 @@ export default function Financing() {
 
         {/* Notarial costs */}
         <div className="mt-10 rounded-3xl p-8 shadow-sm" style={{ background: '#fff', border: '1px solid #D8D2C7' }}>
-          <h3 className="mb-6 text-xl font-bold" style={{ color: '#2E2A26' }}>Costos adicionales</h3>
+          <h3 className="mb-6 text-xl font-bold" style={{ color: '#2E2A26' }}>Costos adicionales estimados</h3>
           <div className="grid gap-4 sm:grid-cols-3">
             {/* Sólo se muestran los costos ya confirmados — los que siguen en null en
                 NOTARIAL_COSTS (lib/data.ts) no se publican como "Por confirmar". */}

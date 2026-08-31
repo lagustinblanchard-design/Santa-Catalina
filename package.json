@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "plano:pdf": "node scripts/plano-pdf/build.mjs"
   },
   "dependencies": {
     "@botpress/webchat": "^5.5.1",

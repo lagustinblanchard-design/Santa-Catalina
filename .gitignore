@@ -47,3 +47,7 @@ dist
 .venv
 
 .vercel
+
+# scratch / tool metadata (disposable, not project code)
+.tmp/
+.claude/

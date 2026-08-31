@@ -100,14 +100,32 @@ export default function ProjectInfo() {
                   </tr>
                 </thead>
                 <tbody>
-                  {Object.entries(LOT_TYPES).map(([key, lot], i) => (
-                    <tr key={key} style={{ background: i % 2 === 0 ? '#fff' : '#F2ECE0', borderTop: '1px solid #D8D2C7' }}>
-                      <td className="px-6 py-4 font-medium" style={{ color: '#2E2A26' }}>{lot.label}</td>
-                      <td className="px-6 py-4" style={{ color: '#6B6660' }}>{lot.dims}</td>
-                      <td className="px-6 py-4" style={{ color: '#6B6660' }}>{lot.sqm.toLocaleString('es-AR')} m²</td>
-                      <td className="px-6 py-4" style={{ color: '#6B6660' }}>{lot.use}</td>
-                    </tr>
-                  ))}
+                  {(() => {
+                    // Las dos tipologías Mixto se muestran como una sola fila, con
+                    // sus medidas y superficies listadas — son lotes distintos
+                    // (450 y 466,5 m²), no una sola tipología con dos nombres.
+                    const mixtoKeys = ['15x30', '15.55x30'] as const
+                    const mixto = mixtoKeys.map((key) => LOT_TYPES[key])
+                    const rows = [
+                      ...(Object.entries(LOT_TYPES).filter(([key]) => !mixtoKeys.includes(key as typeof mixtoKeys[number])) as [string, typeof LOT_TYPES[keyof typeof LOT_TYPES]][])
+                        .map(([key, lot]) => ({ key, label: lot.label, dims: lot.dims, sqm: `${lot.sqm.toLocaleString('es-AR')} m²`, use: lot.use })),
+                      {
+                        key: 'mixto',
+                        label: 'Mixto',
+                        dims: mixto.map((lot) => lot.dims).join(' / '),
+                        sqm: mixto.map((lot) => `${lot.sqm.toLocaleString('es-AR')} m²`).join(' / '),
+                        use: mixto[0].use,
+                      },
+                    ]
+                    return rows.map((row, i) => (
+                      <tr key={row.key} style={{ background: i % 2 === 0 ? '#fff' : '#F2ECE0', borderTop: '1px solid #D8D2C7' }}>
+                        <td className="px-6 py-4 font-medium" style={{ color: '#2E2A26' }}>{row.label}</td>
+                        <td className="px-6 py-4" style={{ color: '#6B6660' }}>{row.dims}</td>
+                        <td className="px-6 py-4" style={{ color: '#6B6660' }}>{row.sqm}</td>
+                        <td className="px-6 py-4" style={{ color: '#6B6660' }}>{row.use}</td>
+                      </tr>
+                    ))
+                  })()}
                 </tbody>
               </table>
             </div>

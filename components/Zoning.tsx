@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { ZONING, PERMITTED_USES, PROHIBITED_USES } from '@/lib/data'
 
 export default function Zoning() {
@@ -37,6 +38,19 @@ export default function Zoning() {
               ))}
             </tbody>
           </table>
+        </div>
+
+        <div className="mb-10 overflow-hidden rounded-2xl shadow-sm" style={{ border: '1px solid #D8D2C7' }}>
+          <Image
+            src="/zonificacion-mapa.webp"
+            alt="Mapa de zonificación — Plan de Sector UG2, Plan Especial 2da Etapa de Urbanización"
+            width={2200}
+            height={1556}
+            className="w-full h-auto"
+          />
+          <p className="px-6 py-4 text-xs" style={{ color: '#6B6660', background: '#F2ECE0' }}>
+            Mapa de zonificación — Plan de Sector UG2, Ordenanza N.º 7403.
+          </p>
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2">

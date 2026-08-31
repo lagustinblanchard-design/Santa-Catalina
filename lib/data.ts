@@ -128,7 +128,7 @@ export const FINANCING_36: Partial<Record<LotSize, {
 export const NOTARIAL_COSTS: Array<{ concept: string; value: string | null }> = [
   { concept: 'Honorarios escribanía',    value: '$645.000 pesos' },
   { concept: 'Impuesto de sellos',        value: '1% (calculado al dólar oficial)' },
-  { concept: 'Honorarios inmobiliarios',  value: '3% en dólares (no incluido en precio)' },
+  { concept: 'Honorarios inmobiliarios',  value: '3% sobre monto de operación' },
 ]
 
 // Fuente: Ordenanza N.º 7403 (09/11/2023) — "Plan de Sector 2, Áreas Residenciales
@@ -205,6 +205,27 @@ export const STATUS_COLORS: Record<LotStatus, string> = {
   VENDIDO:           'bg-red-100 text-red-800 border-red-300',
   FIDEICOMISO:       'bg-purple-100 text-purple-800 border-purple-300',
   NO_COMERCIALIZABLE: 'bg-gray-100 text-gray-500 border-gray-300',
+}
+
+// Paleta para el PDF imprimible (scripts/plano-pdf/). Los hex son los mismos que
+// usa el SVG de components/InteractiveLotMap.tsx.
+//
+// La trama no es decorativa: en escala de grises los cinco `fill` caen dentro de una
+// banda del 6% (luminancias 224,6 / 232,5 / 217,6 / 224,2 / 231,0), o sea que
+// impresos en blanco y negro son indistinguibles entre sí. La trama es la única
+// señal que sobrevive, y se dibuja con `stroke`, que sí está bien separado.
+export type LotHatch = 'none' | 'diag45' | 'cross' | 'diag135' | 'vert90'
+
+export const STATUS_PRINT: Record<LotStatus, {
+  fill: string; stroke: string; hatch: LotHatch; abbr: string
+}> = {
+  // Sin trama a propósito: el vacío se lee más rápido que cualquier patrón, y es el
+  // estado que el cliente busca primero.
+  DISPONIBLE:        { fill: '#bbf7d0', stroke: '#16a34a', hatch: 'none',    abbr: 'DISP.' },
+  RESERVADO:         { fill: '#fef08a', stroke: '#ca8a04', hatch: 'diag45',  abbr: 'RES.' },
+  VENDIDO:           { fill: '#fecaca', stroke: '#dc2626', hatch: 'cross',   abbr: 'VEND.' },
+  FIDEICOMISO:       { fill: '#e9d5ff', stroke: '#9333ea', hatch: 'diag135', abbr: 'AC. PRIV.' },
+  NO_COMERCIALIZABLE:{ fill: '#e5e7eb', stroke: '#9ca3af', hatch: 'vert90',  abbr: 'N/C' },
 }
 
 // Nota: estos datos son de referencia estática.
