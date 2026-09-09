@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { Montserrat, Cinzel, Josefin_Sans } from 'next/font/google'
 import { SITE } from '@/lib/data'
+import { SITE_URL } from '@/lib/site-url'
+import CookieBanner from '@/components/CookieBanner'
 import './globals.css'
 
 const montserrat = Montserrat({
@@ -26,13 +28,6 @@ const josefin = Josefin_Sans({
   display: 'swap',
 })
 
-// Preferí NEXT_PUBLIC_SITE_URL en Vercel (dominio custom estable) una vez confirmado.
-// VERCEL_URL lo inyecta Vercel automáticamente en cada deploy (preview o producción) —
-// sin eso, las URLs de Open Graph salen relativas y WhatsApp/Telegram no muestran imagen.
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ??
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
-
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: `${SITE.name} — ${SITE.stage} | RE/MAX PAYÉ`,
@@ -51,7 +46,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" className={`h-full ${montserrat.variable} ${cinzel.variable} ${josefin.variable}`}>
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        {children}
+        <CookieBanner />
+      </body>
     </html>
   )
 }
