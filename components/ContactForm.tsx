@@ -40,7 +40,7 @@ export default function ContactForm() {
 
   if (sent) {
     return (
-      <section id="contacto" className="py-20" style={{ background: '#F2ECE0' }}>
+      <section id="contacto" className="py-20 scroll-mt-20" style={{ background: '#F2ECE0' }}>
         <div className="mx-auto max-w-lg px-6 text-center">
           <div className="rounded-3xl p-12" style={{ border: '1px solid #D8D2C7', background: '#fff' }}>
             <div className="mb-4 flex justify-center">
@@ -64,7 +64,7 @@ export default function ContactForm() {
   }
 
   return (
-    <section id="contacto" className="py-20" style={{ background: '#F2ECE0' }}>
+    <section id="contacto" className="py-20 scroll-mt-20" style={{ background: '#F2ECE0' }}>
       <div className="mx-auto max-w-6xl px-6">
         <AnimateIn>
           <div className="mb-12 text-center">

@@ -142,7 +142,7 @@ export default function PriceCalculator() {
   }
 
   return (
-    <section id="precios" className="py-20" style={{ background: '#fff' }}>
+    <section id="precios" className="py-20 scroll-mt-20" style={{ background: '#fff' }}>
       <div className="mx-auto max-w-6xl px-6">
         <div className="mb-12 text-center">
           <span className="mb-3 inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest text-white" style={{ backgroundColor: '#AA1120' }}>

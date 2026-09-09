@@ -9,6 +9,7 @@ import GalleryV2 from '@/components/v2/GalleryV2'
 import ContactFormV2 from '@/components/v2/ContactFormV2'
 import ChatWidgetV2 from '@/components/v2/ChatWidgetV2'
 import WhatsAppButton from '@/components/WhatsAppButton'
+import Link from 'next/link'
 import { LOTS, applyStatuses } from '@/lib/lots'
 import { fetchLotStatuses } from '@/lib/sheets'
 
@@ -56,7 +57,12 @@ export default async function HomeV2() {
         <p style={{ color: '#333', fontSize: '0.65rem' }}>
           Predios Santa Catalina — Segunda Preventa · Ord. N.º 7403
         </p>
-        <p style={{ color: '#222', fontSize: '0.6rem', marginTop: '1rem' }}>
+        <p style={{ color: '#444', fontSize: '0.65rem', marginTop: '1rem' }}>
+          <Link href="/privacidad" style={{ color: '#444', textDecoration: 'underline' }}>Política de privacidad</Link>
+          {' · '}
+          <Link href="/terminos" style={{ color: '#444', textDecoration: 'underline' }}>Términos y condiciones</Link>
+        </p>
+        <p style={{ color: '#222', fontSize: '0.6rem', marginTop: '0.75rem' }}>
           Precios en USD. Sujeto a disponibilidad. Honorarios no incluidos.
         </p>
       </footer>

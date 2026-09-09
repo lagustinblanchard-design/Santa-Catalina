@@ -12,7 +12,7 @@ function fmt(n: number, currency: 'USD' | 'ARS' = 'USD') {
 
 export default function Financing() {
   return (
-    <section id="financiacion" className="py-20" style={{ background: '#F2ECE0' }}>
+    <section id="financiacion" className="py-20 scroll-mt-20" style={{ background: '#F2ECE0' }}>
       <div className="mx-auto max-w-6xl px-6">
         <AnimateIn>
           <div className="mb-12 text-center">

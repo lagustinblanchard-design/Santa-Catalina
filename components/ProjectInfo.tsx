@@ -9,7 +9,7 @@ import DeedInfo from './project/DeedInfo'
 
 export default function ProjectInfo() {
   return (
-    <section id="proyecto" className="py-20" style={{ background: '#F2ECE0' }}>
+    <section id="proyecto" className="py-20 scroll-mt-20" style={{ background: '#F2ECE0' }}>
       <div className="mx-auto max-w-6xl px-6">
 
         <AnimateIn>

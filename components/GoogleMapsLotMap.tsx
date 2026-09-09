@@ -209,7 +209,7 @@ export default function GoogleMapsLotMap({ lots }: { lots: Lot[] }) {
   }, [])
 
   return (
-    <section id="lotes" className="bg-gray-50 py-20">
+    <section id="lotes" className="bg-gray-50 py-20 scroll-mt-20">
       <div className="mx-auto max-w-6xl px-6">
 
         <div className="mb-10 text-center">
