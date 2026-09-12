@@ -1,9 +1,23 @@
 'use client'
 
-import { useEffect, useState, type PointerEvent } from 'react'
+import { useEffect, useState, type PointerEvent, type ReactElement } from 'react'
 import { motion, useMotionTemplate, useMotionValue, useReducedMotion, useSpring, useTransform } from 'motion/react'
 import type { V3Banner, V3SectionKey } from '@/lib/v3-banners'
 import { DURATION, EASE_OUT, press, pressTransition } from '@/lib/motion'
+
+// Un ícono de trazo por tarjeta — mismo lenguaje que ServicesStatus.tsx — para
+// que el número grande no quede sin contexto visual de qué mide.
+const ICONS: Record<V3SectionKey, ReactElement> = {
+  proyecto: <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />,
+  lotes: (
+    <>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+      <circle cx="12" cy="11" r="3" strokeLinecap="round" strokeLinejoin="round" />
+    </>
+  ),
+  precios: <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />,
+  normativa: <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2M5 21h2m5-18v18m4-14h.01M9 7h.01M9 11h.01M15 11h.01M9 15h.01M15 15h.01" />,
+}
 
 const TILT_MAX = 6
 // Sin sobrepaso perceptible: la gramática del proyecto es revelado y barrido,
@@ -112,19 +126,39 @@ export default function SectionCard({
         />
       )}
 
-      {/* Numeral fantasma — profundidad, recortado por el overflow-hidden */}
-      <span
+      {/* Ícono fantasma — profundidad, recortado por el overflow-hidden. Antes
+          era el numeral de banner.index; el ícono lo reemplaza como marca de
+          agua para que la identidad visual de la tarjeta sea el ícono, no el
+          número (el "01 · " del kicker se mantiene). */}
+      <svg
         aria-hidden
-        className="pointer-events-none absolute -bottom-8 -right-1 z-0 font-black leading-none"
-        style={{ fontSize: '9rem', color: 'rgba(242,236,224,0.06)' }}
+        className="pointer-events-none absolute -bottom-8 -right-8 z-0"
+        style={{ width: '11rem', height: '11rem', color: 'rgba(242,236,224,0.06)' }}
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth={0.75}
       >
-        {banner.index}
-      </span>
+        {ICONS[banner.key]}
+      </svg>
 
       <div className="relative z-10 flex h-full flex-col">
-        <p className="text-[11px] font-bold uppercase tracking-[0.2em]">
-          <span style={{ color: '#FF4230' }}>{banner.index}</span>
-          <span style={{ color: 'rgba(242,236,224,0.55)' }}> · {banner.title}</span>
+        <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em]">
+          <svg
+            aria-hidden
+            className="h-4 w-4 flex-shrink-0 sm:h-[18px] sm:w-[18px]"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={1.5}
+            style={{ color: 'rgba(242,236,224,0.55)' }}
+          >
+            {ICONS[banner.key]}
+          </svg>
+          <span>
+            <span style={{ color: '#FF4230' }}>{banner.index}</span>
+            <span style={{ color: 'rgba(242,236,224,0.55)' }}> · {banner.title}</span>
+          </span>
         </p>
 
         <p className="mt-auto pt-6 font-black text-white" style={{ fontSize: 'clamp(2rem, 4.5vw, 3.25rem)', lineHeight: 1 }}>
