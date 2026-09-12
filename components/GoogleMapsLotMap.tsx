@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
+import { useInView } from 'motion/react'
 import Link from 'next/link'
 import { setOptions, importLibrary } from '@googlemaps/js-api-loader'
 import type { ReactElement } from 'react'
@@ -59,6 +60,7 @@ const RESERVES = [
 ]
 
 export default function GoogleMapsLotMap({ lots }: { lots: Lot[] }) {
+  const sectionRef = useRef<HTMLElement>(null)
   const mapRef    = useRef<HTMLDivElement>(null)
   const mapObj    = useRef<google.maps.Map | null>(null)
   const polygons  = useRef<Map<string, google.maps.Polygon>>(new Map())
@@ -73,8 +75,15 @@ export default function GoogleMapsLotMap({ lots }: { lots: Lot[] }) {
     STATUSES.map(s => [s, lots.filter(l => l.status === s).length])
   ) as Record<LotStatus, number>
 
+  // Carga diferida: esta sección vive tanto en `/` como en `/v4` (con un
+  // sticky de 7 pantallas encima), y antes se cargaban 306 google.maps.Polygon
+  // apenas hidrataba la página, aunque el usuario estuviera en el Hero.
+  // Margen grande para que ya esté lista cuando el scroll la alcance.
+  const sectionInView = useInView(sectionRef, { margin: '600px 0px 600px 0px' })
+
   // Init Google Maps
   useEffect(() => {
+    if (!sectionInView) return
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
     if (!apiKey || apiKey === 'TU_API_KEY_AQUI') {
       setError('Falta la API key de Google Maps en .env.local')
@@ -82,7 +91,7 @@ export default function GoogleMapsLotMap({ lots }: { lots: Lot[] }) {
     }
     setOptions({ key: apiKey, v: 'weekly' })
     importLibrary('maps').then(() => setLoaded(true)).catch(() => setError('No se pudo cargar Google Maps'))
-  }, [])
+  }, [sectionInView])
 
   // Build map + polygons once loaded
   useEffect(() => {
@@ -209,7 +218,7 @@ export default function GoogleMapsLotMap({ lots }: { lots: Lot[] }) {
   }, [])
 
   return (
-    <section id="lotes" className="bg-gray-50 py-20 scroll-mt-20">
+    <section id="lotes" ref={sectionRef} className="bg-gray-50 py-20 scroll-mt-20">
       <div className="mx-auto max-w-6xl px-6">
 
         <div className="mb-10 text-center">

@@ -6,9 +6,9 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      // /v2, /v3 y /mapa-preview ya van noindex vía metadata (rediseños en curso / vista
+      // /v2, /v3, /v4 y /mapa-preview ya van noindex vía metadata (rediseños en curso / vista
       // interna) — reforzado acá para que ni se rastreen.
-      disallow: ['/v2', '/v3', '/mapa-preview', '/api'],
+      disallow: ['/v2', '/v3', '/v4', '/mapa-preview', '/api'],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,
   }

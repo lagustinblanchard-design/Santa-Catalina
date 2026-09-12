@@ -1,0 +1,125 @@
+{
+  "generatedAt": "2026-09-12T00:36:30.836Z",
+  "frames": [
+    {
+      "id": "campo",
+      "kicker": "Antes",
+      "title": "Acá no había nada.",
+      "body": "Campo abierto sobre el eje de expansión de Corrientes.",
+      "isReal": false,
+      "lqip": "data:image/webp;base64,UklGRm4AAABXRUJQVlA4IGIAAAAwBACdASoYAA4APu1kqk4ppaQiMAgBMB2JQBWABDwFpNEsi2b9StJ3vIgA/Tmd32ha1tLmG6Phdd9oXJ1psNf+xXIwNQ4aDR8i3afKAk41qfQuGEiKQryxBPy/IguJ1fSAAA==",
+      "sizes": [
+        {
+          "w": 2560,
+          "h": 1440,
+          "suffix": ""
+        },
+        {
+          "w": 1280,
+          "h": 720,
+          "suffix": "-m"
+        }
+      ]
+    },
+    {
+      "id": "suelo",
+      "kicker": "Obra",
+      "title": "Primero se mueve la tierra.",
+      "body": "Nivelación y apertura de traza.",
+      "isReal": false,
+      "lqip": "data:image/webp;base64,UklGRnAAAABXRUJQVlA4IGQAAADQAwCdASoYAA4APu1iqk4ppaQiMAgBMB2JZQCdAArRAf1zOC1TY4AA9h6L1TY8eIFdvfDa2kO2a8GuwTQcsfma1zubI3e6V9j+0LFdcfQ0v7oYYgFmCSGdO/T5VpvcmTXUeAAA",
+      "sizes": [
+        {
+          "w": 2560,
+          "h": 1440,
+          "suffix": ""
+        },
+        {
+          "w": 1280,
+          "h": 720,
+          "suffix": "-m"
+        }
+      ]
+    },
+    {
+      "id": "redes",
+      "kicker": "Redes",
+      "title": "Lo que no se ve es lo que más cuesta.",
+      "body": "Agua y cloaca: hoy, 90% ejecutadas.",
+      "isReal": false,
+      "lqip": "data:image/webp;base64,UklGRowAAABXRUJQVlA4IIAAAACQBACdASoYAA4APu1iqU2ppaOiMAgBMB2JYwCdMoAC+1c/qJczXbW4oejOQ4AA9h6MkP++FjdPCPNSrBzNKqeMG/GuUCTcAj+N2pq0JB+h3GlddxHgkNBHl4QhuV3Kss4p/GYtVJ9SalSW44+2XluKZTdmpTtXbMC3A+xxXhREAA==",
+      "sizes": [
+        {
+          "w": 2560,
+          "h": 1440,
+          "suffix": ""
+        },
+        {
+          "w": 1280,
+          "h": 720,
+          "suffix": "-m"
+        }
+      ]
+    },
+    {
+      "id": "cordon",
+      "kicker": "Vial",
+      "title": "Cordón cuneta.",
+      "body": "8 de las 16 manzanas ya lo tienen.",
+      "isReal": false,
+      "lqip": "data:image/webp;base64,UklGRm4AAABXRUJQVlA4IGIAAAAQBACdASoYAA4APu1iqk2ppaQiMAgBMB2JYwCdMoACMy0i6v0VknhAiAD2HovbHbkG3lhjeOUli+mV7TY9xHg8Qyr/8Qe936ZXkd6zbjMGqUxNfIyw6RJTZ02044lUCoAAAA==",
+      "sizes": [
+        {
+          "w": 2560,
+          "h": 1440,
+          "suffix": ""
+        },
+        {
+          "w": 1280,
+          "h": 720,
+          "suffix": "-m"
+        }
+      ]
+    },
+    {
+      "id": "ripio",
+      "kicker": "Calles",
+      "title": "Se puede entrar en auto.",
+      "body": "Apertura y ripio en ejecución, sector oeste.",
+      "isReal": false,
+      "lqip": "data:image/webp;base64,UklGRnIAAABXRUJQVlA4IGYAAADwAwCdASoYAA4APu1iqU2ppaQiMAgBMB2JYwCdMoACMy19aEwVGYdgAPYel0UX803di4/B+MGF6GTKHFQz/N2xU6bwOukFt3p8pUa/VPewQa6hZsvrFjqMKqOgC3jRLNrW+XzxcAA=",
+      "sizes": [
+        {
+          "w": 2560,
+          "h": 1440,
+          "suffix": ""
+        },
+        {
+          "w": 1280,
+          "h": 720,
+          "suffix": "-m"
+        }
+      ]
+    },
+    {
+      "id": "hoy",
+      "kicker": "Hoy — 29/07/2026",
+      "title": "Esto no es un render.",
+      "body": "Vuelo de dron propio, georreferenciado. De acá para abajo, todo lo que veas está proyectado.",
+      "isReal": true,
+      "lqip": "data:image/webp;base64,UklGRswAAABXRUJQVlA4WAoAAAAQAAAAFwAADQAAQUxQSBcAAAABD6AQQADE37nRiIgYDGBE/4MAAAAAAABWUDggjgAAAHAEAJ0BKhgADgA+7WKpTamlo6IwCAEwHYljAMKBjKjOAl2f3e1STPwWWnUAAP4/8vEoVuVdRHhSlqPPEopmWmNIXmi9J5dKgGcXgdLtMZV54KHF2M3rv5Dm5KxYS5XdkEmXpaPrLJNjdxy+p45jcAHsQzBPG8r2DbE5M/bvUrlLSX9NYD4evaPMVX1gAAA=",
+      "sizes": [
+        {
+          "w": 2560,
+          "h": 1440,
+          "suffix": ""
+        },
+        {
+          "w": 1280,
+          "h": 720,
+          "suffix": "-m"
+        }
+      ]
+    }
+  ]
+}

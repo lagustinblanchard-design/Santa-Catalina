@@ -2,9 +2,10 @@
 
 /**
  * Showpiece 3D del loteo Santa Catalina.
- * deck.gl standalone sobre satelital de Esri (gratis, sin API key ni Map ID de Google).
- * Reutiliza el georreferenciado ya calibrado (svgToLatLng) y lot_geometry.json.
- * Los dúplex futuros se enchufan como modelos glTF en MODELS (ScenegraphLayer) — hoy vacío.
+ * El canvas (deck.gl + cámara imperativa) vive en components/lot-scene/LotScene.tsx —
+ * este archivo es sólo el "chrome": portada, tour guiado, filtros, ficha de lote,
+ * atribución. Ver components/lot-scene/ para capas/geometría/constantes compartidas
+ * con el driver de scroll de /v4 (mismos datos, misma calibración, un solo lugar).
  *
  * Terreno fotorrealista (malla de dron): hook dormido hasta tener una captura real.
  * Ver plan `para-el-terreno-fotorrealista-tranquil-newell.md`. Cuando exista el asset en
@@ -18,36 +19,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'motion/react'
-import { DeckGL } from '@deck.gl/react'
-import type { DeckGLRef } from '@deck.gl/react'
-import { MapView, LightingEffect, AmbientLight, DirectionalLight, FlyToInterpolator, LinearInterpolator } from '@deck.gl/core'
 import type { MapViewState } from '@deck.gl/core'
-import { PolygonLayer, BitmapLayer, TextLayer } from '@deck.gl/layers'
-import { TileLayer, Tile3DLayer } from '@deck.gl/geo-layers'
-import { ScenegraphLayer } from '@deck.gl/mesh-layers'
-import { CesiumIonLoader } from '@loaders.gl/3d-tiles'
 import { type Lot } from '@/lib/lots'
 import { STATUS_LABELS, SITE, PROJECT_PHASES, SURROUNDINGS, type LotStatus } from '@/lib/data'
-import GEO from '@/lib/lot_geometry.json'
-import { ORTHO_URL, ORTHO_BOUNDS } from '@/lib/ortho'
-import { svgToLngLat } from '@/lib/geo/calibration'
-import { FeatherExtension } from '@/lib/geo/feather-extension'
 import { EASE_OUT, DURATION } from '@/lib/motion'
-
-const featherExtension = new FeatherExtension()
-
-// ---------- Georreferenciado (ver lib/geo/calibration.ts) ----------
-
-function rectToPolygon(c: [number, number, number, number]): [number, number][] {
-  const [x0, y0, x1, y1] = c
-  return [svgToLngLat(x0, y0), svgToLngLat(x1, y0), svgToLngLat(x1, y1), svgToLngLat(x0, y1)]
-}
-
-function centroid(c: [number, number, number, number]): [number, number] {
-  return svgToLngLat((c[0] + c[2]) / 2, (c[1] + c[3]) / 2)
-}
-
-const LOTS_GEO = GEO.lots as unknown as Record<string, [number, number, number, number]>
+import LotScene, { type LotSceneHandle, type LotFeature } from '@/components/lot-scene/LotScene'
+import { STATUS_HEX, HAS_TERRAIN_MESH } from '@/components/lot-scene/constants'
+import { ROTATE_DEG_PER_SEC, HOLD_MS } from '@/components/lot-scene/camera'
+import { buildFeatures } from '@/components/lot-scene/geometry'
 
 // ---------- Estilos ----------
 // Tipografía del recorrido 3D: Helvetica Bold en todo el chrome de overlay (títulos,
@@ -74,49 +53,7 @@ function chipStyle(active: boolean): React.CSSProperties {
   }
 }
 
-const STATUS_RGB: Record<LotStatus, [number, number, number]> = {
-  DISPONIBLE: [22, 163, 74],
-  RESERVADO: [202, 138, 4],
-  VENDIDO: [220, 38, 38],
-  FIDEICOMISO: [147, 51, 234],
-  NO_COMERCIALIZABLE: [156, 163, 175],
-}
-const STATUS_HEX: Record<LotStatus, string> = {
-  DISPONIBLE: '#16a34a',
-  RESERVADO: '#ca8a04',
-  VENDIDO: '#dc2626',
-  FIDEICOMISO: '#9333ea',
-  NO_COMERCIALIZABLE: '#9ca3af',
-}
-const STATUS_ELEV: Record<LotStatus, number> = {
-  DISPONIBLE: 4,
-  RESERVADO: 3,
-  VENDIDO: 2,
-  FIDEICOMISO: 2,
-  NO_COMERCIALIZABLE: 1.5,
-}
 const STATUSES = Object.keys(STATUS_LABELS) as LotStatus[]
-
-const RESERVES: { name: string; coords: [number, number, number, number] }[] = [
-  { name: 'Reserva Municipal 1', coords: [537.7, 1447.2, 879.9, 1592.4] },
-  { name: 'Reserva Municipal 2', coords: [153.5, 1446.5, 489.7, 1591.7] },
-]
-
-// ---------- Terreno fotorrealista (malla de dron, vía Cesium ion) ----------
-// Dormido hasta que exista la captura real. Con las env vars vacías, HAS_TERRAIN_MESH
-// es false y todo lo demás en este archivo se comporta exactamente igual que hoy.
-const ION_ASSET_ID = process.env.NEXT_PUBLIC_CESIUM_ION_ASSET_ID
-const ION_TOKEN = process.env.NEXT_PUBLIC_CESIUM_ION_TOKEN
-const HAS_TERRAIN_MESH = Boolean(ION_ASSET_ID && ION_TOKEN)
-// Offset de cota para asentar los lotes sobre la malla real (Corrientes es muy plano;
-// alcanza con una constante — afinar a ojo cuando la malla esté cargada).
-const TERRAIN_BASE_ELEV = Number(process.env.NEXT_PUBLIC_TERRAIN_BASE_ELEV ?? 0)
-
-// ---------- Dúplex futuros (se completa cuando lleguen los modelos ~2 meses) ----------
-// Cada entrada posiciona un .glb sobre un lote. Ejemplo:
-//   { lotId: 'M8-L14', url: '/modelos/duplex-a.glb', heading: 90, tipologia: 'Dúplex 3 amb.' }
-type DuplexModel = { lotId: string; url: string; heading?: number; sizeScale?: number; tipologia?: string }
-const MODELS: DuplexModel[] = []
 
 // ---------- Vista ----------
 // zoom/pitch recalibrados contra la huella real del ortomosaico (788 x 492 m): a mayor
@@ -144,63 +81,7 @@ const START_VIEW_STATE = {
   bearing: 40,
 }
 
-const INTRO_DURATION_MS = 4200
 const IDLE_MS = 3200 // sin interacción → retoma la rotación automática
-const ROTATE_DEG_PER_SEC = 2.4 // vuelta completa cada ~150s
-const LABEL_MIN_ZOOM = 16.4 // etiquetas de lote sólo al acercarse
-const HOLD_MS = 400 // margen entre el fin de un vuelo y el próximo — ver startHoldDrift
-// ~11m de margen a esta latitud — separa "misma posición, sólo cambia zoom/pitch/bearing"
-// de un salto real de centro, para elegir el interpolador (ver isSameCenter/flyCamera).
-const SAME_CENTER_EPS = 0.0001
-
-// Ease-in-out cúbico — misma familia que --ease-in-out de app/globals.css (fuerte,
-// simétrico). deck.gl pide una función (t)=>number para transitionEasing, no un string
-// CSS, así que no se reusa el token literal, pero el carácter del movimiento es el mismo.
-function easeInOutCubic(t: number): number {
-  return t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2
-}
-
-function isSameCenter(a: MapViewState, b: MapViewState): boolean {
-  return Math.abs(a.longitude - b.longitude) < SAME_CENTER_EPS && Math.abs(a.latitude - b.latitude) < SAME_CENTER_EPS
-}
-
-// FlyToInterpolator (arco de Van Wijk) sólo tiene sentido cuando el centro se traslada
-// — sin traslación, el arco degenera. Las paradas que comparten centro (sólo cambia
-// zoom/pitch/bearing) usan LinearInterpolator con un ease-in-out cúbico: desplazamiento
-// deliberado, no un vuelo. El easing sólo se aplica ahí — sobre FlyToInterpolator alteraría
-// su propia curva interna (curve/speed), ya afinada.
-function flyTo(view: MapViewState, durationMs = INTRO_DURATION_MS, translates = true): MapViewState {
-  return {
-    ...view,
-    transitionDuration: durationMs,
-    transitionInterpolator: translates
-      ? new FlyToInterpolator({ curve: 1.3, speed: 0.9 })
-      : new LinearInterpolator({ transitionProps: ['zoom', 'pitch', 'bearing'] }),
-    transitionEasing: translates ? undefined : easeInOutCubic,
-  }
-}
-
-// Iluminación "hora dorada": luz cálida rasante + relleno frío tenue + sombra proyectada.
-const lightingEffect = new LightingEffect({
-  ambient: new AmbientLight({ color: [180, 200, 230], intensity: 0.55 }),
-  sun: new DirectionalLight({
-    color: [255, 190, 130],
-    intensity: 1.0,
-    direction: [-0.75, -0.55, -0.25],
-  }),
-})
-
-type LotFeature = {
-  id: string
-  block: number
-  lot: number
-  dims: string
-  sqm: number
-  status: LotStatus
-  price?: number
-  polygon: [number, number][]
-  position: [number, number]
-}
 
 type Waypoint = {
   view: MapViewState
@@ -244,18 +125,10 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
   const [tourStep, setTourStep] = useState(0)
   const [filter, setFilter] = useState<LotStatus | 'ALL'>('ALL')
   const [selected, setSelected] = useState<LotFeature | null>(null)
-  // La posición de cámara ya NO vive en React state — antes cada tick de rotación
-  // automática y cada frame de vuelo llamaba setViewState, re-renderizando este
-  // componente (10 bloques de overlay) hasta 60 veces por segundo. Ahora vive en un ref
-  // y se empuja al canvas con deck.setProps directo (ver flyCamera/viewStateRef más abajo);
-  // React sólo se entera cuando algo derivado (zoomedIn, la bruma) cruza un umbral.
-  const [zoomedIn, setZoomedIn] = useState(false)
-  const [hazeOpacity, setHazeOpacity] = useState(0)
   // Toggle entre el mapa de disponibilidad (satélite Esri) y la malla real del dron.
   // Sin malla cargada (HAS_TERRAIN_MESH=false) queda fijo en 'disponibilidad'.
   const [photoMode, setPhotoMode] = useState<'disponibilidad' | 'fotorrealista'>('disponibilidad')
-  const deckRef = useRef<DeckGLRef>(null)
-  const viewStateRef = useRef<MapViewState>(START_VIEW_STATE)
+  const sceneRef = useRef<LotSceneHandle>(null)
 
   // Estado de la cámara cinemática vive en refs (no re-render) para que el loop de
   // rAF pueda leerlo cada frame sin reiniciarse cuando cambian filter/selected/mode.
@@ -269,55 +142,18 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
     modeRef.current = mode
   }, [mode])
 
-  // prefers-reduced-motion: antes ni el comentario de globals.css (falso — ese bloque CSS
-  // nunca llega a esta cámara) ni el código lo respetaban. reducedMotionRef espeja el
-  // estado para que el loop de rotación y flyCamera lo lean sin re-suscribirse.
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+  // prefers-reduced-motion: sólo gatea el loop de rotación automática de acá abajo — el
+  // vuelo cinemático (flyTo) y el drift entre paradas (startHoldDrift) ya lo respetan
+  // adentro de LotScene, sin que este componente tenga que saberlo.
   const reducedMotionRef = useRef(false)
-  useEffect(() => {
-    reducedMotionRef.current = prefersReducedMotion
-  }, [prefersReducedMotion])
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setPrefersReducedMotion(mq.matches)
-    const handler = () => setPrefersReducedMotion(mq.matches)
+    reducedMotionRef.current = mq.matches
+    const handler = () => { reducedMotionRef.current = mq.matches }
     mq.addEventListener('change', handler)
     return () => mq.removeEventListener('change', handler)
   }, [])
-
-  // Mueve la cámara de forma imperativa (sin setState): actualiza el ref y lo empuja al
-  // canvas con deck.setProps. Con reduced-motion, salta directo al encuadre final sin
-  // vuelo — ni FlyToInterpolator ni LinearInterpolator entran en el objeto.
-  const flyCamera = (view: MapViewState, durationMs?: number) => {
-    const target = reducedMotionRef.current
-      ? { ...view }
-      : flyTo(view, durationMs, !isSameCenter(view, viewStateRef.current))
-    viewStateRef.current = target
-    deckRef.current?.deck?.setProps({ viewState: target })
-  }
-
-  // Sostiene un drift lento de bearing durante el margen entre paradas del tour (HOLD_MS)
-  // para que la cámara nunca se congele en seco — sin tocar ninguna duración calibrada
-  // del guion. Con reduced-motion no hace nada (la cámara se queda quieta, como corresponde).
-  const startHoldDrift = (ms: number): (() => void) => {
-    if (reducedMotionRef.current) return () => {}
-    let raf = 0
-    const startT = performance.now()
-    let lastT = startT
-    const tick = (t: number) => {
-      const dt = (t - lastT) / 1000
-      lastT = t
-      viewStateRef.current = {
-        ...viewStateRef.current,
-        bearing: ((viewStateRef.current.bearing ?? 0) + ROTATE_DEG_PER_SEC * dt) % 360,
-      }
-      deckRef.current?.deck?.setProps({ viewState: viewStateRef.current })
-      if (t - startT < ms) raf = requestAnimationFrame(tick)
-    }
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-  }
 
   useEffect(() => setMounted(true), [])
 
@@ -334,26 +170,6 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const features = useMemo<LotFeature[]>(() => {
-    return lots
-      .map((l) => {
-        const rect = LOTS_GEO[l.id]
-        if (!rect) return null
-        return {
-          id: l.id,
-          block: l.block,
-          lot: l.lot,
-          dims: l.dims,
-          sqm: l.sqm,
-          status: l.status,
-          price: l.price,
-          polygon: rectToPolygon(rect),
-          position: centroid(rect),
-        } as LotFeature
-      })
-      .filter(Boolean) as LotFeature[]
-  }, [lots])
-
   const counts = useMemo(
     () =>
       Object.fromEntries(STATUSES.map((s) => [s, lots.filter((l) => l.status === s).length])) as Record<
@@ -363,15 +179,16 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
     [lots],
   )
 
-  // Centroide de los lotes disponibles → hacia dónde apunta el waypoint de "disponibles".
+  // Sólo para apuntar el waypoint de "disponibles" — LotScene calcula sus propios
+  // features para dibujar; acá alcanza con el centroide de los disponibles.
   const dispCenter = useMemo<[number, number]>(() => {
-    const d = features.filter((f) => f.status === 'DISPONIBLE')
+    const d = buildFeatures(lots).filter((f) => f.status === 'DISPONIBLE')
     if (!d.length) return [INITIAL_VIEW_STATE.longitude, INITIAL_VIEW_STATE.latitude]
     return [
       d.reduce((a, f) => a + f.position[0], 0) / d.length,
       d.reduce((a, f) => a + f.position[1], 0) / d.length,
     ]
-  }, [features])
+  }, [lots])
 
   // Guion del recorrido guiado: cada parada = encuadre + texto + (opcional) spotlight de estado.
   const WAYPOINTS = useMemo<Waypoint[]>(() => {
@@ -407,7 +224,7 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
 
   // Driver del tour/reel: al entrar en modo tour o reel, secuencia TODAS las paradas con un
   // único timer encadenado (no un efecto por paso — eso se re-ejecutaba y adelantaba el tiempo).
-  // La cámara (flyCamera) y el drift del hold corren fuera de React — sólo setTourStep()
+  // La cámara (sceneRef.flyTo) y el drift del hold corren fuera de React — sólo setTourStep()
   // re-renderiza, y sólo para cambiar el caption/los dots, no la posición de la cámara.
   useEffect(() => {
     if (mode !== 'tour' && mode !== 'reel') return
@@ -423,12 +240,12 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
       }
       const wp = activeWaypoints[step]
       setTourStep(step)
-      flyCamera(wp.view, wp.duration)
+      sceneRef.current?.flyTo(wp.view, wp.duration)
       timer = setTimeout(() => {
         if (cancelled) return
         // Hold: la cámara ya llegó, pero no se congela en seco — deriva suave hasta que
         // arranca la próxima parada. Ninguna duración del guion cambia por esto.
-        stopDrift = startHoldDrift(HOLD_MS)
+        stopDrift = sceneRef.current?.startHoldDrift(HOLD_MS) ?? null
         timer = setTimeout(() => {
           stopDrift?.()
           stopDrift = null
@@ -445,8 +262,8 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
   }, [mode, activeWaypoints])
 
   // Rotación automática: lenta en modo libre (tras inactividad, sin lote abierto) y en la
-  // portada. Corre fuera de React (deck.setProps directo vía viewStateRef) — antes esto
-  // renderizaba el árbol completo de overlays hasta 60 veces por segundo mientras rotaba.
+  // portada. Corre fuera de React (sceneRef.setViewState directo) — antes esto renderizaba
+  // el árbol completo de overlays hasta 60 veces por segundo mientras rotaba.
   useEffect(() => {
     let raf = 0
     let lastT = performance.now()
@@ -458,11 +275,13 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
       const rotate = !reducedMotionRef.current && (m === 'portada' || (m === 'free' && idle && !selectedRef.current))
       if (rotate) {
         const speed = m === 'portada' ? 1.1 : ROTATE_DEG_PER_SEC
-        viewStateRef.current = {
-          ...viewStateRef.current,
-          bearing: ((viewStateRef.current.bearing ?? 0) + speed * dt) % 360,
+        const current = sceneRef.current?.getViewState()
+        if (current) {
+          sceneRef.current?.setViewState({
+            ...current,
+            bearing: ((current.bearing ?? 0) + speed * dt) % 360,
+          })
         }
-        deckRef.current?.deck?.setProps({ viewState: viewStateRef.current })
       }
       raf = requestAnimationFrame(tick)
     }
@@ -479,183 +298,14 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
     setMode('free')
     setTourStep(0)
     lastInteractionRef.current = Date.now()
-    flyCamera(INITIAL_VIEW_STATE, 1600)
+    sceneRef.current?.flyTo(INITIAL_VIEW_STATE, 1600)
   }
 
   // Durante el tour/reel el "spotlight" del waypoint manda; fuera manda el filtro del usuario.
   const spotlight: LotStatus | null =
     mode === 'tour' || mode === 'reel' ? activeWaypoints[tourStep]?.spotlight ?? null : null
-  const isDim = (s: LotStatus) => (spotlight ? s !== spotlight : filter !== 'ALL' && s !== filter)
 
   const showMesh = HAS_TERRAIN_MESH && photoMode === 'fotorrealista'
-
-  // hazeOpacity ya viene derivado y throttleado del pitch en onViewStateChange (ver
-  // <DeckGL> más abajo) — no se recalcula acá para no depender de un viewState en React.
-
-  const layers = useMemo(() => {
-    // Satélite Esri — capa base en modo disponibilidad, o fallback si no hay malla real todavía.
-    const base = showMesh
-      ? null
-      : new TileLayer({
-          id: 'esri-satellite',
-          data: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-          minZoom: 0,
-          // 19 dejaba huecos rosa/malva en el horizonte lejano (se veía el <div> de cielo
-          // detrás): @deck.gl/geo-layers, con pitch <= 60, fija la selección de tiles en
-          // maxZoom sin permitir tiles más gruesos de respaldo (tile-2d-traversal.js:146),
-          // así que el horizonte necesitaría una cantidad impracticable de tiles z19.
-          // 17 ≈ 1,06 m/px, casi 1:1 con la vista por defecto (zoom 17,1) — nítido donde se
-          // ve, y 16x menos tiles que z19 para cubrir el horizonte (verificar con capturas
-          // que el hueco no vuelva; si vuelve, ver SHOWROOM-3D-NOTES.md para el plan B).
-          maxZoom: 17,
-          tileSize: 256,
-          renderSubLayers: (props) => {
-            // @ts-expect-error tile.bbox existe en modo geoespacial
-            const { west, south, east, north } = props.tile.bbox
-            return new BitmapLayer(props, {
-              data: undefined,
-              image: props.data,
-              bounds: [west, south, east, north],
-              // El satélite es el entorno, no el producto: algo desaturado para no competir
-              // con el ortomosaico del dron. Antes llevaba tintColor cálido — pero tintColor
-              // sólo puede oscurecer (es multiplicativo) y el satélite YA es ~2x más oscuro
-              // que el dron (medido: dron RGB 103,102,85 vs Esri 52,64,34) — el tinte
-              // agrandaba la diferencia en vez de cerrarla, así que se sacó. 0.8 y 0.6 fueron
-              // demasiado agresivos para cuando el satélite era "piso de maqueta" bajo
-              // volúmenes 3D (revertidos — ver SHOWROOM-3D-NOTES.md); sin esos volúmenes el
-              // entorno puede leerse más natural. 0.35 sigue apagándolo sin perder textura.
-              desaturate: 0.35,
-            })
-          },
-        })
-
-    // Ortomosaico real del vuelo (ver lib/ortho.ts) — se dibuja sobre el satélite Esri,
-    // pero sólo cubre su propia huella de vuelo; fuera de ese rectángulo se sigue viendo
-    // Esri debajo. No tiene sentido combinarlo con la malla 3D (esa vista ya trae su
-    // propia textura real), así que se apaga en modo 'fotorrealista'.
-    const orthophoto = showMesh
-      ? null
-      : new BitmapLayer({
-          id: 'ortho-dron',
-          image: ORTHO_URL,
-          bounds: ORTHO_BOUNDS,
-          pickable: false,
-          // Difumina el borde para que no corte duro contra el satélite de abajo
-          // (ver lib/geo/feather-extension.ts).
-          extensions: [featherExtension],
-        })
-
-    // Malla real capturada con dron (Cesium ion) — sólo si hay asset configurado y el
-    // usuario prendió el toggle "Vista fotorrealista". Dormida (null) en el resto de los casos.
-    const terrainMesh = showMesh
-      ? new Tile3DLayer({
-          id: 'terreno-dron',
-          data: `https://assets.ion.cesium.com/${ION_ASSET_ID}/tileset.json`,
-          loaders: [CesiumIonLoader],
-          loadOptions: { 'cesium-ion': { accessToken: ION_TOKEN } },
-          pickable: false,
-        })
-      : null
-
-    const reserves = new PolygonLayer<{ name: string; coords: [number, number, number, number] }>({
-      id: 'reservas',
-      data: RESERVES,
-      getPolygon: (d) => rectToPolygon(d.coords),
-      extruded: true,
-      getElevation: 1,
-      getFillColor: [34, 197, 94, 90],
-      getLineColor: [21, 128, 61, 200],
-      getLineWidth: 1,
-      lineWidthMinPixels: 1,
-      stroked: true,
-      pickable: false,
-    })
-
-    const lotsLayer = new PolygonLayer<LotFeature>({
-      id: 'lotes',
-      data: features,
-      extruded: true,
-      wireframe: true,
-      getPolygon: (d) => d.polygon,
-      // Sobre la malla real, sumar el offset de terreno para que los lotes se asienten
-      // en el piso capturado en vez de flotar/enterrarse en el plano lat/lng.
-      getElevation: (d) => STATUS_ELEV[d.status] + (showMesh ? TERRAIN_BASE_ELEV : 0),
-      getFillColor: (d) => {
-        const [r, g, b] = STATUS_RGB[d.status]
-        // Antes 210 (82% opaco): el color de estado tapaba casi del todo el ortomosaico
-        // de abajo, así que el loteo se leía como una calcomanía sólida contra el resto
-        // de Corrientes sin overlay. Más translúcido deja ver la textura real debajo del
-        // color y suaviza ese contraste. En vista fotorrealista sigue aún más translúcido
-        // para no tapar la malla.
-        const base = showMesh ? 90 : 130
-        return [r, g, b, isDim(d.status) ? (showMesh ? 15 : 40) : base]
-      },
-      getLineColor: (d) => {
-        const [r, g, b] = STATUS_RGB[d.status]
-        return [r, g, b, isDim(d.status) ? 60 : 255]
-      },
-      getLineWidth: 0.5,
-      lineWidthMinPixels: 1,
-      stroked: true,
-      material: { ambient: 0.45, diffuse: 0.85, shininess: 24, specularColor: [255, 224, 190] },
-      pickable: true,
-      autoHighlight: true,
-      highlightColor: [255, 255, 255, 120],
-      onClick: (info) => {
-        if (modeRef.current !== 'free') return
-        const f = info.object as LotFeature | undefined
-        if (f && !isDim(f.status)) setSelected(f)
-      },
-      updateTriggers: {
-        getFillColor: [filter, spotlight, showMesh],
-        getLineColor: [filter, spotlight],
-        getElevation: [showMesh],
-      },
-      // Cuando cambia el filtro o el spotlight del tour, el color salta de un frame al
-      // otro. Transición de atributo nativa de deck.gl (GPU, sin costo de React) — 600ms,
-      // el mismo orden de magnitud que --duration-panel/--duration-reveal del resto del sitio.
-      transitions: { getFillColor: 600, getLineColor: 600 },
-    })
-
-    // Dúplex glTF — solo si hay modelos cargados
-    const modelLayers = MODELS.length
-      ? [
-          new ScenegraphLayer<DuplexModel>({
-            id: 'duplex-models',
-            data: MODELS.filter((m) => LOTS_GEO[m.lotId]),
-            scenegraph: (d: DuplexModel) => d.url,
-            getPosition: (d: DuplexModel) => centroid(LOTS_GEO[d.lotId]),
-            getOrientation: (d: DuplexModel) => [0, d.heading ?? 0, 90],
-            sizeScale: 1,
-            _lighting: 'pbr',
-            pickable: true,
-          }),
-        ]
-      : []
-
-    // Etiquetas de lote — sólo al acercarse (evita empapelar el plano en la vista general).
-    const labels = zoomedIn
-      ? [
-          new TextLayer<LotFeature>({
-            id: 'lot-labels',
-            data: features.filter((f) => !isDim(f.status)),
-            getPosition: (d) => [...d.position, STATUS_ELEV[d.status] + 1.2] as [number, number, number],
-            getText: (d) => String(d.lot),
-            getSize: 11,
-            sizeUnits: 'pixels',
-            getColor: [255, 255, 255, 230],
-            background: true,
-            getBackgroundColor: [20, 20, 20, 110],
-            backgroundPadding: [3, 1],
-            getPixelOffset: [0, -2],
-            billboard: true,
-            pickable: false,
-          }),
-        ]
-      : []
-
-    return [base, orthophoto, terrainMesh, reserves, lotsLayer, ...modelLayers, ...labels].filter(Boolean)
-  }, [features, filter, zoomedIn, spotlight, showMesh])
 
   if (!mounted) {
     return (
@@ -667,33 +317,19 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
 
   return (
     <div className="relative h-full w-full overflow-hidden">
-      {/* Cielo de hora dorada, detrás del canvas (se ve en bordes y mientras cargan los tiles) */}
-      <div
-        className="absolute inset-0"
-        style={{ background: 'linear-gradient(180deg, #2b2440 0%, #7a4a5a 45%, #d98a5f 75%, #f0b878 100%)' }}
-      />
-
-      {/* Bruma atmosférica: crece con el pitch, que es cuando más plano lejano entra al
-          cuadro (en cenital no hay horizonte, así que no molesta). */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          opacity: hazeOpacity,
-          background:
-            'linear-gradient(180deg,' +
-            ' rgba(240,184,120,0.60) 0%,' +
-            ' rgba(217,138,95,0.30) 16%,' +
-            ' rgba(217,138,95,0.11) 32%,' +
-            ' rgba(217,138,95,0.00) 52%)',
-          transition: 'opacity 400ms ease-out',
-        }}
-      />
-
-      <DeckGL
-        ref={deckRef}
-        views={new MapView({ repeat: true })}
+      <LotScene
+        ref={sceneRef}
+        lots={lots}
         initialViewState={START_VIEW_STATE}
-        onViewStateChange={({ viewState: vs, interactionState }) => {
+        controller={{ dragRotate: true, touchRotate: true, inertia: 300 }}
+        filter={filter}
+        spotlight={spotlight}
+        showMesh={showMesh}
+        onLotClick={(f) => {
+          if (modeRef.current !== 'free') return
+          setSelected(f)
+        }}
+        onViewStateChange={({ interactionState }) => {
           const { isDragging, isPanning, isRotating, isZooming } = interactionState
           if (isDragging || isPanning || isRotating || isZooming) {
             lastInteractionRef.current = Date.now()
@@ -703,34 +339,7 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
               setTourStep(0)
             }
           }
-          viewStateRef.current = vs as MapViewState
-          // Eco manual: una vez que cualquier deck.setProps({viewState}) explícito ocurrió
-          // (tour, reencuadrar, rotación), deck.gl deja de auto-aplicar los cambios de
-          // interacción por su cuenta (sólo lo hace mientras nunca se le pasó viewState
-          // como prop controlada). Repetirlo aquí es gratis cuando no hace falta y
-          // necesario cuando sí — no pasa por React, así que no re-renderiza.
-          deckRef.current?.deck?.setProps({ viewState: vs })
-          setZoomedIn((prev) => {
-            const next = vs.zoom >= LABEL_MIN_ZOOM
-            return prev === next ? prev : next
-          })
-          // Bruma de horizonte, throttleada a pasos de 1/50 (basta para que el ojo no note
-          // la cuantización, y evita recalcular el estado de React en cada frame de vuelo).
-          const nextHaze = Math.round(Math.min(1, Math.max(0, ((vs.pitch ?? 0) - 10) / 45)) * 50) / 50
-          setHazeOpacity((prev) => (prev === nextHaze ? prev : nextHaze))
         }}
-        controller={{ dragRotate: true, touchRotate: true, inertia: 300 }}
-        effects={[lightingEffect]}
-        layers={layers}
-        getCursor={({ isDragging, isHovering }) => (isDragging ? 'grabbing' : isHovering ? 'pointer' : 'grab')}
-        style={{ position: 'absolute', width: '100%', height: '100%' }}
-      />
-
-      {/* Viñeta cinemática (oscurece bordes, foco al centro) — entibiada para no cortar
-          contra la bruma cálida de arriba con un borde frío. */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{ boxShadow: 'inset 0 0 200px 50px rgba(60,30,20,0.42)' }}
       />
 
       {/* Volver al sitio + título/filtros (arriba izq.). El botón de volver queda montado en
@@ -786,7 +395,7 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
           <button
             onClick={() => {
               lastInteractionRef.current = Date.now()
-              flyCamera(INITIAL_VIEW_STATE, 1800)
+              sceneRef.current?.flyTo(INITIAL_VIEW_STATE, 1800)
             }}
             style={chipStyle(false)}
           >
