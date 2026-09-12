@@ -51,3 +51,11 @@ dist
 # scratch / tool metadata (disposable, not project code)
 .tmp/
 .claude/
+
+# material fuente sin derivar — el derivado optimizado que sí se sirve vive
+# en public/timeline/ (ver scripts/timeline/build.mjs)
+/public/higgsfield-renders/
+
+# sin usar todavía por ningún componente
+/public/gallery/timelapse-obra-01.mp4
+/public/gallery/timelapse-obra-01-poster.jpg
