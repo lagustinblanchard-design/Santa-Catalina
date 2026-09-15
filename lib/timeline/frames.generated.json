@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-12T00:36:30.836Z",
+  "generatedAt": "2026-09-15T17:45:47.839Z",
   "frames": [
     {
       "id": "campo",
@@ -107,7 +107,7 @@
       "title": "Esto no es un render.",
       "body": "Vuelo de dron propio, georreferenciado. De acá para abajo, todo lo que veas está proyectado.",
       "isReal": true,
-      "lqip": "data:image/webp;base64,UklGRswAAABXRUJQVlA4WAoAAAAQAAAAFwAADQAAQUxQSBcAAAABD6AQQADE37nRiIgYDGBE/4MAAAAAAABWUDggjgAAAHAEAJ0BKhgADgA+7WKpTamlo6IwCAEwHYljAMKBjKjOAl2f3e1STPwWWnUAAP4/8vEoVuVdRHhSlqPPEopmWmNIXmi9J5dKgGcXgdLtMZV54KHF2M3rv5Dm5KxYS5XdkEmXpaPrLJNjdxy+p45jcAHsQzBPG8r2DbE5M/bvUrlLSX9NYD4evaPMVX1gAAA=",
+      "lqip": "data:image/webp;base64,UklGRsoAAABXRUJQVlA4WAoAAAAQAAAAFwAADQAAQUxQSBwAAAABF6AQQADE37nRiIh4ICQgJP9HiwZE9H8CmDUAVlA4IIgAAADQAwCdASoYAA4APu1iqU2ppaOiMAgBMB2JYwAAGyJXp4jyk0Jf0MAA/nXRIuvYj6Ph72g3xcslmfEhHGyLV5nT2/k9SbOM95vm9DeUYCVSC/Kk3tXe4q0WePDcmk7buOI+pqa+W4Vxb9JYXOPITLZ9ohgdGUNgmtV88HVSXBxXBJ2ldMy03YAA",
       "sizes": [
         {
           "w": 2560,

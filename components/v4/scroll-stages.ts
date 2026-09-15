@@ -4,10 +4,15 @@ import type { MapViewState } from '@deck.gl/core'
 // que este valor esté afinado del todo) para que calce con el recorte del
 // ortomosaico real que usa la etapa "hoy" del sticky: el handoff foto→3D
 // tiene que sentirse como el mismo dibujo, no un salto de cámara.
+//
+// Recalibrado cuando cambió el recorte de "hoy" (scripts/timeline/frames.mjs)
+// de un cruce de calles vacío a una zona con varias manzanas y lotes
+// distinguibles — el centro geográfico del recorte se corrió, así que el
+// punto de partida de la cámara 3D también.
 export const HANDOFF_VIEW: MapViewState = {
-  longitude: -58.8052705,
-  latitude: -27.5297,
-  zoom: 16.75,
+  longitude: -58.8058,
+  latitude: -27.5302,
+  zoom: 16.6,
   pitch: 0,
   bearing: 0,
 }
