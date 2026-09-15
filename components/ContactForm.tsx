@@ -14,7 +14,10 @@ const inputStyle: React.CSSProperties = {
   padding: '0.75rem 1rem',
   color: '#2E2A26',
   outline: 'none',
-  fontSize: '0.875rem',
+  // 16px, no 14px — iOS Safari hace zoom automático en cualquier input con
+  // fuente menor a 16px al enfocarlo, y desmaqueta toda la página. Justo en
+  // el formulario de contacto, que es el de mayor intención de conversión.
+  fontSize: '1rem',
   fontFamily: 'inherit',
   boxSizing: 'border-box',
   transition: 'border-color 0.2s',
@@ -40,9 +43,9 @@ export default function ContactForm() {
 
   if (sent) {
     return (
-      <section id="contacto" className="py-20 scroll-mt-20" style={{ background: '#F2ECE0' }}>
+      <section id="contacto" className="py-14 scroll-mt-20 sm:py-20" style={{ background: '#F2ECE0' }}>
         <div className="mx-auto max-w-lg px-6 text-center">
-          <div className="rounded-3xl p-12" style={{ border: '1px solid #D8D2C7', background: '#fff' }}>
+          <div className="rounded-3xl p-6 sm:p-12" style={{ border: '1px solid #D8D2C7', background: '#fff' }}>
             <div className="mb-4 flex justify-center">
               <svg className="h-14 w-14 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
@@ -52,7 +55,7 @@ export default function ContactForm() {
             <p className="mt-3" style={{ color: '#6B6660' }}>Un asesor de RE/MAX PAYÉ se va a comunicar con vos a la brevedad.</p>
             <button
               onClick={() => setSent(false)}
-              className="mt-6 text-sm underline"
+              className="mt-6 inline-block rounded-lg px-3 py-2.5 text-sm underline"
               style={{ color: '#6B6660' }}
             >
               Enviar otra consulta
@@ -64,19 +67,19 @@ export default function ContactForm() {
   }
 
   return (
-    <section id="contacto" className="py-20 scroll-mt-20" style={{ background: '#F2ECE0' }}>
+    <section id="contacto" className="py-14 scroll-mt-20 sm:py-20" style={{ background: '#F2ECE0' }}>
       <div className="mx-auto max-w-6xl px-6">
         <AnimateIn>
           <div className="mb-12 text-center">
             <span className="mb-3 inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest text-white" style={{ backgroundColor: '#AA1120' }}>
               Contacto
             </span>
-            <h2 className="text-4xl font-black" style={{ color: '#2E2A26' }}>¿Te interesa un lote?</h2>
+            <h2 className="text-3xl font-black sm:text-4xl" style={{ color: '#2E2A26' }}>¿Te interesa un lote?</h2>
             <p className="mt-4" style={{ color: '#6B6660' }}>Completá el formulario y un asesor te va a contactar.</p>
           </div>
         </AnimateIn>
 
-        <div className="grid gap-12 lg:grid-cols-2 max-w-5xl mx-auto">
+        <div className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-2 lg:gap-12">
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
             {[
@@ -139,7 +142,7 @@ export default function ContactForm() {
 
           {/* Contact info */}
           <div className="space-y-4">
-            <div className="rounded-2xl p-6" style={{ background: '#fff', border: '1px solid #D8D2C7' }}>
+            <div className="rounded-2xl p-4 sm:p-6" style={{ background: '#fff', border: '1px solid #D8D2C7' }}>
               <h3 className="mb-4 font-bold" style={{ color: '#2E2A26' }}>RE/MAX PAYÉ</h3>
               <div className="space-y-3 text-sm" style={{ color: '#6B6660' }}>
                 <div>

@@ -8,9 +8,9 @@ export default function SiteFooter() {
       <p className="mt-1" style={{ color: '#D8D2C7' }}>{SITE.name} — {SITE.stage} · Ord. N.º 7403</p>
       <p className="mt-3 text-xs" style={{ color: '#6B6660' }}>Precios en USD. Sujeto a disponibilidad. Honorarios no incluidos.</p>
       <p className="mt-4 text-xs">
-        <Link href="/privacidad" className="underline" style={{ color: '#6B6660' }}>Política de privacidad</Link>
-        <span style={{ color: '#6B6660' }}> · </span>
-        <Link href="/terminos" className="underline" style={{ color: '#6B6660' }}>Términos y condiciones</Link>
+        <Link href="/privacidad" className="inline-block px-2 py-2.5 underline" style={{ color: '#6B6660' }}>Política de privacidad</Link>
+        <span style={{ color: '#6B6660' }}>·</span>
+        <Link href="/terminos" className="inline-block px-2 py-2.5 underline" style={{ color: '#6B6660' }}>Términos y condiciones</Link>
       </p>
     </footer>
   )

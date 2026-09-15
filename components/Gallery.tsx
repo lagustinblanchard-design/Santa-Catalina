@@ -51,7 +51,7 @@ export default function Gallery() {
           <span className="mb-3 inline-block rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-widest text-white/60">
             Galería
           </span>
-          <h2 className="text-4xl font-black text-white mb-6">Fotos del desarrollo</h2>
+          <h2 className="text-3xl font-black text-white mb-6 sm:text-4xl">Fotos del desarrollo</h2>
           <div className="rounded-2xl border border-white/10 bg-white/5 py-20 text-white/40">
             <p className="text-lg font-medium">Fotos de dron próximamente</p>
             <p className="mt-2 text-sm">
@@ -71,7 +71,7 @@ export default function Gallery() {
           <span className="mb-3 inline-block rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-widest text-white/60">
             Galería
           </span>
-          <h2 className="text-4xl font-black text-white">Fotos del desarrollo</h2>
+          <h2 className="text-3xl font-black text-white sm:text-4xl">Fotos del desarrollo</h2>
         </div>
 
         {/* Main media */}

@@ -74,12 +74,12 @@ export default function RendersV4() {
 
         <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm" style={{ color: 'rgba(242,236,224,0.65)' }}>{view.caption}</p>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {VIEWS.map((v) => (
               <button
                 key={v.id}
                 onClick={() => setActive(v.id)}
-                className="rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wider transition-colors"
+                className="rounded-full px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors"
                 style={{
                   background: active === v.id ? '#AA1120' : 'transparent',
                   border: '1px solid rgba(242,236,224,0.3)',

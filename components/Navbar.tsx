@@ -79,9 +79,10 @@ export default function Navbar() {
           </a>
         </div>
 
-        {/* Mobile menu button */}
+        {/* Mobile menu button — p-2.5 + -m-2.5 llevan el target táctil a 44×44
+            (mínimo de Apple) sin mover el ícono ni el layout del resto de la barra. */}
         <button
-          className="md:hidden"
+          className="-m-2.5 p-2.5 md:hidden"
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Menú"
         >

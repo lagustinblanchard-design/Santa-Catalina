@@ -9,9 +9,9 @@ export default function Surroundings() {
         </p>
         <div className="space-y-3">
           {SURROUNDINGS.travelTimes.map(({ label, time }) => (
-            <div key={label} className="flex items-center justify-between">
+            <div key={label} className="flex items-baseline justify-between gap-3">
               <span className="text-sm" style={{ color: '#2E2A26' }}>{label}</span>
-              <span className="text-sm font-bold" style={{ color: '#AA1120' }}>{time}</span>
+              <span className="flex-shrink-0 whitespace-nowrap text-sm font-bold" style={{ color: '#AA1120' }}>{time}</span>
             </div>
           ))}
         </div>
@@ -20,7 +20,7 @@ export default function Surroundings() {
         <p className="mb-4 text-xs font-bold uppercase tracking-widest" style={{ color: '#8A6A47' }}>
           Servicios cercanos
         </p>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {SURROUNDINGS.nearbyServices.map((s) => (
             <div key={s} className="flex items-center gap-2">
               <svg className="h-3.5 w-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} style={{ color: '#16a34a' }}>

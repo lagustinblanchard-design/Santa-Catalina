@@ -218,14 +218,14 @@ export default function GoogleMapsLotMap({ lots }: { lots: Lot[] }) {
   }, [])
 
   return (
-    <section id="lotes" ref={sectionRef} className="bg-gray-50 py-20 scroll-mt-20">
+    <section id="lotes" ref={sectionRef} className="bg-gray-50 py-14 scroll-mt-20 sm:py-20">
       <div className="mx-auto max-w-6xl px-6">
 
         <div className="mb-10 text-center">
           <span className="mb-3 inline-block rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-widest text-white" style={{ backgroundColor: '#FF1200' }}>
             Disponibilidad
           </span>
-          <h2 className="text-4xl font-black text-gray-900">Mapa interactivo del loteo</h2>
+          <h2 className="text-3xl font-black text-gray-900 sm:text-4xl">Mapa interactivo del loteo</h2>
           <p className="mt-3 text-gray-500 text-sm">
             Hacé clic en cada lote para ver su estado y precio
           </p>
@@ -235,7 +235,7 @@ export default function GoogleMapsLotMap({ lots }: { lots: Lot[] }) {
         <div className="mb-6 flex flex-wrap justify-center gap-3">
           <button
             onClick={() => setFilter('ALL')}
-            className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium transition-colors ${
               activeFilter === 'ALL'
                 ? 'border-gray-900 bg-gray-900 text-white'
                 : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
@@ -248,7 +248,7 @@ export default function GoogleMapsLotMap({ lots }: { lots: Lot[] }) {
             <button
               key={s}
               onClick={() => handleFilterClick(s)}
-              className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+              className={`flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium transition-colors ${
                 activeFilter === s
                   ? 'border-gray-700 bg-gray-700 text-white'
                   : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
@@ -271,7 +271,7 @@ export default function GoogleMapsLotMap({ lots }: { lots: Lot[] }) {
           <div className="lg:col-span-3 flex flex-col gap-3">
 
             {/* Layer switcher */}
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {([
                 { id: 'satellite', label: 'Satélite' },
                 { id: 'hybrid',    label: 'Geolocalización' },
@@ -280,7 +280,7 @@ export default function GoogleMapsLotMap({ lots }: { lots: Lot[] }) {
                 <button
                   key={id}
                   onClick={() => handleMapType(id)}
-                  className="rounded-full border px-4 py-1.5 text-xs font-semibold transition-colors"
+                  className="rounded-full border px-4 py-2.5 text-xs font-semibold transition-colors"
                   style={{
                     background:   mapType === id ? '#2E2A26' : '#fff',
                     color:        mapType === id ? '#fff'    : '#2E2A26',
@@ -315,7 +315,7 @@ export default function GoogleMapsLotMap({ lots }: { lots: Lot[] }) {
               <div className="flex flex-wrap gap-2">
                 <Link
                   href="/mapa-3d"
-                  className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold text-white transition-opacity hover:opacity-90"
+                  className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
                   style={{ backgroundColor: '#AA1120' }}
                 >
                   Ver en 3D →
@@ -323,7 +323,7 @@ export default function GoogleMapsLotMap({ lots }: { lots: Lot[] }) {
                 <a
                   href="/Loteo Sta. Catalina.pdf"
                   target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                  className="flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
                 >
                   Ver plano de Mensura
                 </a>
@@ -347,14 +347,14 @@ export default function GoogleMapsLotMap({ lots }: { lots: Lot[] }) {
               <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#8A6A47' }}>Tiempos de viaje</p>
               <div className="space-y-3">
                 {SURROUNDINGS.travelTimes.map(({ label, time }) => (
-                  <div key={label} className="flex items-center justify-between">
+                  <div key={label} className="flex items-baseline justify-between gap-3">
                     <div className="flex items-center gap-2">
                       <svg className="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{ color: '#AA1120' }}>
                         {TRAVEL_ICONS[label]}
                       </svg>
                       <span className="text-sm" style={{ color: '#2E2A26' }}>{label}</span>
                     </div>
-                    <span className="text-sm font-bold" style={{ color: '#AA1120' }}>{time}</span>
+                    <span className="flex-shrink-0 whitespace-nowrap text-sm font-bold" style={{ color: '#AA1120' }}>{time}</span>
                   </div>
                 ))}
               </div>
@@ -363,7 +363,7 @@ export default function GoogleMapsLotMap({ lots }: { lots: Lot[] }) {
             {/* Nearby services */}
             <div className="rounded-2xl border p-5" style={{ background: '#fff', borderColor: '#D8D2C7' }}>
               <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#8A6A47' }}>Servicios cercanos</p>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {SURROUNDINGS.nearbyServices.map(s => (
                   <div key={s} className="flex items-center gap-2">
                     <svg className="h-3.5 w-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} style={{ color: '#16a34a' }}>

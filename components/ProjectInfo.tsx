@@ -2,6 +2,7 @@
 
 import { SITE, LOT_TYPES } from '@/lib/data'
 import AnimateIn from './AnimateIn'
+import ResponsiveTable from './ResponsiveTable'
 import ProjectPhases from './project/ProjectPhases'
 import ServicesStatus from './project/ServicesStatus'
 import Surroundings from './project/Surroundings'
@@ -9,7 +10,7 @@ import DeedInfo from './project/DeedInfo'
 
 export default function ProjectInfo() {
   return (
-    <section id="proyecto" className="py-20 scroll-mt-20" style={{ background: '#F2ECE0' }}>
+    <section id="proyecto" className="py-14 scroll-mt-20 sm:py-20" style={{ background: '#F2ECE0' }}>
       <div className="mx-auto max-w-6xl px-6">
 
         <AnimateIn>
@@ -17,7 +18,7 @@ export default function ProjectInfo() {
             <span className="mb-3 inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest text-white" style={{ backgroundColor: '#AA1120' }}>
               El proyecto
             </span>
-            <h2 className="text-4xl font-black" style={{ color: '#2E2A26' }}>Barrio Santa Catalina</h2>
+            <h2 className="text-3xl font-black sm:text-4xl" style={{ color: '#2E2A26' }}>Barrio Santa Catalina</h2>
             <p className="mt-4 text-lg max-w-2xl mx-auto" style={{ color: '#6B6660', lineHeight: 1.7 }}>
               Loteo residencial y mixto comercializado por{' '}
               <strong style={{ color: '#2E2A26' }}>RE/MAX PAYÉ</strong> en Corrientes Capital.
@@ -34,7 +35,7 @@ export default function ProjectInfo() {
             { label: 'Etapa actual',  value: SITE.stage },
           ].map((item, i) => (
             <AnimateIn key={item.label} delay={i * 0.08}>
-              <div className="rounded-2xl border p-6" style={{ background: '#fff', borderColor: '#D8D2C7' }}>
+              <div className="rounded-2xl border p-4 sm:p-6" style={{ background: '#fff', borderColor: '#D8D2C7' }}>
                 <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: '#8A6A47' }}>{item.label}</p>
                 <p className="text-lg font-bold" style={{ color: '#2E2A26' }}>{item.value}</p>
               </div>
@@ -60,7 +61,7 @@ export default function ProjectInfo() {
 
         {/* Location */}
         <AnimateIn direction="left">
-          <div className="mb-16 rounded-2xl p-8 text-white" style={{ background: '#2E2A26' }}>
+          <div className="mb-16 rounded-2xl p-5 text-white sm:p-8" style={{ background: '#2E2A26' }}>
             <h3 className="mb-3 text-xl font-bold">Ubicación</h3>
             <p style={{ color: '#D8D2C7' }}>{SITE.location}</p>
             <p className="mt-2 text-sm" style={{ color: '#6B6660' }}>
@@ -89,46 +90,35 @@ export default function ProjectInfo() {
         <AnimateIn>
           <div>
             <h3 className="mb-6 text-2xl font-bold" style={{ color: '#2E2A26' }}>Tipologías de lotes</h3>
-            <div className="overflow-x-auto rounded-2xl border" style={{ borderColor: '#D8D2C7' }}>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr style={{ background: '#fff' }}>
-                    <th className="px-6 py-4 text-left font-semibold" style={{ color: '#2E2A26' }}>Tipología</th>
-                    <th className="px-6 py-4 text-left font-semibold" style={{ color: '#2E2A26' }}>Medidas</th>
-                    <th className="px-6 py-4 text-left font-semibold" style={{ color: '#2E2A26' }}>Superficie</th>
-                    <th className="px-6 py-4 text-left font-semibold" style={{ color: '#2E2A26' }}>Uso</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(() => {
-                    // Las dos tipologías Mixto se muestran como una sola fila, con
-                    // sus medidas y superficies listadas — son lotes distintos
-                    // (450 y 466,5 m²), no una sola tipología con dos nombres.
-                    const mixtoKeys = ['15x30', '15.55x30'] as const
-                    const mixto = mixtoKeys.map((key) => LOT_TYPES[key])
-                    const rows = [
-                      ...(Object.entries(LOT_TYPES).filter(([key]) => !mixtoKeys.includes(key as typeof mixtoKeys[number])) as [string, typeof LOT_TYPES[keyof typeof LOT_TYPES]][])
-                        .map(([key, lot]) => ({ key, label: lot.label, dims: lot.dims, sqm: `${lot.sqm.toLocaleString('es-AR')} m²`, use: lot.use })),
-                      {
-                        key: 'mixto',
-                        label: 'Mixto',
-                        dims: mixto.map((lot) => lot.dims).join(' / '),
-                        sqm: mixto.map((lot) => `${lot.sqm.toLocaleString('es-AR')} m²`).join(' / '),
-                        use: mixto[0].use,
-                      },
-                    ]
-                    return rows.map((row, i) => (
-                      <tr key={row.key} style={{ background: i % 2 === 0 ? '#fff' : '#F2ECE0', borderTop: '1px solid #D8D2C7' }}>
-                        <td className="px-6 py-4 font-medium" style={{ color: '#2E2A26' }}>{row.label}</td>
-                        <td className="px-6 py-4" style={{ color: '#6B6660' }}>{row.dims}</td>
-                        <td className="px-6 py-4" style={{ color: '#6B6660' }}>{row.sqm}</td>
-                        <td className="px-6 py-4" style={{ color: '#6B6660' }}>{row.use}</td>
-                      </tr>
-                    ))
-                  })()}
-                </tbody>
-              </table>
-            </div>
+            {(() => {
+              // Las dos tipologías Mixto se muestran como una sola fila, con
+              // sus medidas y superficies listadas — son lotes distintos
+              // (450 y 466,5 m²), no una sola tipología con dos nombres.
+              const mixtoKeys = ['15x30', '15.55x30'] as const
+              const mixto = mixtoKeys.map((key) => LOT_TYPES[key])
+              const rows = [
+                ...(Object.entries(LOT_TYPES).filter(([key]) => !mixtoKeys.includes(key as typeof mixtoKeys[number])) as [string, typeof LOT_TYPES[keyof typeof LOT_TYPES]][])
+                  .map(([key, lot]) => ({ key, label: lot.label, dims: lot.dims, sqm: `${lot.sqm.toLocaleString('es-AR')} m²`, use: lot.use })),
+                {
+                  key: 'mixto',
+                  label: 'Mixto',
+                  dims: mixto.map((lot) => lot.dims).join(' / '),
+                  sqm: mixto.map((lot) => `${lot.sqm.toLocaleString('es-AR')} m²`).join(' / '),
+                  use: mixto[0].use,
+                },
+              ]
+              return (
+                <ResponsiveTable
+                  columns={[
+                    { key: 'label', label: 'Tipología' },
+                    { key: 'dims', label: 'Medidas' },
+                    { key: 'sqm', label: 'Superficie' },
+                    { key: 'use', label: 'Uso' },
+                  ]}
+                  rows={rows.map((r) => ({ key: r.key, cells: r }))}
+                />
+              )
+            })()}
           </div>
         </AnimateIn>
 

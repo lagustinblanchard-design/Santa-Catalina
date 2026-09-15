@@ -1,43 +1,47 @@
 import Image from 'next/image'
+import ResponsiveTable from './ResponsiveTable'
 import { ZONING, PERMITTED_USES, PROHIBITED_USES } from '@/lib/data'
 
 export default function Zoning() {
   return (
-    <section id="zonificacion" className="py-20 scroll-mt-20" style={{ background: '#fff' }}>
+    <section id="zonificacion" className="py-14 scroll-mt-20 sm:py-20" style={{ background: '#fff' }}>
       <div className="mx-auto max-w-6xl px-6">
         <div className="mb-12 text-center">
           <span className="mb-3 inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest text-white" style={{ backgroundColor: '#AA1120' }}>
             Normativa
           </span>
-          <h2 className="text-4xl font-black" style={{ color: '#2E2A26' }}>Zonificación</h2>
+          <h2 className="text-3xl font-black sm:text-4xl" style={{ color: '#2E2A26' }}>Zonificación</h2>
           <p className="mt-4 text-sm" style={{ color: '#6B6660' }}>Ordenanza N.º 7403 — Municipalidad de Corrientes</p>
         </div>
 
-        <div className="overflow-x-auto rounded-2xl shadow-sm mb-10" style={{ border: '1px solid #D8D2C7' }}>
-          <table className="w-full text-sm">
-            <thead>
-              <tr style={{ background: '#2E2A26' }}>
-                {['Zona', 'Sup. mín.', 'Frente mín.', 'Altura máx.', 'FOT máx.', 'FOS máx.'].map(h => (
-                  <th key={h} className="px-6 py-4 text-left font-semibold text-white">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {ZONING.map((zone, i) => (
-                <tr key={zone.zone} style={{ background: i % 2 === 0 ? '#fff' : '#F2ECE0', borderTop: '1px solid #D8D2C7' }}>
-                  <td className="px-6 py-4">
+        <div className="mb-10 overflow-hidden rounded-2xl shadow-sm" style={{ border: '1px solid #D8D2C7' }}>
+          <ResponsiveTable
+            headStyle={{ background: '#2E2A26' }}
+            columns={[
+              { key: 'zone', label: 'Zona' },
+              { key: 'minSqm', label: 'Sup. mín.' },
+              { key: 'minFront', label: 'Frente mín.' },
+              { key: 'maxHeight', label: 'Altura máx.' },
+              { key: 'fot', label: 'FOT máx.' },
+              { key: 'fos', label: 'FOS máx.' },
+            ]}
+            rows={ZONING.map((zone) => ({
+              key: zone.zone,
+              cells: {
+                zone: (
+                  <>
                     <div className="font-bold" style={{ color: '#2E2A26' }}>{zone.zone}</div>
                     <div className="text-xs" style={{ color: '#6B6660' }}>{zone.desc}</div>
-                  </td>
-                  <td className="px-6 py-4" style={{ color: '#2E2A26' }}>{zone.minSqm}</td>
-                  <td className="px-6 py-4" style={{ color: '#2E2A26' }}>{zone.minFront}</td>
-                  <td className="px-6 py-4" style={{ color: '#2E2A26' }}>{zone.maxHeight}</td>
-                  <td className="px-6 py-4 font-semibold" style={{ color: '#2E2A26' }}>{zone.fot}</td>
-                  <td className="px-6 py-4 font-semibold" style={{ color: '#2E2A26' }}>{zone.fos}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </>
+                ),
+                minSqm: zone.minSqm,
+                minFront: zone.minFront,
+                maxHeight: zone.maxHeight,
+                fot: <span className="font-semibold">{zone.fot}</span>,
+                fos: <span className="font-semibold">{zone.fos}</span>,
+              },
+            }))}
+          />
         </div>
 
         <div className="mb-10 overflow-hidden rounded-2xl shadow-sm" style={{ border: '1px solid #D8D2C7' }}>

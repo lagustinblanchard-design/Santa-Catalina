@@ -12,10 +12,13 @@ const MODALITY_LABELS: Record<Modality, string> = {
   '36_usd':   'Financiado 36 cuotas — USD',
 }
 
+// Espacio duro ( ) entre el símbolo de moneda y el número — con un espacio
+// normal, un flex angosto en mobile puede partir la línea justo ahí y dejar el
+// "$" solo arriba y el importe abajo (el bug de la captura del usuario).
 function fmt(n: number, currency: 'USD' | 'ARS' = 'USD') {
   return currency === 'USD'
-    ? `USD ${n.toLocaleString('es-AR')}`
-    : `$ ${n.toLocaleString('es-AR')}`
+    ? `USD ${n.toLocaleString('es-AR')}`
+    : `$ ${n.toLocaleString('es-AR')}`
 }
 
 export default function PriceCalculator() {
@@ -41,9 +44,9 @@ export default function PriceCalculator() {
             <span style={{ color: '#6B6660' }}>Descuento contado</span>
             <span className="font-semibold text-green-700">− {fmt(price.cashUSD * price.discount)}</span>
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <span className="text-lg font-bold" style={{ color: '#2E2A26' }}>Total contado</span>
-            <span className="text-2xl font-black" style={{ color: '#AA1120' }}>{fmt(withDiscount)}</span>
+            <span className="text-xl font-black tabular-nums sm:text-2xl" style={{ color: '#AA1120' }}>{fmt(withDiscount)}</span>
           </div>
         </div>
       )
@@ -68,9 +71,9 @@ export default function PriceCalculator() {
             <span style={{ color: '#6B6660' }}>12 cuotas de</span>
             <span className="font-semibold" style={{ color: '#2E2A26' }}>{fmt(fin12.installmentPesos, 'ARS')}</span>
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <span className="text-lg font-bold" style={{ color: '#2E2A26' }}>Total financiado</span>
-            <span className="text-2xl font-black" style={{ color: '#AA1120' }}>
+            <span className="text-xl font-black tabular-nums sm:text-2xl" style={{ color: '#AA1120' }}>
               {fmt(fin12.downPesos + fin12.installmentPesos * 12, 'ARS')}
             </span>
           </div>
@@ -97,9 +100,9 @@ export default function PriceCalculator() {
             <span style={{ color: '#6B6660' }}>12 cuotas de</span>
             <span className="font-semibold" style={{ color: '#2E2A26' }}>{fmt(fin12.installmentUSD)}</span>
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <span className="text-lg font-bold" style={{ color: '#2E2A26' }}>Total financiado</span>
-            <span className="text-2xl font-black" style={{ color: '#AA1120' }}>
+            <span className="text-xl font-black tabular-nums sm:text-2xl" style={{ color: '#AA1120' }}>
               {fmt(fin12.downUSD + fin12.installmentUSD * 12)}
             </span>
           </div>
@@ -125,9 +128,9 @@ export default function PriceCalculator() {
             <span style={{ color: '#6B6660' }}>36 cuotas de</span>
             <span className="font-semibold" style={{ color: '#2E2A26' }}>{fmt(fin36.installmentUSD)}</span>
           </div>
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <span className="text-lg font-bold" style={{ color: '#2E2A26' }}>Total financiado</span>
-            <span className="text-2xl font-black" style={{ color: '#AA1120' }}>
+            <span className="text-xl font-black tabular-nums sm:text-2xl" style={{ color: '#AA1120' }}>
               {fmt(fin36.downUSD + fin36.installmentUSD * 36)}
             </span>
           </div>
@@ -142,18 +145,18 @@ export default function PriceCalculator() {
   }
 
   return (
-    <section id="precios" className="py-20 scroll-mt-20" style={{ background: '#fff' }}>
+    <section id="precios" className="py-14 scroll-mt-20 sm:py-20" style={{ background: '#fff' }}>
       <div className="mx-auto max-w-6xl px-6">
         <div className="mb-12 text-center">
           <span className="mb-3 inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest text-white" style={{ backgroundColor: '#AA1120' }}>
             Precios
           </span>
-          <h2 className="text-4xl font-black" style={{ color: '#2E2A26' }}>Calculadora de precios</h2>
+          <h2 className="text-3xl font-black sm:text-4xl" style={{ color: '#2E2A26' }}>Calculadora de precios</h2>
           <p className="mt-4" style={{ color: '#6B6660' }}>Seleccioná el tamaño del lote y la modalidad de pago</p>
         </div>
 
         <div className="mx-auto max-w-2xl">
-          <div className="rounded-3xl p-8 shadow-lg" style={{ border: '1px solid #D8D2C7', background: '#fff' }}>
+          <div className="rounded-3xl p-5 shadow-lg sm:p-8" style={{ border: '1px solid #D8D2C7', background: '#fff' }}>
             {/* Lot size selector */}
             <div className="mb-6">
               <label className="mb-3 block text-sm font-bold" style={{ color: '#2E2A26' }}>Tipología de lote</label>

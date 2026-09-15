@@ -28,18 +28,29 @@ export default function Hero() {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const isSlowConnection = conn?.saveData === true || conn?.effectiveType === 'slow-2g' || conn?.effectiveType === '2g' || conn?.effectiveType === '3g'
 
-    // En mobile, con reduced-motion, o con conexión lenta/saveData: el hero se queda
-    // en el poster estático. El <video> nunca descarga los ~5,7 MB.
-    if (!isDesktop || prefersReducedMotion || isSlowConnection) return
+    // Con reduced-motion o con conexión lenta/saveData: el hero se queda en el
+    // poster estático, en cualquier viewport. El ancho de pantalla ya no
+    // bloquea el video (antes sólo cargaba en desktop) — sólo elige cuál de
+    // los dos archivos pedir: el liviano en celular (~1,4 MB), el de
+    // siempre en desktop (~3,8 MB).
+    if (prefersReducedMotion || isSlowConnection) return
 
     const source = document.createElement('source')
-    source.src = '/hero-video.mp4'
+    source.src = isDesktop ? '/hero-video.mp4' : '/hero-video-mobile.mp4'
     source.type = 'video/mp4'
     video.appendChild(source)
     video.load()
-    video.play().catch(() => {
-      // autoplay bloqueado por el navegador — el poster se queda de fondo, sin error visible
-    })
+
+    function attemptPlay() {
+      video?.play().catch(() => {
+        // autoplay bloqueado por el navegador — el poster se queda de fondo, sin error visible
+      })
+    }
+    attemptPlay()
+    // Si el primer play() se rechazó por falta de datos (no por política del
+    // navegador), reintentar una vez cuando el video ya tenga suficiente
+    // buffer — si no, puede quedar pausado para siempre sin ningún rastro.
+    video.addEventListener('canplay', attemptPlay, { once: true })
   }, [])
 
   return (

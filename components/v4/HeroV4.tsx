@@ -35,14 +35,21 @@ export default function HeroV4({ lots }: { lots: Lot[] }) {
     const isDesktop = window.matchMedia('(min-width: 768px)').matches
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const isSlowConnection = conn?.saveData === true || conn?.effectiveType === 'slow-2g' || conn?.effectiveType === '2g' || conn?.effectiveType === '3g'
-    if (!isDesktop || prefersReducedMotion || isSlowConnection) return
+    // El ancho de pantalla ya no bloquea el video (antes sólo cargaba en
+    // desktop) — sólo elige la fuente: liviana en celular (~1,4 MB), la de
+    // siempre en desktop (~3,8 MB). reduced-motion/conexión lenta sí siguen
+    // dejando el poster fijo, en cualquier viewport.
+    if (prefersReducedMotion || isSlowConnection) return
 
     if (!video.querySelector('source')) {
       const source = document.createElement('source')
-      source.src = '/hero-video.mp4'
+      source.src = isDesktop ? '/hero-video.mp4' : '/hero-video-mobile.mp4'
       source.type = 'video/mp4'
       video.appendChild(source)
       video.load()
+      // Si el primer play() (abajo) se rechaza por falta de datos, reintentar
+      // una vez cuando el video ya tenga buffer suficiente.
+      video.addEventListener('canplay', () => { if (heroInView) video.play().catch(() => {}) }, { once: true })
     }
     if (heroInView) video.play().catch(() => {})
     else video.pause()
