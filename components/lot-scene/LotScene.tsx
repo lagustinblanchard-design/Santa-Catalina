@@ -137,7 +137,18 @@ const LotScene = forwardRef<LotSceneHandle, LotSceneProps>(function LotScene(
   }
 
   return (
-    <div className={className ?? 'relative h-full w-full overflow-hidden'}>
+    <div
+      className={className ?? 'relative h-full w-full overflow-hidden'}
+      // deck.gl pone `touch-action: none` en su wrapper interno (.deck-events-root)
+      // para poder decidir él mismo qué hacer con cada gesto — necesario cuando
+      // `controller` maneja pan/zoom por touch (/mapa-3d). Pero con
+      // `controller={false}` (el mapa embebido en el sticky de /v4, que no es
+      // interactivo) ese `none` seguía ahí, así que un swipe vertical sobre el
+      // canvas no scrolleaba la página — sólo funcionaba tocando la angosta
+      // barra de scroll del navegador. La regla de abajo (ver globals.css) lo
+      // habilita de nuevo, sólo cuando no hay controller.
+      data-deck-controller={controller ? 'true' : 'false'}
+    >
       {/* Cielo de hora dorada, detrás del canvas (se ve en bordes y mientras cargan los tiles) */}
       <div
         className="absolute inset-0"
