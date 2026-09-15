@@ -64,3 +64,44 @@ export async function fetchLotStatuses(): Promise<Record<string, LotStatus>> {
   )
   return Object.assign({}, ...results)
 }
+
+// ---------- Chequeo de salud (usado por el cron diario, ver app/api/cron/check-lot-sync) ----------
+// fetchLotStatuses() no distingue "esta manzana no tiene lotes hoy" de "el fetch/parseo
+// falló para esta manzana" — ambos casos devuelven {} y la manzana cae al fallback
+// hardcodeado de lib/lots.ts en silencio. Este chequeo existe para que ESO deje de ser
+// silencioso: si algún día el Sheet cambia de formato o Google tiene una caída, alguien
+// se entera por mail en vez de que un cliente vea disponibilidad vieja.
+export const EXPECTED_TOTAL_LOTS = 306
+
+export type SheetHealthReport = {
+  ok: boolean
+  totalLots: number
+  perBlock: Record<number, number>
+  emptyBlocks: number[]
+  checkedAt: string
+}
+
+export async function checkSheetHealth(): Promise<SheetHealthReport> {
+  const perBlock: Record<number, number> = {}
+  const emptyBlocks: number[] = []
+
+  await Promise.all(
+    Array.from({ length: 14 }, async (_, i) => {
+      const mz = i + 1
+      const statuses = await fetchManzana(mz)
+      const count = Object.keys(statuses).length
+      perBlock[mz] = count
+      if (count === 0) emptyBlocks.push(mz)
+    })
+  )
+
+  const totalLots = Object.values(perBlock).reduce((a, b) => a + b, 0)
+
+  return {
+    ok: emptyBlocks.length === 0 && totalLots === EXPECTED_TOTAL_LOTS,
+    totalLots,
+    perBlock,
+    emptyBlocks,
+    checkedAt: new Date().toISOString(),
+  }
+}
