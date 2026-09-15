@@ -64,3 +64,14 @@ body {
 div[data-deck-controller="false"] .deck-events-root {
   touch-action: pan-y !important;
 }
+
+/* Oculta la barra de scroll horizontal de la fila de filtros de /mapa-3d
+   (LotMap3D.tsx) en celular — el scroll sigue funcionando con el dedo, sólo
+   no se ve la barra nativa del navegador flotando sobre el chip. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

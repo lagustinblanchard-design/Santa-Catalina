@@ -34,8 +34,27 @@ import { buildFeatures } from '@/components/lot-scene/geometry'
 // del owner. Es system font (sin @next/font de por medio), así que no hay costo de carga.
 const HELVETICA = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
-// Chip de filtro/toggle en el vocabulario de v2: bordes rectos, hairline de 1px, único
-// acento #FF1200 — reemplaza el rounded-full + bg-black/40 heredado de v1.
+// Material de vidrio de todo el chrome — misma mecánica que components/v3/SectionCard.tsx
+// (blur 18px + saturate, radius, sombra de elevación), con la paleta propia del mapa
+// (#FF1200 / negro) en vez del #FF4230 de v3. Los paneles de título y del recorrido
+// también usan estos mismos valores (antes eran un rgba(12,12,12,0.72)+blur-md aparte) —
+// todo el chrome se lee como una sola superficie.
+const GLASS_BLUR = 'blur(18px) saturate(140%)'
+// lib/motion.ts exporta EASE_OUT como array (para Motion); acá hace falta la misma curva
+// como string de CSS puro, para el `transition` inline de chipStyle().
+const EASE_OUT_CSS = `cubic-bezier(${EASE_OUT.join(',')})`
+const glassSurface: React.CSSProperties = {
+  backdropFilter: GLASS_BLUR,
+  WebkitBackdropFilter: GLASS_BLUR, // sin esto, iOS Safari no renderiza el blur — se pierde en silencio
+  borderRadius: 12,
+  background: 'linear-gradient(160deg, rgba(12,12,12,0.62), rgba(12,12,12,0.42))',
+  border: '1px solid rgba(255,255,255,0.14)',
+  boxShadow: '0 8px 24px rgba(0,0,0,0.28)',
+}
+
+// Chip de filtro/toggle — vidrio en vez de los bordes rectos/hairline heredados de v2:
+// glass ya estaba a medias en el chrome (panel de título, caption del tour), esto lo
+// extiende a los botones para que todo el overlay sea un mismo material.
 function chipStyle(active: boolean): React.CSSProperties {
   return {
     fontFamily: HELVETICA,
@@ -43,13 +62,25 @@ function chipStyle(active: boolean): React.CSSProperties {
     fontSize: '0.65rem',
     letterSpacing: '0.1em',
     textTransform: 'uppercase',
-    padding: '0.45rem 0.9rem',
-    backdropFilter: 'blur(6px)',
+    display: 'inline-flex',
+    alignItems: 'center',
+    // Un flex container no respeta un espacio de texto suelto entre hijos (acá: la
+    // etiqueta y el contador, o el ícono y el label) — sin este gap, "Todos" y "306"
+    // quedaban pegados ("TODOS306") pese a que el espacio SÍ está en el JSX.
+    gap: '0.35em',
+    minHeight: 40,
+    padding: '0 0.9rem',
+    backdropFilter: GLASS_BLUR,
+    WebkitBackdropFilter: GLASS_BLUR,
     cursor: 'pointer',
-    background: active ? '#FF1200' : 'rgba(12,12,12,0.55)',
+    borderRadius: 12,
+    background: active
+      ? 'linear-gradient(160deg, rgba(255,18,0,0.85), rgba(255,18,0,0.62))'
+      : 'linear-gradient(160deg, rgba(12,12,12,0.55), rgba(12,12,12,0.36))',
     color: active ? '#fff' : '#ccc',
-    border: active ? '1px solid #FF1200' : '1px solid rgba(255,255,255,0.2)',
-    transition: 'background-color 150ms, border-color 150ms, color 150ms',
+    border: active ? '1px solid rgba(255,90,70,0.55)' : '1px solid rgba(255,255,255,0.16)',
+    boxShadow: active ? '0 8px 24px rgba(255,18,0,0.22)' : '0 8px 24px rgba(0,0,0,0.28)',
+    transition: `background-color ${DURATION.hover}s ${EASE_OUT_CSS}, border-color ${DURATION.hover}s ${EASE_OUT_CSS}, color ${DURATION.hover}s ${EASE_OUT_CSS}`,
   }
 }
 
@@ -342,71 +373,89 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
         }}
       />
 
-      {/* Volver al sitio + título/filtros (arriba izq.). El botón de volver queda montado en
+      {/* Barra superior única: Volver a la izq., acciones de modo a la der., ambas en el
+          mismo flex — antes eran dos absolutos independientes (left-4/right-4) que en
+          390px se pisaban literalmente (el bug reportado). Al ser hermanos de un mismo
+          contenedor no pueden encimarse, sea cual sea el ancho de pantalla. Montada en
           todos los modos salvo 'reel' (esa vista es sólo para la captura automática con
-          Playwright — ver el useEffect de ?reel=1 más arriba — y debe quedar limpia de UI).
-          z-40 para quedar por encima de la portada (z-30), así también se puede salir desde ahí. */}
+          Playwright — ver el useEffect de ?reel=1 más arriba — y debe quedar limpia de UI). */}
       {mode !== 'reel' && (
-        <div className="pointer-events-none absolute left-4 top-4 z-40 flex max-w-[calc(100%-2rem)] flex-col gap-3">
-          <Link href="/" className="pointer-events-auto w-fit" style={chipStyle(false)}>
-            ← Volver al sitio
+        <div className="pointer-events-none absolute inset-x-3 top-3 z-40 flex items-start justify-between gap-2">
+          <Link href="/" className="pointer-events-auto shrink-0" style={chipStyle(false)}>
+            ← Volver <span className="hidden sm:inline">al sitio</span>
           </Link>
-          {mode === 'free' && (
-            <>
-              <div
-                className="pointer-events-auto px-4 py-3 text-white backdrop-blur-md"
-                style={{ background: 'rgba(12,12,12,0.72)', border: '1px solid rgba(255,255,255,0.12)' }}
-              >
-                <p style={{ fontFamily: HELVETICA, fontWeight: 700, fontSize: '0.6rem', letterSpacing: '0.3em', color: '#FF1200', textTransform: 'uppercase' }}>
-                  Loteo en 3D
-                </p>
-                <p style={{ fontFamily: HELVETICA, fontSize: '1.15rem', fontWeight: 700, lineHeight: 1.15, marginTop: '0.2rem' }}>
-                  Barrio Santa Catalina
-                </p>
-              </div>
-              <div className="pointer-events-auto flex flex-wrap gap-2">
-                <button onClick={() => setFilter('ALL')} style={chipStyle(filter === 'ALL')}>
-                  Todos <span style={{ opacity: 0.7 }} className="tabular-nums">{lots.length}</span>
-                </button>
-                {STATUSES.filter((s) => counts[s] > 0).map((s) => (
-                  <button key={s} onClick={() => setFilter((p) => (p === s ? 'ALL' : s))} style={chipStyle(filter === s)} className="flex items-center gap-1.5">
-                    <span className="inline-block h-2 w-2" style={{ backgroundColor: STATUS_HEX[s] }} />
-                    {STATUS_LABELS[s]} <span style={{ opacity: 0.7 }} className="tabular-nums">{counts[s]}</span>
+
+          <div className="pointer-events-auto flex shrink-0 gap-2">
+            {mode === 'free' && (
+              <>
+                {HAS_TERRAIN_MESH && (
+                  <button
+                    onClick={() => setPhotoMode((p) => (p === 'disponibilidad' ? 'fotorrealista' : 'disponibilidad'))}
+                    style={chipStyle(photoMode === 'fotorrealista')}
+                    aria-label="Vista real (dron)"
+                  >
+                    🛰 <span className="hidden sm:inline">Vista real (dron)</span>
                   </button>
-                ))}
-              </div>
-            </>
-          )}
+                )}
+                <button onClick={startTour} style={chipStyle(false)}>▶ Recorrido</button>
+                <button
+                  onClick={() => {
+                    lastInteractionRef.current = Date.now()
+                    sceneRef.current?.flyTo(INITIAL_VIEW_STATE, 1800)
+                  }}
+                  style={chipStyle(false)}
+                  aria-label="Reencuadrar"
+                >
+                  🎯 <span className="hidden sm:inline">Reencuadrar</span>
+                </button>
+              </>
+            )}
+            {mode === 'tour' && (
+              <button onClick={skipToFree} style={chipStyle(false)}>Saltar ⏭</button>
+            )}
+          </div>
         </div>
       )}
 
-      {/* Controles arriba der. — según modo */}
+      {/* Título + filtros — debajo de la barra superior, sólo en modo libre. */}
       {mode === 'free' && (
-        <div className="absolute right-4 top-4 z-10 flex gap-2">
-          {HAS_TERRAIN_MESH && (
-            <button
-              onClick={() => setPhotoMode((p) => (p === 'disponibilidad' ? 'fotorrealista' : 'disponibilidad'))}
-              style={chipStyle(photoMode === 'fotorrealista')}
-            >
-              🛰 Vista real (dron)
-            </button>
-          )}
-          <button onClick={startTour} style={chipStyle(false)}>▶ Recorrido</button>
-          <button
-            onClick={() => {
-              lastInteractionRef.current = Date.now()
-              sceneRef.current?.flyTo(INITIAL_VIEW_STATE, 1800)
-            }}
-            style={chipStyle(false)}
-          >
-            Reencuadrar
-          </button>
+        <div className="pointer-events-none absolute left-3 top-16 z-30 flex max-w-[calc(100%-1.5rem)] flex-col gap-3 sm:top-20">
+          <div className="pointer-events-auto px-4 py-3 text-white" style={glassSurface}>
+            <p style={{ fontFamily: HELVETICA, fontWeight: 700, fontSize: '0.6rem', letterSpacing: '0.3em', color: '#FF1200', textTransform: 'uppercase' }}>
+              Loteo en 3D
+            </p>
+            <p style={{ fontFamily: HELVETICA, fontSize: '1.15rem', fontWeight: 700, lineHeight: 1.15, marginTop: '0.2rem' }}>
+              Barrio Santa Catalina
+            </p>
+          </div>
+
+          {/* Fila de filtros: una sola línea deslizable en celular (antes flex-wrap partía
+              los 6 chips en 3 filas desparejas que se comían medio mapa) — de sm: para
+              arriba vuelve a envolver como siempre. El degradado de la derecha insinúa que
+              hay más chips para deslizar (un overflow sin barra visible, si no, es invisible). */}
+          <div className="relative">
+            <div className="no-scrollbar pointer-events-auto flex gap-2 overflow-x-auto sm:flex-wrap sm:overflow-visible">
+              <button onClick={() => setFilter('ALL')} style={{ ...chipStyle(filter === 'ALL'), flexShrink: 0 }}>
+                Todos <span style={{ opacity: 0.7 }} className="tabular-nums">{lots.length}</span>
+              </button>
+              {STATUSES.filter((s) => counts[s] > 0).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setFilter((p) => (p === s ? 'ALL' : s))}
+                  style={{ ...chipStyle(filter === s), flexShrink: 0 }}
+                  className="flex items-center gap-1.5"
+                >
+                  <span className="inline-block h-2 w-2 flex-shrink-0" style={{ backgroundColor: STATUS_HEX[s] }} />
+                  {STATUS_LABELS[s]} <span style={{ opacity: 0.7 }} className="tabular-nums">{counts[s]}</span>
+                </button>
+              ))}
+            </div>
+            <div
+              className="pointer-events-none absolute inset-y-0 right-0 w-8 sm:hidden"
+              style={{ background: 'linear-gradient(to right, transparent, rgba(12,12,12,0.55))' }}
+            />
+          </div>
         </div>
-      )}
-      {mode === 'tour' && (
-        <button onClick={skipToFree} className="absolute right-4 top-4 z-20" style={chipStyle(false)}>
-          Saltar ⏭
-        </button>
       )}
 
       {/* Caption del tour/reel + progreso (abajo centro). El contenedor queda montado todo
@@ -420,8 +469,8 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
             {activeWaypoints[tourStep]?.title && (
               <motion.div
                 key={tourStep}
-                className="px-6 py-4 text-center backdrop-blur-md"
-                style={{ background: 'rgba(12,12,12,0.72)', border: '1px solid rgba(255,255,255,0.12)' }}
+                className="px-6 py-4 text-center"
+                style={glassSurface}
                 initial={{ opacity: 0, transform: 'translateY(12px)' }}
                 animate={{ opacity: 1, transform: 'translateY(0px)' }}
                 exit={{ opacity: 0, transform: 'translateY(-12px)' }}
@@ -502,7 +551,10 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
 
       {/* Ficha del lote seleccionado (abajo izq.) */}
       {selected && (
-        <div className="absolute bottom-4 left-4 z-10 w-64 overflow-hidden" style={{ background: '#111', border: '1px solid #1a1a1a' }}>
+        <div
+          className="absolute bottom-3 left-3 right-3 z-10 w-auto overflow-hidden sm:left-4 sm:right-auto sm:w-64"
+          style={{ background: '#111', border: '1px solid #1a1a1a', borderRadius: 12 }}
+        >
           <div className="flex items-center justify-between px-4 py-3" style={{ background: STATUS_HEX[selected.status] }}>
             <div>
               <p style={{ fontFamily: HELVETICA, fontWeight: 700, fontSize: '0.6rem', letterSpacing: '0.15em', color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase' }}>
