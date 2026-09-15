@@ -2,15 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-
-const STORAGE_KEY = 'santa-catalina-cookie-consent'
+import { COOKIE_CONSENT_KEY, COOKIE_CONSENT_EVENT } from '@/lib/consent'
 
 export default function CookieBanner() {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
     try {
-      if (!localStorage.getItem(STORAGE_KEY)) setVisible(true)
+      if (!localStorage.getItem(COOKIE_CONSENT_KEY)) setVisible(true)
     } catch {
       // localStorage no disponible (modo privado, etc.) — no mostramos el banner
     }
@@ -18,10 +17,14 @@ export default function CookieBanner() {
 
   function accept() {
     try {
-      localStorage.setItem(STORAGE_KEY, 'accepted')
+      localStorage.setItem(COOKIE_CONSENT_KEY, 'accepted')
     } catch {
       // ignorar — el banner se vuelve a mostrar en la próxima visita, no es crítico
     }
+    // Habilita Analytics (components/Analytics.tsx) en esta misma carga, sin
+    // esperar a un refresh — Analytics escucha este evento además de leer
+    // localStorage en su propio mount.
+    window.dispatchEvent(new Event(COOKIE_CONSENT_EVENT))
     setVisible(false)
   }
 

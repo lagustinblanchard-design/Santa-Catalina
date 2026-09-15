@@ -2,7 +2,9 @@ import type { Metadata } from 'next'
 import { Montserrat, Cinzel, Josefin_Sans } from 'next/font/google'
 import { SITE } from '@/lib/data'
 import { SITE_URL } from '@/lib/site-url'
+import { organizationJsonLd } from '@/lib/structured-data'
 import CookieBanner from '@/components/CookieBanner'
+import Analytics from '@/components/Analytics'
 import './globals.css'
 
 const montserrat = Montserrat({
@@ -41,14 +43,27 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
   },
+  // Google Search Console: pega acá el código de verificación por meta tag
+  // (Search Console > Agregar propiedad > "Etiqueta HTML" > sólo el valor de
+  // content="..."). Vacío por defecto — Next.js omite la meta tag si no hay
+  // valor, no rompe nada.
+  verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+    : undefined,
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" className={`h-full ${montserrat.variable} ${cinzel.variable} ${josefin.variable}`}>
       <body className="min-h-full">
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd()) }}
+        />
         {children}
         <CookieBanner />
+        <Analytics />
       </body>
     </html>
   )
