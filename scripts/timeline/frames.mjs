@@ -57,12 +57,12 @@ export const FRAMES = [
     src: path.join(PUB, 'ortho-2607.webp'),
     // El ortomosaico real es un rombo rotado sobre fondo transparente
     // (4096x2267). Este recorte (verificado sin canal alpha en los bordes,
-    // ver .tmp/crop-candidates2.mjs de la sesión que lo eligió) muestra varias
-    // manzanas con calles cruzadas y lotes distinguibles — el recorte anterior
-    // (614,390,2867,1406) centraba el "hoy" en un cruce de calles vacío que en
-    // portrait mobile (object-cover corta ~74% del ancho) se veía como campo
-    // abierto, no como un barrio en desarrollo.
-    crop: { left: 400, top: 470, width: 2867, height: 1350 },
+    // ver .tmp/crop-candidates3.mjs de la sesión que lo eligió) centra un
+    // cruce de calles recién abiertas y anchas (con acopio de material para
+    // cordón cuneta a un costado) — pedido explícito: que se note la apertura
+    // de calles, no sólo manzanas con pasto. Recorte anterior (400,470,2867,1350)
+    // mostraba manzanas y un auto pero las calles no se leían como "abiertas".
+    crop: { left: 2050, top: 900, width: 1900, height: 950 },
     kicker: 'Hoy — 29/07/2026',
     title: 'Esto no es un render.',
     body: 'Vuelo de dron propio, georreferenciado. De acá para abajo, todo lo que veas está proyectado.',

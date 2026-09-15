@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import Link from 'next/link'
 import { motion, useInView } from 'motion/react'
 import { SITE } from '@/lib/data'
 import { countByStatus, type Lot } from '@/lib/lots'
@@ -104,6 +105,21 @@ export default function HeroV4({ lots }: { lots: Lot[] }) {
           >
             Hablar por WhatsApp
           </a>
+        </motion.div>
+
+        {/* Acceso directo al recorrido 3D — sólo en celular. En desktop ya está
+            siempre visible en el Navbar; en celular queda escondido detrás del
+            menú hamburguesa, y el recorrido 3D es justo lo que este rediseño
+            quiere mostrar primero. Tratamiento más liviano que los dos CTA de
+            arriba para no competir con "Ver lotes disponibles". */}
+        <motion.div {...fadeUp(0.7)} className="mt-4 sm:hidden">
+          <Link
+            href="/mapa-3d"
+            className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium text-white/85 transition-colors hover:text-white"
+            style={{ border: '1px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.06)' }}
+          >
+            <span aria-hidden>🧭</span> Recorrer el loteo en 3D
+          </Link>
         </motion.div>
       </div>
 

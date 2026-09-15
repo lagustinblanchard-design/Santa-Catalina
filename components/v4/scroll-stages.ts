@@ -6,12 +6,12 @@ import type { MapViewState } from '@deck.gl/core'
 // tiene que sentirse como el mismo dibujo, no un salto de cámara.
 //
 // Recalibrado cuando cambió el recorte de "hoy" (scripts/timeline/frames.mjs)
-// de un cruce de calles vacío a una zona con varias manzanas y lotes
-// distinguibles — el centro geográfico del recorte se corrió, así que el
-// punto de partida de la cámara 3D también.
+// — ahora centrado en un cruce de calles recién abiertas (pedido explícito:
+// que se note la apertura de calles) — el centro geográfico del recorte se
+// corrió de nuevo, así que el punto de partida de la cámara 3D también.
 export const HANDOFF_VIEW: MapViewState = {
-  longitude: -58.8058,
-  latitude: -27.5302,
+  longitude: -58.8034,
+  latitude: -27.5306,
   zoom: 16.6,
   pitch: 0,
   bearing: 0,
