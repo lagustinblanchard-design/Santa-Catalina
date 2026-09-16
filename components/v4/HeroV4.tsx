@@ -101,7 +101,9 @@ export default function HeroV4({ lots }: { lots: Lot[] }) {
           Santa Catalina, Corrientes Capital
         </motion.p>
 
-        <motion.div {...fadeUp(0.6)} className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+        {/* Escritorio: los mismos 2 CTA de siempre, sin cambios — el recorrido
+            3D ya está siempre visible ahí, en el Navbar (destacado). */}
+        <motion.div {...fadeUp(0.6)} className="hidden items-center justify-center gap-4 sm:flex">
           <a
             href="#lotes"
             className="rounded-full px-8 py-4 text-base font-bold text-white transition-opacity hover:opacity-90"
@@ -119,19 +121,35 @@ export default function HeroV4({ lots }: { lots: Lot[] }) {
           </a>
         </motion.div>
 
-        {/* Acceso directo al recorrido 3D — sólo en celular. En desktop ya está
-            siempre visible en el Navbar; en celular queda escondido detrás del
-            menú hamburguesa, y el recorrido 3D es justo lo que este rediseño
-            quiere mostrar primero. Tratamiento más liviano que los dos CTA de
-            arriba para no competir con "Ver lotes disponibles". */}
-        <motion.div {...fadeUp(0.7)} className="mt-4 sm:hidden">
+        {/* Celular: reordenado a pedido explícito — el recorrido 3D pasa a ser
+            el primer botón y el destacado (toma el tratamiento sólido que
+            antes tenía "Ver lotes disponibles"; en desktop el 3D ya es
+            prominente vía el Navbar, acá en celular queda escondido detrás
+            del menú hamburguesa, así que se lo destaca acá). "Ver lotes" baja
+            al 2° lugar y WhatsApp al 3°, los dos con el mismo tratamiento
+            secundario (borde). */}
+        <motion.div {...fadeUp(0.6)} className="flex flex-col items-center gap-4 sm:hidden">
           <Link
             href="/mapa-3d"
-            className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium text-white/85 transition-colors hover:text-white"
-            style={{ border: '1px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.06)' }}
+            className="rounded-full px-8 py-4 text-base font-bold text-white transition-opacity hover:opacity-90"
+            style={{ backgroundColor: '#AA1120' }}
           >
-            <span aria-hidden>🧭</span> Recorrer el loteo en 3D
+            Recorrer el loteo en 3D
           </Link>
+          <a
+            href="#lotes"
+            className="rounded-full border border-white/40 px-8 py-4 text-base font-medium text-white transition-colors hover:bg-white/10"
+          >
+            Ver lotes disponibles
+          </a>
+          <a
+            href={waHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-full border border-white/40 px-8 py-4 text-base font-medium text-white transition-colors hover:bg-white/10"
+          >
+            Hablar por WhatsApp
+          </a>
         </motion.div>
       </div>
 
