@@ -86,8 +86,19 @@ export default function HeroV4({ lots }: { lots: Lot[] }) {
           <span style={{ color: '#AA1120' }}>Santa Catalina se expande.</span>
         </motion.h1>
 
+        {/* Copy pedido explícitamente en este orden y en líneas separadas —
+            pensado sobre todo para celular, donde la versión anterior (una
+            sola oración larga) envolvía mal. El texto de la ordenanza acá es
+            más corto ("ordenanza N° 7403") que SITE.ordinance ("Ord. N.º
+            7403", usado en el resto del sitio) a propósito, sólo para el Hero. */}
         <motion.p {...fadeUp(0.45)} className="mx-auto mb-10 max-w-2xl text-base sm:text-lg" style={{ color: 'rgba(242,236,224,0.8)' }}>
-          Santa Catalina, Corrientes Capital. {SITE.stage} — {SITE.totalBlocks} manzanas aprobadas por {SITE.ordinance}, a 2 minutos de Av. Maipú.
+          {SITE.stage}
+          <br />
+          {SITE.totalBlocks} Mz aprobadas por ordenanza N° 7403.
+          <br />
+          A 2 minutos de Av. Maipú
+          <br />
+          Santa Catalina, Corrientes Capital
         </motion.p>
 
         <motion.div {...fadeUp(0.6)} className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
