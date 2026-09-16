@@ -40,7 +40,7 @@ export default function RendersV4() {
             Proyección
           </span>
           <h2 className="max-w-2xl text-4xl font-black text-white sm:text-5xl" style={{ letterSpacing: '-0.02em' }}>
-            Así lo imaginamos.
+            Así lo proyectamos.
           </h2>
           <p className="mt-4 max-w-xl text-base" style={{ color: 'rgba(242,236,224,0.75)' }}>
             Es una proyección, no una promesa contractual — la obra real la mostramos en la sección de arriba,

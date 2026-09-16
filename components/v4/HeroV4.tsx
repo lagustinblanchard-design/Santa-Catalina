@@ -6,10 +6,11 @@ import { motion, useInView } from 'motion/react'
 import { SITE } from '@/lib/data'
 import { countByStatus, type Lot } from '@/lib/lots'
 
-// Hero de /v4 — mismo video/CTA que el de producción (components/Hero.tsx),
-// con la píldora de disponibilidad en vivo que dispara la narrativa del
-// sticky de abajo (TimelineStage). El copy es el del guion de V4, no el de
-// producción: acá el foco es "el barrio ya empezó", no la marca sola.
+// Hero de la home (V4 pasó a ser la versión oficial y única de cara al
+// público — ver git log de app/page.tsx; el Hero viejo, components/Hero.tsx,
+// se borró al quedar sin uso). Mismo video/CTA de siempre, con la píldora de
+// disponibilidad en vivo que dispara la narrativa del sticky de abajo
+// (TimelineStage).
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 24 },
   animate: { opacity: 1, y: 0 },
@@ -82,7 +83,7 @@ export default function HeroV4({ lots }: { lots: Lot[] }) {
         <motion.h1 {...fadeUp(0.25)} className="mb-4 text-4xl font-black leading-tight tracking-tight sm:text-5xl md:text-7xl" style={{ letterSpacing: '-0.025em' }}>
           Distrito Payé.
           <br />
-          <span style={{ color: '#AA1120' }}>El barrio ya empezó.</span>
+          <span style={{ color: '#AA1120' }}>Santa Catalina se expande.</span>
         </motion.h1>
 
         <motion.p {...fadeUp(0.45)} className="mx-auto mb-10 max-w-2xl text-base sm:text-lg" style={{ color: 'rgba(242,236,224,0.8)' }}>

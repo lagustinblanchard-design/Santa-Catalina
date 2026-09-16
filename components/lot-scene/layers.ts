@@ -13,6 +13,7 @@ import {
   STATUS_RGB, RESERVES, MODELS, ION_ASSET_ID, ION_TOKEN, TERRAIN_BASE_ELEV, type DuplexModel,
 } from './constants'
 import { STATUS_ELEV } from './constants'
+import { MAIN_STREETS, type MainStreet } from './streets'
 
 const featherExtension = new FeatherExtension()
 
@@ -158,6 +159,31 @@ export function buildLayers({ features, filter, spotlight, zoomedIn, showMesh, o
       ]
     : []
 
+  // Calles principales geolocalizadas (ver ./streets.ts) — a diferencia de las
+  // etiquetas de lote de abajo, sin puerta de zoom: son sólo 4 y sirven
+  // justamente para orientarse en las vistas amplias del recorrido (hay
+  // waypoints en zoom 16.2-16.4, por debajo de LABEL_MIN_ZOOM). Un poco más
+  // grandes/opacas que el número de lote para que lean como nombre de calle.
+  const streetLabels = new TextLayer<MainStreet>({
+    id: 'main-streets',
+    data: MAIN_STREETS,
+    getPosition: (d) => [...d.position, 0.8],
+    getText: (d) => d.name,
+    // El default de TextLayer es sólo ASCII imprimible (32-127) — sin esto, cada
+    // tilde/Ñ de "Calle Pública", "Av. Tito Aranda" etc. se dibuja en blanco
+    // ("Missing character: ú"). 'auto' arma el atlas a partir del texto real.
+    characterSet: 'auto',
+    getSize: 13,
+    sizeUnits: 'pixels',
+    fontWeight: 700,
+    getColor: [255, 255, 255, 235],
+    background: true,
+    getBackgroundColor: [20, 20, 20, 130],
+    backgroundPadding: [5, 3],
+    billboard: true,
+    pickable: false,
+  })
+
   // Etiquetas de lote — sólo al acercarse (evita empapelar el plano en la vista general).
   const labels = zoomedIn
     ? [
@@ -179,5 +205,5 @@ export function buildLayers({ features, filter, spotlight, zoomedIn, showMesh, o
       ]
     : []
 
-  return [base, orthophoto, terrainMesh, reserves, lotsLayer, ...modelLayers, ...labels].filter(Boolean)
+  return [base, orthophoto, terrainMesh, reserves, lotsLayer, ...modelLayers, streetLabels, ...labels].filter(Boolean)
 }

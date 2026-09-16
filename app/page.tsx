@@ -1,13 +1,18 @@
 import Navbar from '@/components/Navbar'
-import Hero from '@/components/Hero'
+import HeroV4 from '@/components/v4/HeroV4'
+import TimelineStage from '@/components/v4/TimelineStage'
 import PageSections from '@/components/PageSections'
+import RendersV4 from '@/components/v4/RendersV4'
+import CierreV4 from '@/components/v4/CierreV4'
 import SiteFooter from '@/components/SiteFooter'
 import WhatsAppButton from '@/components/WhatsAppButton'
 import { LOTS, applyStatuses } from '@/lib/lots'
 import { fetchLotStatuses } from '@/lib/sheets'
 import { listingJsonLd } from '@/lib/structured-data'
 
-// Disponibilidad de lotes: siempre en vivo, sin caché de página ni de datos.
+// V4 (antes en /v4, ver git log) pasó a ser la versión oficial y única de cara
+// al público — /v4 ahora redirige acá (ver next.config.ts). Disponibilidad de
+// lotes: siempre en vivo, sin caché de página ni de datos.
 export const dynamic = 'force-dynamic'
 
 export default async function Home() {
@@ -28,8 +33,11 @@ export default async function Home() {
       />
       <Navbar />
       <main>
-        <Hero />
+        <HeroV4 lots={lots} />
+        <TimelineStage lots={lots} />
         <PageSections lots={lots} />
+        <RendersV4 />
+        <CierreV4 />
       </main>
       <SiteFooter />
       <WhatsAppButton />

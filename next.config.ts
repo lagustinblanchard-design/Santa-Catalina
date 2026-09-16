@@ -38,6 +38,14 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: '/(.*)', headers: securityHeaders }]
   },
+  async redirects() {
+    return [
+      // /v4 fue la home en preview/rediseño; ahora ES la home (ver app/page.tsx). Source
+      // exacto (no '/v4/:path*'): /v4/calibrar sigue siendo una ruta propia, la herramienta
+      // de calibración del handoff foto→3D, y no debe redirigir.
+      { source: '/v4', destination: '/', permanent: true },
+    ]
+  },
 };
 
 export default nextConfig;
