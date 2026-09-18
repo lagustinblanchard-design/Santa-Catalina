@@ -1,7 +1,7 @@
 export const SITE = {
   name: 'Distrito Payé',
   tagline: 'Segunda Preventa — Corrientes Capital',
-  developer: 'PAYÉ',
+  developer: 'Desarrollos Payé',
   broker: 'RE/MAX PAYÉ',
   ordinance: 'Ord. N.º 7403',
   location: 'Junto a viviendas del PROCREAR, zona de expansión urbana de Corrientes',
