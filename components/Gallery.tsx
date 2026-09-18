@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 type GalleryItem =
   | { kind: 'photo'; src: string; alt: string }
@@ -41,8 +41,31 @@ const REEL: GalleryItem = {
 
 const ITEMS: GalleryItem[] = [...PHOTOS, ...VIDEOS, REEL]
 
+function ChevronIcon({ direction }: { direction: 'left' | 'right' }) {
+  return (
+    <svg viewBox="0 0 24 24" className="h-6 w-6 fill-none stroke-current stroke-2">
+      <path d={direction === 'left' ? 'M15 6l-6 6 6 6' : 'M9 6l6 6-6 6'} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 export default function Gallery() {
   const [active, setActive] = useState(0)
+  const touchStartX = useRef<number | null>(null)
+
+  const goTo = (i: number) => setActive(((i % ITEMS.length) + ITEMS.length) % ITEMS.length)
+  const next = () => goTo(active + 1)
+  const prev = () => goTo(active - 1)
+
+  function onTouchStart(e: React.TouchEvent) {
+    touchStartX.current = e.touches[0].clientX
+  }
+  function onTouchEnd(e: React.TouchEvent) {
+    if (touchStartX.current === null) return
+    const delta = e.changedTouches[0].clientX - touchStartX.current
+    if (Math.abs(delta) > 40) delta < 0 ? next() : prev()
+    touchStartX.current = null
+  }
 
   if (ITEMS.length === 0) {
     return (
@@ -75,7 +98,12 @@ export default function Gallery() {
         </div>
 
         {/* Main media */}
-        <div className="relative mb-4 overflow-hidden rounded-2xl" style={{ aspectRatio: '16/9' }}>
+        <div
+          className="relative mb-4 touch-pan-y select-none overflow-hidden rounded-2xl"
+          style={{ aspectRatio: '16/9' }}
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+        >
           {ITEMS[active].kind === 'video' ? (
             <video
               key={ITEMS[active].src}
@@ -93,6 +121,25 @@ export default function Gallery() {
               className="object-cover transition-opacity duration-300"
               sizes="(max-width: 768px) 100vw, 1152px"
             />
+          )}
+
+          {ITEMS.length > 1 && (
+            <>
+              <button
+                onClick={prev}
+                aria-label="Anterior"
+                className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition-colors hover:bg-black/60"
+              >
+                <ChevronIcon direction="left" />
+              </button>
+              <button
+                onClick={next}
+                aria-label="Siguiente"
+                className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition-colors hover:bg-black/60"
+              >
+                <ChevronIcon direction="right" />
+              </button>
+            </>
           )}
         </div>
 

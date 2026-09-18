@@ -2,12 +2,15 @@ import type { LotStatus } from './data'
 
 const SHEET_ID = process.env.GOOGLE_SHEETS_ID ?? '1lpt7vGJRwPf_xgW-xisHj-xShxyivt91surRRKfXb7c'
 
-function mapStatus(raw: string): LotStatus {
+function mapStatus(raw: string, note: string): LotStatus {
   const s = raw.toUpperCase().trim()
   if (s.includes('FIDEICOMISO')) return 'FIDEICOMISO'
   if (s.includes('NO COMERCIALIZABLE')) return 'NO_COMERCIALIZABLE'
   if (s === 'RESERVADO') return 'RESERVADO'
   if (s === 'DISPONIBLE') return 'DISPONIBLE'
+  // "VENDIDO" con nota "TERCEROS" = vendido fuera del canal de comercialización
+  // (acuerdo privado), mismo tratamiento que FIDEICOMISO — no un vendido normal.
+  if (s === 'VENDIDO' && note.toUpperCase().includes('TERCEROS')) return 'FIDEICOMISO'
   return 'VENDIDO' // VENDIDO, NO DISPONIBLE, desconocido
 }
 
@@ -50,9 +53,10 @@ async function fetchManzana(mz: number): Promise<Record<string, LotStatus>> {
   for (const row of parseCSV(await res.text())) {
     const c10 = row[10] ?? ''
     const c12 = (row[12] ?? '').trim()
+    const c13 = row[13] ?? ''
     const lotMatch = c10.match(/LOTE\s+(\d+)/i)
     if (lotMatch && c12) {
-      statuses[`M${mz}-L${parseInt(lotMatch[1])}`] = mapStatus(c12)
+      statuses[`M${mz}-L${parseInt(lotMatch[1])}`] = mapStatus(c12, c13)
     }
   }
   return statuses

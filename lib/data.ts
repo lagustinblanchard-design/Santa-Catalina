@@ -105,23 +105,30 @@ export const PRICES: Record<LotSize, { cashUSD: number; discount: number }> = {
 }
 
 // Opción 1 — 12 cuotas, 30% de entrega. Sólo residencial (Mixto no tiene esta opción).
+//
+// 12x30 tenía un error: installmentUSD estaba en 1150, pero el saldo a 12 cuotas
+// (19800 lista − 5940 entrega = 13860 / 12) da 1155 exacto — sin margen de
+// redondeo, a diferencia de 12x26/12x28. Coincide además con installmentPesos
+// (1848000), que ya estaba bien: 1848000 / 1155 = 1600 exacto, el mismo tipo de
+// cambio que usa downPesos/downUSD de esta misma fila (9504000 / 5940 = 1600).
+// O sea: el peso siempre estuvo bien, sólo el USD tenía el typo.
 export const FINANCING_12: Partial<Record<LotSize, {
   downPesos: number; installmentPesos: number
   downUSD: number;   installmentUSD: number
 }>> = {
   '12x26': { downPesos: 8236800, installmentPesos: 1601600, downUSD: 5150, installmentUSD: 1000 },
   '12x28': { downPesos: 8870400, installmentPesos: 1724800, downUSD: 5550, installmentUSD: 1080 },
-  '12x30': { downPesos: 9504000, installmentPesos: 1848000, downUSD: 5940, installmentUSD: 1150 },
+  '12x30': { downPesos: 9504000, installmentPesos: 1848000, downUSD: 5940, installmentUSD: 1155 },
 }
 
 // Opción 3 — 36 cuotas en USD
 export const FINANCING_36: Partial<Record<LotSize, {
   downUSD: number; installmentUSD: number; availability: string
 }>> = {
-  '12x26': { downUSD: 2000, installmentUSD: 590, availability: '2 lotes disponibles' },
+  '12x26': { downUSD: 2000, installmentUSD: 590, availability: '1 lote disponible' },
   '12x28': { downUSD: 2000, installmentUSD: 650, availability: 'Consultar' },
-  '12x30': { downUSD: 2000, installmentUSD: 700, availability: 'Consultar' },
-  '15x30': { downUSD: 3000, installmentUSD: 920, availability: '9 lotes disponibles' },
+  '12x30': { downUSD: 2000, installmentUSD: 750, availability: 'Consultar' },
+  '15x30': { downUSD: 3000, installmentUSD: 920, availability: '8 lotes disponibles' },
 }
 
 // Confirmado por el usuario: los gastos de la operación son únicamente estos 3.
