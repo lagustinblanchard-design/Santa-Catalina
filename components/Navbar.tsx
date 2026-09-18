@@ -63,7 +63,11 @@ export default function Navbar() {
           scrolled ? 'bg-white/97 shadow-sm backdrop-blur-sm' : 'bg-transparent'
         }`}
       >
-        <div className="mx-auto flex max-w-6xl items-center justify-between py-4 pl-32 pr-6 sm:pl-44">
+        {/* min-h-[100px]: el logo watermark mide 80px y arranca a 12px del borde
+            (top-3) → 92px de punta a punta. Si esta fila fuera más baja, el
+            fondo del nav (blanco al scrollear) no llega a cubrirlo entero y se
+            ve lo que hay detrás asomando por debajo del logo. */}
+        <div className="mx-auto flex min-h-[100px] max-w-6xl items-center justify-between pl-32 pr-6 sm:pl-44">
           <a href="#inicio" className="flex items-center gap-3">
             <span
               className="text-xs font-semibold"

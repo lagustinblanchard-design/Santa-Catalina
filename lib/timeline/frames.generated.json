@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-09-18T18:10:50.158Z",
+  "generatedAt": "2026-09-18T18:32:09.761Z",
   "frames": [
     {
       "id": "campo",
-      "kicker": "Antes, un predio nativo",
-      "title": "Acá no había nada.",
+      "kicker": "Antes",
+      "title": "Antes, un predio nativo.",
       "body": "Hoy, una extensión urbana.",
       "isReal": false,
       "lqip": "data:image/webp;base64,UklGRm4AAABXRUJQVlA4IGIAAAAwBACdASoYAA4APu1kqk4ppaQiMAgBMB2JQBWABDwFpNEsi2b9StJ3vIgA/Tmd32ha1tLmG6Phdd9oXJ1psNf+xXIwNQ4aDR8i3afKAk41qfQuGEiKQryxBPy/IguJ1fSAAA==",
@@ -23,8 +23,8 @@
     },
     {
       "id": "suelo",
-      "kicker": "Inicio de obra",
-      "title": "Primero se mueve la tierra.",
+      "kicker": "Obra",
+      "title": "Inicio de obra.",
       "body": "Relevamiento y movimiento de suelo.",
       "isReal": false,
       "lqip": "data:image/webp;base64,UklGRnAAAABXRUJQVlA4IGQAAADQAwCdASoYAA4APu1iqk4ppaQiMAgBMB2JZQCdAArRAf1zOC1TY4AA9h6L1TY8eIFdvfDa2kO2a8GuwTQcsfma1zubI3e6V9j+0LFdcfQ0v7oYYgFmCSGdO/T5VpvcmTXUeAAA",
@@ -43,8 +43,8 @@
     },
     {
       "id": "redes",
-      "kicker": "La construcción que no se ve",
-      "title": "Lo que no se ve es lo que más cuesta.",
+      "kicker": "Redes",
+      "title": "La construcción que no se ve.",
       "body": "Infraestructura subterránea — red de agua y cloaca.",
       "isReal": false,
       "lqip": "data:image/webp;base64,UklGRowAAABXRUJQVlA4IIAAAACQBACdASoYAA4APu1iqU2ppaOiMAgBMB2JYwCdMoAC+1c/qJczXbW4oejOQ4AA9h6MkP++FjdPCPNSrBzNKqeMG/GuUCTcAj+N2pq0JB+h3GlddxHgkNBHl4QhuV3Kss4p/GYtVJ9SalSW44+2XluKZTdmpTtXbMC3A+xxXhREAA==",
@@ -63,8 +63,8 @@
     },
     {
       "id": "cordon",
-      "kicker": "Transitabilidad",
-      "title": "Cordón cuneta.",
+      "kicker": "Vial",
+      "title": "Transitabilidad.",
       "body": "Destape y apertura de calles.",
       "isReal": false,
       "lqip": "data:image/webp;base64,UklGRm4AAABXRUJQVlA4IGIAAAAQBACdASoYAA4APu1iqk2ppaQiMAgBMB2JYwCdMoACMy0i6v0VknhAiAD2HovbHbkG3lhjeOUli+mV7TY9xHg8Qyr/8Qe936ZXkd6zbjMGqUxNfIyw6RJTZ02044lUCoAAAA==",
@@ -83,8 +83,8 @@
     },
     {
       "id": "ripio",
-      "kicker": "Obra vial",
-      "title": "Se puede entrar en auto.",
+      "kicker": "Calles",
+      "title": "Obra vial.",
       "body": "Cordón cuneta y enripiado.",
       "isReal": false,
       "lqip": "data:image/webp;base64,UklGRnIAAABXRUJQVlA4IGYAAADwAwCdASoYAA4APu1iqU2ppaQiMAgBMB2JYwCdMoACMy19aEwVGYdgAPYel0UX803di4/B+MGF6GTKHFQz/N2xU6bwOukFt3p8pUa/VPewQa6hZsvrFjqMKqOgC3jRLNrW+XzxcAA=",
