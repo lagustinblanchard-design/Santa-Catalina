@@ -35,10 +35,7 @@ export default function CierreV4() {
         transition={{ duration: DURATION.reveal, ease: EASE_OUT }}
         className="relative z-10 mx-auto max-w-2xl px-6"
       >
-        <h2 className="text-4xl font-black text-white sm:text-6xl" style={{ letterSpacing: '-0.02em' }}>
-          Alguien clavó esa estaca.
-        </h2>
-        <p className="mx-auto mt-4 max-w-lg text-base sm:text-lg" style={{ color: 'rgba(242,236,224,0.85)' }}>
+        <p className="mx-auto max-w-lg text-lg sm:text-xl" style={{ color: 'rgba(242,236,224,0.85)' }}>
           {SITE.name} lo desarrolla {SITE.developer} y lo comercializa {SITE.broker}.
         </p>
         <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
