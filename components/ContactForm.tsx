@@ -26,19 +26,31 @@ const inputStyle: React.CSSProperties = {
 export default function ContactForm() {
   const [form, setForm] = useState({ name: '', phone: '', interest: '', message: '' })
   const [sent, setSent]  = useState(false)
+  const [sending, setSending] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     setForm({ ...form, [e.target.name as Field]: e.target.value })
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const subject = encodeURIComponent(`Consulta Santa Catalina — ${form.interest || 'Interesado'}`)
-    const body    = encodeURIComponent(
-      `Nombre: ${form.name}\nTeléfono: ${form.phone}\nInterés: ${form.interest}\n\n${form.message}`
-    )
-    window.location.href = `mailto:${SITE.CONTACT_EMAIL}?subject=${subject}&body=${body}`
-    setSent(true)
+    setSending(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+      const data = await res.json().catch(() => null)
+      if (!res.ok || !data?.ok) throw new Error('No se pudo enviar')
+      setSent(true)
+    } catch {
+      setError('No se pudo enviar la consulta. Probá de nuevo o escribinos directamente por WhatsApp.')
+    } finally {
+      setSending(false)
+    }
   }
 
   if (sent) {
@@ -127,12 +139,17 @@ export default function ContactForm() {
               />
             </div>
 
+            {error && (
+              <p className="text-sm font-medium" style={{ color: '#AA1120' }}>{error}</p>
+            )}
+
             <button
               type="submit"
-              className="w-full rounded-xl py-4 text-base font-bold text-white transition-opacity hover:opacity-90"
+              disabled={sending}
+              className="w-full rounded-xl py-4 text-base font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
               style={{ backgroundColor: '#AA1120' }}
             >
-              Enviar consulta
+              {sending ? 'Enviando…' : 'Enviar consulta'}
             </button>
 
             <p className="text-xs text-center" style={{ color: '#6B6660' }}>

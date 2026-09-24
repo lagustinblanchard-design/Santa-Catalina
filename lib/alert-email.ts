@@ -10,9 +10,14 @@ const ALERT_EMAIL_TO = process.env.ALERT_EMAIL_TO
 // dominio propio, ideal para una alerta interna de bajo volumen como ésta.
 const ALERT_EMAIL_FROM = process.env.ALERT_EMAIL_FROM ?? 'onboarding@resend.dev'
 
-export async function sendAlertEmail(subject: string, html: string): Promise<{ sent: boolean; reason?: string }> {
-  if (!RESEND_API_KEY || !ALERT_EMAIL_TO) {
-    return { sent: false, reason: 'RESEND_API_KEY o ALERT_EMAIL_TO no configurados' }
+// `to` es opcional (default ALERT_EMAIL_TO) para poder reusar el mismo envío
+// de Resend tanto para las alertas de salud del cron como para las consultas
+// del formulario de contacto (ver app/api/contact/route.ts), que van a
+// SITE.CONTACT_EMAIL en vez de a la casilla de alertas técnicas.
+export async function sendAlertEmail(subject: string, html: string, to?: string): Promise<{ sent: boolean; reason?: string }> {
+  const recipient = to ?? ALERT_EMAIL_TO
+  if (!RESEND_API_KEY || !recipient) {
+    return { sent: false, reason: 'RESEND_API_KEY o destinatario no configurados' }
   }
 
   const res = await fetch('https://api.resend.com/emails', {
@@ -23,7 +28,7 @@ export async function sendAlertEmail(subject: string, html: string): Promise<{ s
     },
     body: JSON.stringify({
       from: `Santa Catalina <${ALERT_EMAIL_FROM}>`,
-      to: [ALERT_EMAIL_TO],
+      to: [recipient],
       subject,
       html,
     }),
