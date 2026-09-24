@@ -11,7 +11,6 @@ const NAV_ITEMS = {
   precios:      { href: '#precios',      label: 'Precios' },
   financiacion: { href: '#financiacion', label: 'Financiación' },
   zonificacion: { href: '#zonificacion', label: 'Uso de suelo' },
-  contacto:     { href: '#contacto',     label: 'Contacto' },
 } as const
 
 type NavKey = keyof typeof NAV_ITEMS | 'recorrido3d'
@@ -20,22 +19,73 @@ type NavKey = keyof typeof NAV_ITEMS | 'recorrido3d'
 // página), así que se renderiza aparte como <Link>. Va acá sólo como marcador
 // de posición dentro del orden.
 //
-// Escritorio y celular tienen ÓRDENES DISTINTOS (pedido explícito del owner):
-// en escritorio, Galería / El proyecto / Recorrido 3D van primero (con el 3D
-// destacado); en la hamburguesa el orden es otro y ninguno lleva tratamiento
-// especial.
-const DESKTOP_ORDER: NavKey[] = ['galeria', 'proyecto', 'recorrido3d', 'lotes', 'precios', 'financiacion', 'zonificacion', 'contacto']
-const MOBILE_ORDER: NavKey[] = ['proyecto', 'galeria', 'recorrido3d', 'zonificacion', 'lotes', 'precios', 'financiacion', 'contacto']
+// "Contacto" salió de los dos órdenes (era un link redundante: el botón
+// "Consultar"/"Consultar ahora", que ya se renderiza inmediatamente después de
+// este .map(), hace exactamente lo mismo — scrollea a #contacto). 'recorrido3d'
+// pasa a ser el ÚLTIMO de cada orden a propósito: al ser lo último antes de
+// ese botón, queda pegado a "Consultar"/"Consultar ahora" sin tocar el JSX de
+// abajo.
+//
+// Escritorio y celular siguen con ÓRDENES DISTINTOS (pedido explícito del
+// owner) para el resto de los items.
+const DESKTOP_ORDER: NavKey[] = ['galeria', 'proyecto', 'lotes', 'precios', 'financiacion', 'zonificacion', 'recorrido3d']
+const MOBILE_ORDER: NavKey[] = ['proyecto', 'galeria', 'zonificacion', 'lotes', 'precios', 'financiacion', 'recorrido3d']
+
+// Secciones con link propio en el nav — se trackean con IntersectionObserver
+// para resaltar cuál está a la vista (scroll-spy). "contacto" no entra: ya no
+// tiene link propio. "inicio" tampoco: no hay nada que resaltar ahí.
+const TRACKED_IDS = ['proyecto', 'lotes', 'precios', 'financiacion', 'zonificacion', 'galeria']
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [activeId, setActiveId] = useState<string | null>(null)
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 50)
     window.addEventListener('scroll', handler)
     return () => window.removeEventListener('scroll', handler)
   }, [])
+
+  // Scroll-spy: qué sección está "activa" mientras se scrollea, para resaltar
+  // su link en el nav. rootMargin angosto al centro del viewport en vez de
+  // medir qué sección ocupa más pantalla — las secciones tienen altos muy
+  // dispares (el sticky de TimelineStage mide 480-760vh y no tiene id propio),
+  // así que medir proporción de intersección siempre favorecería a las cortas.
+  // La franja central es el truco estándar de scroll-spy, independiente del
+  // alto de cada sección.
+  useEffect(() => {
+    const els = TRACKED_IDS.map((id) => document.getElementById(id)).filter((el): el is HTMLElement => el !== null)
+    if (els.length === 0) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const hit = entries.find((e) => e.isIntersecting)
+        if (hit) setActiveId(hit.target.id)
+      },
+      { rootMargin: '-45% 0px -45% 0px', threshold: 0 }
+    )
+    els.forEach((el) => observer.observe(el))
+    return () => observer.disconnect()
+  }, [])
+
+  // Mismo acento que ya usa el resto del sitio para "seleccionado" (ver
+  // PriceCalculator.tsx: color #AA1120 + fontWeight 700 en la tipología activa).
+  const isActive = (key: keyof typeof NAV_ITEMS) => NAV_ITEMS[key].href === `#${activeId}`
+
+  // Escritorio: el fondo de la barra cambia con `scrolled` (transparente sobre
+  // el video / blanco al scrollear), así que el color por defecto depende de eso.
+  function desktopLinkStyle(key: keyof typeof NAV_ITEMS) {
+    if (isActive(key)) return { color: '#AA1120', fontWeight: 700 }
+    return { color: scrolled ? '#2E2A26' : 'rgba(242,236,224,0.9)' }
+  }
+
+  // Celular: el menú desplegado siempre tiene fondo blanco (ver className más
+  // abajo), sin importar `scrolled` — a diferencia del de escritorio, acá el
+  // color por defecto es fijo.
+  function mobileLinkStyle(key: keyof typeof NAV_ITEMS) {
+    if (isActive(key)) return { color: '#AA1120', fontWeight: 700 }
+    return { color: '#2E2A26' }
+  }
 
   return (
     <>
@@ -98,7 +148,7 @@ export default function Navbar() {
                   key={key}
                   href={NAV_ITEMS[key].href}
                   className="text-sm font-medium transition-colors hover:opacity-80"
-                  style={{ color: scrolled ? '#2E2A26' : 'rgba(242,236,224,0.9)' }}
+                  style={desktopLinkStyle(key)}
                 >
                   {NAV_ITEMS[key].label}
                 </a>
@@ -153,7 +203,7 @@ export default function Navbar() {
                   href={NAV_ITEMS[key].href}
                   onClick={() => setMenuOpen(false)}
                   className="block py-3 text-sm font-medium"
-                  style={{ color: '#2E2A26', borderBottom: '1px solid #F2ECE0' }}
+                  style={{ ...mobileLinkStyle(key), borderBottom: '1px solid #F2ECE0' }}
                 >
                   {NAV_ITEMS[key].label}
                 </a>

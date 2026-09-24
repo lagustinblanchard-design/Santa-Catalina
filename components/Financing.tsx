@@ -134,7 +134,7 @@ export default function Financing() {
             Financiación a medida
           </span>
           <h3 className="mt-3 text-2xl font-bold" style={{ color: '#2E2A26' }}>
-            Para consultar una financiación personalizada contacte un asesor
+            Para consultar la financiación que más se ajuste a tu presupuesto contactá a un asesor
           </h3>
           <a
             href={`https://wa.me/${SITE.WA_NUMBER.replace(/\D/g, '')}?text=${encodeURIComponent('Hola, quiero consultar una financiación personalizada para un lote en Santa Catalina.')}`}

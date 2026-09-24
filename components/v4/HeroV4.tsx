@@ -161,7 +161,7 @@ export default function HeroV4({ lots }: { lots: Lot[] }) {
       >
         <div className="mx-auto mb-2 h-8 w-px" style={{ background: 'linear-gradient(to bottom, transparent, rgba(242,236,224,0.5))' }} />
         <p className="text-xs" style={{ color: 'rgba(242,236,224,0.55)' }}>
-          Bajá: el terreno se queda quieto, el tiempo avanza.
+          Bajá: Conocé el alcance del proyecto.
         </p>
       </motion.div>
     </section>

@@ -59,17 +59,6 @@ export default function ProjectInfo() {
           </div>
         </AnimateIn>
 
-        {/* Location */}
-        <AnimateIn direction="left">
-          <div className="mb-16 rounded-2xl p-5 text-white sm:p-8" style={{ background: '#2E2A26' }}>
-            <h3 className="mb-3 text-xl font-bold">Ubicación</h3>
-            <p style={{ color: '#D8D2C7' }}>{SITE.location}</p>
-            <p className="mt-2 text-sm" style={{ color: '#6B6660' }}>
-              Corrientes Capital — zona de expansión urbana con acceso a servicios y vías principales.
-            </p>
-          </div>
-        </AnimateIn>
-
         {/* Entorno y accesos */}
         <AnimateIn>
           <div className="mb-16">
@@ -88,7 +77,7 @@ export default function ProjectInfo() {
 
         {/* Lot typologies */}
         <AnimateIn>
-          <div>
+          <div className="rounded-3xl p-5 shadow-sm sm:p-8" style={{ background: '#fff', border: '1px solid #D8D2C7' }}>
             <h3 className="mb-6 text-2xl font-bold" style={{ color: '#2E2A26' }}>Tipologías de lotes</h3>
             {(() => {
               // Las dos tipologías Mixto se muestran como una sola fila, con
