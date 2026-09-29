@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { SITE } from '@/lib/data'
 import AnimateIn from './AnimateIn'
+import { trackMeta } from './MetaPixel'
 
 type Field = 'name' | 'phone' | 'interest' | 'message'
 
@@ -45,6 +46,7 @@ export default function ContactForm() {
       })
       const data = await res.json().catch(() => null)
       if (!res.ok || !data?.ok) throw new Error('No se pudo enviar')
+      trackMeta('Lead', { content_name: form.interest || 'Contacto web' })
       setSent(true)
     } catch {
       setError('No se pudo enviar la consulta. Probá de nuevo o escribinos directamente por WhatsApp.')

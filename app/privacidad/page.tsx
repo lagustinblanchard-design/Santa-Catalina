@@ -41,7 +41,7 @@ export default function Privacidad() {
             de contacto (nombre, teléfono, tipo de lote de interés y mensaje) y, cuando escribís
             por WhatsApp, el número desde el que nos contactás. También podemos recopilar datos
             técnicos de navegación (tipo de dispositivo, páginas visitadas) a través de cookies
-            propias, según se detalla en la sección 6.
+            propias y, si lo aceptás, del píxel de Meta, según se detalla en la sección 6.
           </p>
 
           <h2 className={h2}>3. Finalidad</h2>
@@ -70,9 +70,12 @@ export default function Privacidad() {
           <h2 className={h2}>6. Cookies</h2>
           <p className={p}>
             Usamos cookies propias para recordar tu preferencia sobre este aviso y para el
-            funcionamiento básico del sitio. No usamos cookies de seguimiento publicitario. Podés
-            eliminar las cookies almacenadas desde la configuración de tu navegador en cualquier
-            momento.
+            funcionamiento básico del sitio. Solo si aceptás el aviso de cookies, también usamos el
+            píxel de Meta (Facebook e Instagram), que registra visitas, clics en WhatsApp y envíos
+            del formulario de contacto para medir y mejorar nuestros anuncios. Meta procesa esos
+            datos conforme a su propia política de privacidad, incluso fuera de Argentina. Si no
+            aceptás el aviso, el píxel no se carga. Podés eliminar las cookies almacenadas desde la
+            configuración de tu navegador en cualquier momento.
           </p>
 
           <h2 className={h2}>7. Tus derechos</h2>

@@ -5,6 +5,7 @@ import { SITE_URL } from '@/lib/site-url'
 import { organizationJsonLd } from '@/lib/structured-data'
 import CookieBanner from '@/components/CookieBanner'
 import Analytics from '@/components/Analytics'
+import MetaPixel from '@/components/MetaPixel'
 import './globals.css'
 
 const montserrat = Montserrat({
@@ -64,6 +65,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <CookieBanner />
         <Analytics />
+        <MetaPixel />
       </body>
     </html>
   )

@@ -39,7 +39,7 @@ export default function CookieBanner() {
     >
       <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 sm:flex-row sm:justify-between">
         <p className="text-sm" style={{ color: '#D8D2C7' }}>
-          Usamos cookies propias para mejorar tu experiencia en el sitio. Más información en nuestra{' '}
+          Usamos cookies propias y, si aceptás, cookies de medición y publicidad de Meta (Facebook e Instagram). Más información en nuestra{' '}
           <Link href="/privacidad" className="underline" style={{ color: '#fff' }}>
             Política de privacidad
           </Link>.
