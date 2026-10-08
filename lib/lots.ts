@@ -52,11 +52,11 @@ function lot(d: string, s: S): { dims: string; sqm: number; status: S; price?: n
 // ---- datos por manzana (fuente: planilla DISPONIBILIDAD LOTES - Drive) ----
 const MZ: Record<number, ReturnType<typeof lot>[]> = {
   1: [
-    lot('16.25x32',V), lot('15.5x32',V),  lot('15.5x32',V),  lot('15.5x32',F),
-    lot('15.5x32',F),  lot('15.5x32',V),  lot('15.5x32',V),  lot('15.5x32',V),
+    lot('16.25x32',V), lot('15.5x32.5',V),  lot('15.5x32.5',V),  lot('15.5x32.5',F),
+    lot('15x32.5',F),  lot('15.5x32.5',V),  lot('15.5x32.5',V),  lot('15.5x32.5',V),
     lot('12x30',V),    lot('12x30',D),    lot('12x30',D),    lot('12x30',D),
     lot('12x30',D),    lot('12x30',D),    lot('12x30',D),    lot('12x30',D),
-    lot('12x30',V),    lot('15x32',V),    lot('15x32',D),    lot('15x32',D),
+    lot('12x30',V),    lot('15x32',V),    lot('15x32',D),    lot('16.25x32',D),
   ],
   2: [
     lot('16x32.5',V),   lot('15.5x32.5',V), lot('15.5x32.5',V), lot('15.5x32.5',V),
@@ -66,7 +66,7 @@ const MZ: Record<number, ReturnType<typeof lot>[]> = {
     lot('12x30',D),     lot('12x30',V),     lot('12x30',V),     lot('16x30',V),
   ],
   3: [
-    lot('15.5x32.5',V), lot('15.5x32.5',V), lot('15.5x32.5',V), lot('15.5x32.5',V),
+    lot('15.5x32.5',V), lot('15.5x32.5',V), lot('15.5x32.5',V), lot('15x32.5',V),
     lot('15.5x32.5',V), lot('15.5x32.5',V), lot('15.5x32.5',V), lot('16.25x32',V),
     lot('16.25x32',V),  lot('15x32',V),     lot('15x32',V),     lot('12x30',V),
     lot('12x30',V),     lot('12x30',V),     lot('12x30',V),     lot('12x30',V),
