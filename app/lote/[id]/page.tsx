@@ -7,6 +7,8 @@ import {
 import { buildFeatures } from '@/components/lot-scene/geometry'
 import PrintButton from '@/components/PrintButton'
 import { headers } from 'next/headers'
+import QRCode from 'qrcode'
+import { AGENTS } from '@/lib/agents'
 
 // Ficha imprimible de un lote (/lote/M7-L12). Se abre desde la ficha del mapa 3D y se
 // guarda como PDF con el diálogo de impresión del navegador (PrintButton).
@@ -48,8 +50,19 @@ function MiniPlan({ lots, id }: { lots: ReturnType<typeof buildFeatures>; id: st
   )
 }
 
-export default async function LotePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function LotePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ ref?: string }>
+}) {
   const { id } = await params
+  // ?ref= lo agrega el botón "Ficha PDF" del mapa 3D si el visitante vino por un agente:
+  // el QR y el WhatsApp impresos quedan de ese agente.
+  const refParam = (await searchParams).ref?.toLowerCase()
+  const ref = refParam && Object.hasOwn(AGENTS, refParam) ? refParam : null
+  const waNumber = (ref && AGENTS[ref].phone) || SITE.WA_NUMBER
   let lots = LOTS
   try {
     lots = applyStatuses(await fetchLotStatuses())
@@ -67,8 +80,11 @@ export default async function LotePage({ params }: { params: Promise<{ id: strin
   const features = buildFeatures(lots)
   // Host del pedido y no SITE_URL: en Vercel, sin NEXT_PUBLIC_SITE_URL, SITE_URL es la URL
   // interna del deploy, no el dominio por el que entró el cliente.
-  const host = (await headers()).get('host') ?? ''
-  const waHref = `https://wa.me/${SITE.WA_NUMBER.replace(/\D/g, '')}?text=${encodeURIComponent(
+  const h = await headers()
+  const host = h.get('host') ?? ''
+  const lotUrl = `${h.get('x-forwarded-proto') ?? 'https'}://${host}/mapa-3d?lote=${lot.id}${ref ? `&ref=${ref}` : ''}`
+  const qrSvg = await QRCode.toString(lotUrl, { type: 'svg', margin: 0, color: { dark: '#2E2A26', light: '#0000' } })
+  const waHref = `https://wa.me/${waNumber.replace(/\D/g, '')}?text=${encodeURIComponent(
     `Hola, me interesa el Lote ${lot.lot} de la Manzana ${lot.block} — Santa Catalina.`,
   )}`
 
@@ -119,7 +135,13 @@ export default async function LotePage({ params }: { params: Promise<{ id: strin
       <footer className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t pt-4 text-sm">
         <div>
           <p className="font-bold">{SITE.developer}</p>
-          <p className="text-[#6B6660]">WhatsApp {SITE.WA_NUMBER} · Ver en 3D: {host}/mapa-3d?lote={lot.id}</p>
+          <p className="text-[#6B6660]">WhatsApp {waNumber}</p>
+          <p className="text-[#6B6660]">Ver en 3D: {host}/mapa-3d?lote={lot.id}</p>
+        </div>
+        <div className="flex items-center gap-3">
+          {/* SVG generado en el servidor por la librería qrcode, a partir de una URL propia — no hay input de usuario sin validar */}
+          <div className="h-24 w-24" dangerouslySetInnerHTML={{ __html: qrSvg }} />
+          <p className="max-w-[9rem] text-xs text-[#6B6660]">Escaneá para ver el lote en el recorrido 3D</p>
         </div>
         <div className="flex gap-3 print:hidden">
           <a href={waHref} target="_blank" rel="noopener noreferrer" className="rounded-xl px-5 py-3 text-sm font-bold text-white" style={{ background: '#25D366' }}>

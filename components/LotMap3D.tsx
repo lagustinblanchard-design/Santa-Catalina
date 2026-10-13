@@ -651,7 +651,7 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
                 {copied ? 'Link copiado ✓' : 'Compartir'}
               </button>
               <a
-                href={`/lote/${selected.id}`}
+                href={`/lote/${selected.id}${getStoredRef() ? `?ref=${getStoredRef()}` : ''}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 py-2 text-center"
