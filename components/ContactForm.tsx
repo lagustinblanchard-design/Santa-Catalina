@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { SITE } from '@/lib/data'
 import AnimateIn from './AnimateIn'
 import { trackMeta } from './MetaPixel'
+import { getStoredRef } from '@/lib/agents'
 
 type Field = 'name' | 'phone' | 'interest' | 'message'
 
@@ -42,7 +43,7 @@ export default function ContactForm() {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, ref: getStoredRef() }),
       })
       const data = await res.json().catch(() => null)
       if (!res.ok || !data?.ok) throw new Error('No se pudo enviar')

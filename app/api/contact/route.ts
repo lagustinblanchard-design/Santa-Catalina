@@ -7,6 +7,7 @@
  */
 import { sendAlertEmail } from '@/lib/alert-email'
 import { SITE } from '@/lib/data'
+import { AGENTS } from '@/lib/agents'
 
 function escapeHtml(s: string): string {
   return s
@@ -17,7 +18,7 @@ function escapeHtml(s: string): string {
 }
 
 export async function POST(request: Request) {
-  let body: { name?: unknown; phone?: unknown; interest?: unknown; message?: unknown }
+  let body: { name?: unknown; phone?: unknown; interest?: unknown; message?: unknown; ref?: unknown }
   try {
     body = await request.json()
   } catch {
@@ -28,6 +29,7 @@ export async function POST(request: Request) {
   const phone = typeof body.phone === 'string' ? body.phone.trim() : ''
   const interest = typeof body.interest === 'string' ? body.interest.trim() : ''
   const message = typeof body.message === 'string' ? body.message.trim() : ''
+  const agent = typeof body.ref === 'string' && Object.hasOwn(AGENTS, body.ref) ? AGENTS[body.ref] : undefined
 
   if (!name || !phone) {
     return Response.json({ ok: false, error: 'Nombre y teléfono son obligatorios' }, { status: 400 })
@@ -39,12 +41,13 @@ export async function POST(request: Request) {
       <li><strong>Nombre:</strong> ${escapeHtml(name)}</li>
       <li><strong>Teléfono:</strong> ${escapeHtml(phone)}</li>
       <li><strong>Interés:</strong> ${escapeHtml(interest) || '—'}</li>
+      ${agent ? `<li><strong>Agente (ref):</strong> ${escapeHtml(agent.name)} — ${escapeHtml(String(body.ref).toUpperCase())}</li>` : ''}
     </ul>
     ${message ? `<p><strong>Mensaje:</strong><br>${escapeHtml(message).replace(/\n/g, '<br>')}</p>` : ''}
   `.trim()
 
   const result = await sendAlertEmail(
-    `Consulta ${SITE.name} — ${interest || name}`,
+    `Consulta ${SITE.name} — ${interest || name}${agent ? ` [Ref: ${String(body.ref).toUpperCase()}]` : ''}`,
     html,
     SITE.CONTACT_EMAIL
   )

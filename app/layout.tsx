@@ -6,6 +6,7 @@ import { organizationJsonLd } from '@/lib/structured-data'
 import CookieBanner from '@/components/CookieBanner'
 import Analytics from '@/components/Analytics'
 import MetaPixel from '@/components/MetaPixel'
+import AgentRef from '@/components/AgentRef'
 import './globals.css'
 
 const montserrat = Montserrat({
@@ -66,6 +67,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <CookieBanner />
         <Analytics />
         <MetaPixel />
+        <AgentRef />
       </body>
     </html>
   )
