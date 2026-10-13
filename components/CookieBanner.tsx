@@ -32,7 +32,7 @@ export default function CookieBanner() {
 
   return (
     <div
-      className="fixed inset-x-0 bottom-0 z-50 px-4 py-4 sm:px-6"
+      className="fixed inset-x-0 bottom-0 z-50 px-4 py-4 sm:px-6 print:hidden"
       style={{ background: '#2E2A26' }}
       role="region"
       aria-label="Aviso de cookies"

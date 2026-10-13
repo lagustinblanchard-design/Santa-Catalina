@@ -27,6 +27,7 @@ import LotScene, { type LotSceneHandle, type LotFeature } from '@/components/lot
 import { STATUS_HEX, HAS_TERRAIN_MESH } from '@/components/lot-scene/constants'
 import { ROTATE_DEG_PER_SEC, HOLD_MS } from '@/components/lot-scene/camera'
 import { buildFeatures } from '@/components/lot-scene/geometry'
+import { getStoredRef } from '@/lib/agents'
 
 // ---------- Estilos ----------
 // Tipografía del recorrido 3D: Helvetica Bold en todo el chrome de overlay (títulos,
@@ -200,6 +201,49 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
     setMode('reel')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Link directo a un lote (?lote=M7-L12): salta la portada y vuela al lote con su ficha
+  // abierta. Mismo criterio que ?reel=1: window.location en vez de useSearchParams.
+  useEffect(() => {
+    if (!mounted) return
+    const id = new URLSearchParams(window.location.search).get('lote')?.toUpperCase()
+    const f = id && buildFeatures(lots).find((x) => x.id === id)
+    if (!f) return
+    setMode('free')
+    setSelected(f)
+    sceneRef.current?.flyTo({ ...INITIAL_VIEW_STATE, longitude: f.position[0], latitude: f.position[1], zoom: 18.8, pitch: 50 }, 2400)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mounted])
+
+  // La barra de direcciones refleja el lote abierto, así copiarla ya comparte ese lote.
+  useEffect(() => {
+    if (!mounted) return
+    const url = new URL(window.location.href)
+    if (selected) url.searchParams.set('lote', selected.id)
+    else url.searchParams.delete('lote')
+    window.history.replaceState(null, '', url)
+  }, [mounted, selected])
+
+  const [copied, setCopied] = useState(false)
+  const shareLot = async (f: LotFeature) => {
+    const url = new URL('/mapa-3d', window.location.origin)
+    url.searchParams.set('lote', f.id)
+    // Si el visitante vino por un agente, el link compartido sigue siendo de ese agente.
+    const ref = getStoredRef()
+    if (ref) url.searchParams.set('ref', ref)
+    const title = `Manzana ${f.block} · Lote ${f.lot} — ${SITE.name}`
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, url: url.toString() })
+        return
+      }
+      await navigator.clipboard.writeText(url.toString())
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // share cancelado por el usuario o clipboard bloqueado — no hay nada que hacer
+    }
+  }
 
   const counts = useMemo(
     () =>
@@ -579,7 +623,7 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
             </div>
             {selected.status === 'DISPONIBLE' && selected.price && (
               <div className="px-3 py-2" style={{ border: '1px solid rgba(255,18,0,0.3)', background: 'rgba(255,18,0,0.08)' }}>
-                <p style={{ fontFamily: HELVETICA, fontWeight: 700, fontSize: '0.55rem', letterSpacing: '0.1em', color: '#888', textTransform: 'uppercase' }}>Precio contado</p>
+                <p style={{ fontFamily: HELVETICA, fontWeight: 700, fontSize: '0.55rem', letterSpacing: '0.1em', color: '#888', textTransform: 'uppercase' }}>Precio de lista</p>
                 <p style={{ fontFamily: HELVETICA, fontSize: '1.3rem', fontWeight: 700, color: '#FF1200' }}>
                   USD {selected.price.toLocaleString('es-AR')}
                 </p>
@@ -598,6 +642,24 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
                 Consultar por WhatsApp →
               </a>
             )}
+            <div className="flex gap-2">
+              <button
+                onClick={() => shareLot(selected)}
+                className="flex-1 py-2 text-center"
+                style={{ fontFamily: HELVETICA, fontWeight: 700, fontSize: '0.65rem', letterSpacing: '0.1em', textTransform: 'uppercase', border: '1px solid #333', color: '#F5F0EB' }}
+              >
+                {copied ? 'Link copiado ✓' : 'Compartir'}
+              </button>
+              <a
+                href={`/lote/${selected.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 py-2 text-center"
+                style={{ fontFamily: HELVETICA, fontWeight: 700, fontSize: '0.65rem', letterSpacing: '0.1em', textTransform: 'uppercase', border: '1px solid #333', color: '#F5F0EB' }}
+              >
+                Ficha PDF
+              </a>
+            </div>
           </div>
         </div>
       )}
