@@ -49,6 +49,12 @@ export async function GET(request: Request) {
     <ul>
       <li><strong>Total de lotes encontrados:</strong> ${report.totalLots} (esperado: ${EXPECTED_TOTAL_LOTS})</li>
       <li><strong>Manzanas sin datos:</strong> ${report.emptyBlocks.length ? report.emptyBlocks.join(', ') : 'ninguna'}</li>
+      <li><strong>Estados que el sitio no reconoce:</strong> ${
+        report.unrecognized.length
+          ? report.unrecognized.map((u) => `${u.id} = "${u.value}"`).join(', ') +
+            ' — el sitio los muestra como VENDIDO. Corregir el texto en el Excel o avisar para que el sitio lo reconozca.'
+          : 'ninguno'
+      }</li>
     </ul>
     <p>Mientras esto no se resuelva, esas manzanas se muestran en el sitio con el dato
     de respaldo (que puede estar desactualizado), no con el Excel real. Revisar el

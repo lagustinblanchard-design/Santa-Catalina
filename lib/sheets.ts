@@ -7,7 +7,11 @@ function mapStatus(raw: string, note: string): LotStatus {
   if (s.includes('FIDEICOMISO')) return 'FIDEICOMISO'
   if (s.includes('NO COMERCIALIZABLE')) return 'NO_COMERCIALIZABLE'
   if (s === 'RESERVADO') return 'RESERVADO'
-  if (s === 'DISPONIBLE') return 'DISPONIBLE'
+  // "DISPONIBLE - ROSS" (M7-L21, M14-L19): disponible, con el nombre del inversor
+  // agregado a mano en la celda. Antes la comparación era exacta (=== 'DISPONIBLE') y
+  // cualquier texto extra caía abajo como VENDIDO. "NO DISPONIBLE" no entra acá: no
+  // empieza con DISPONIBLE, y sigue yendo a VENDIDO a propósito (ver más abajo).
+  if (s === 'DISPONIBLE' || s.startsWith('DISPONIBLE ')) return 'DISPONIBLE'
   // "VENDIDO" con nota "TERCEROS" = vendido fuera del canal de comercialización
   // (acuerdo privado), mismo tratamiento que FIDEICOMISO — no un vendido normal.
   if (s === 'VENDIDO' && note.toUpperCase().includes('TERCEROS')) return 'FIDEICOMISO'
@@ -37,28 +41,47 @@ function parseCSV(text: string): string[][] {
   return rows
 }
 
-async function fetchManzana(mz: number): Promise<Record<string, LotStatus>> {
+// Valores de estado que el mapeo de arriba conoce de verdad. Cualquier otro texto cae
+// a VENDIDO por defecto (lo más seguro: nunca ofrecer algo que quizás no está libre),
+// pero ese default es justo lo que escondió "DISPONIBLE - ROSS" — por eso el chequeo
+// diario avisa de los valores que no reconoce en vez de dejarlos pasar en silencio.
+function isRecognizedStatus(raw: string): boolean {
+  const s = raw.toUpperCase().trim()
+  return (
+    s === 'VENDIDO' || s === 'RESERVADO' || s === 'NO DISPONIBLE' ||
+    s === 'DISPONIBLE' || s.startsWith('DISPONIBLE ') ||
+    s.includes('FIDEICOMISO') || s.includes('NO COMERCIALIZABLE')
+  )
+}
+
+type SheetRow = { lot: number; raw: string; note: string }
+
+async function fetchManzanaRows(mz: number): Promise<SheetRow[]> {
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=MZ+${mz}`
   let res: Response
   try {
     // Timeout corto: si Sheets se cuelga para esta manzana, no debe trabar la página
-    // entera — se resuelve como {} y esa manzana cae al dato hardcodeado de fallback.
+    // entera — se resuelve como [] y esa manzana cae al dato hardcodeado de fallback.
     res = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(6000) })
   } catch {
-    return {}
+    return []
   }
-  if (!res.ok) return {}
+  if (!res.ok) return []
 
-  const statuses: Record<string, LotStatus> = {}
+  const rows: SheetRow[] = []
   for (const row of parseCSV(await res.text())) {
     const c10 = row[10] ?? ''
     const c12 = (row[12] ?? '').trim()
     const c13 = row[13] ?? ''
     const lotMatch = c10.match(/LOTE\s+(\d+)/i)
-    if (lotMatch && c12) {
-      statuses[`M${mz}-L${parseInt(lotMatch[1])}`] = mapStatus(c12, c13)
-    }
+    if (lotMatch && c12) rows.push({ lot: parseInt(lotMatch[1]), raw: c12, note: c13 })
   }
+  return rows
+}
+
+async function fetchManzana(mz: number): Promise<Record<string, LotStatus>> {
+  const statuses: Record<string, LotStatus> = {}
+  for (const r of await fetchManzanaRows(mz)) statuses[`M${mz}-L${r.lot}`] = mapStatus(r.raw, r.note)
   return statuses
 }
 
@@ -82,30 +105,34 @@ export type SheetHealthReport = {
   totalLots: number
   perBlock: Record<number, number>
   emptyBlocks: number[]
+  /** Lotes cuyo estado en el Excel no se reconoce (se muestran como VENDIDO). */
+  unrecognized: { id: string; value: string }[]
   checkedAt: string
 }
 
 export async function checkSheetHealth(): Promise<SheetHealthReport> {
   const perBlock: Record<number, number> = {}
   const emptyBlocks: number[] = []
+  const unrecognized: { id: string; value: string }[] = []
 
   await Promise.all(
     Array.from({ length: 14 }, async (_, i) => {
       const mz = i + 1
-      const statuses = await fetchManzana(mz)
-      const count = Object.keys(statuses).length
-      perBlock[mz] = count
-      if (count === 0) emptyBlocks.push(mz)
+      const rows = await fetchManzanaRows(mz)
+      perBlock[mz] = rows.length
+      if (rows.length === 0) emptyBlocks.push(mz)
+      for (const r of rows) if (!isRecognizedStatus(r.raw)) unrecognized.push({ id: `M${mz}-L${r.lot}`, value: r.raw })
     })
   )
 
   const totalLots = Object.values(perBlock).reduce((a, b) => a + b, 0)
 
   return {
-    ok: emptyBlocks.length === 0 && totalLots === EXPECTED_TOTAL_LOTS,
+    ok: emptyBlocks.length === 0 && totalLots === EXPECTED_TOTAL_LOTS && unrecognized.length === 0,
     totalLots,
     perBlock,
     emptyBlocks,
+    unrecognized,
     checkedAt: new Date().toISOString(),
   }
 }
