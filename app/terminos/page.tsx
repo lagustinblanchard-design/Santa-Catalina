@@ -3,6 +3,8 @@ import { SITE } from '@/lib/data'
 
 export const metadata = {
   title: `Términos y condiciones | ${SITE.name}`,
+  description: `Condiciones de uso del sitio de ${SITE.name}: carácter informativo de precios y disponibilidad, propiedad intelectual y legislación aplicable.`,
+  alternates: { canonical: '/terminos' },
 }
 
 const h2 = 'mt-10 text-xl font-bold'

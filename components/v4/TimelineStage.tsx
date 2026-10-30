@@ -86,7 +86,13 @@ function StageFrame({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={`/timeline/${frame.id}.webp`}
-            alt=""
+            // La foto del dron es real; el resto son ilustraciones de cada etapa de obra.
+            // Se dicen así a propósito (y no como "foto") para no hacer pasar un render por registro real.
+            alt={
+              frame.isReal
+                ? 'Foto aérea real del loteo Santa Catalina, Corrientes, tomada con dron'
+                : `Ilustración de la obra del loteo Santa Catalina — ${frame.title} ${frame.body}`
+            }
             className="h-full w-full object-cover"
             loading="eager"
             decoding="async"

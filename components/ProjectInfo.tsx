@@ -18,7 +18,7 @@ export default function ProjectInfo() {
             <span className="mb-3 inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest text-white" style={{ backgroundColor: '#AA1120' }}>
               El proyecto
             </span>
-            <h2 className="text-3xl font-black sm:text-4xl" style={{ color: '#2E2A26' }}>Barrio Santa Catalina</h2>
+            <h2 className="text-3xl font-black sm:text-4xl" style={{ color: '#2E2A26' }}>Lotes residenciales y mixtos en Santa Catalina, Corrientes</h2>
             <p className="mt-4 text-lg max-w-2xl mx-auto" style={{ color: '#6B6660', lineHeight: 1.7 }}>
               Loteo residencial y mixto comercializado por{' '}
               <strong style={{ color: '#2E2A26' }}>RE/MAX PAYÉ</strong> en Corrientes Capital.

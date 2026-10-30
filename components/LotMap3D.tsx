@@ -565,12 +565,15 @@ export default function LotMap3D({ lots }: { lots: Lot[] }) {
           <p style={{ fontFamily: HELVETICA, fontWeight: 700, fontSize: '0.7rem', letterSpacing: '0.3em', color: '#FF1200', textTransform: 'uppercase' }}>
             Recorrido virtual
           </p>
-          <h1
+          {/* <p> y no <h1>: el H1 de la página vive en app/mapa-3d/page.tsx (para que esté
+              en el HTML que lee Google, antes de que cargue el mapa). Dos H1 a la vez
+              ensucian la jerarquía; el aspecto visual no cambia (el tamaño va por clase). */}
+          <p
             className="mt-2 text-4xl drop-shadow-lg md:text-5xl"
             style={{ fontFamily: HELVETICA, fontWeight: 700, color: '#F5F0EB', textTransform: 'uppercase' }}
           >
             {SITE.name}
-          </h1>
+          </p>
           <p style={{ fontFamily: HELVETICA, fontWeight: 700, fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)', marginTop: '0.75rem', maxWidth: 420 }}>
             Corrientes Capital · 306 lotes · {SITE.stage}
           </p>

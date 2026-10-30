@@ -3,6 +3,8 @@ import { SITE } from '@/lib/data'
 
 export const metadata = {
   title: `Política de privacidad | ${SITE.name}`,
+  description: `Qué datos recopila ${SITE.name}, para qué se usan, qué cookies y servicios de terceros usa el sitio, y cómo ejercer tus derechos.`,
+  alternates: { canonical: '/privacidad' },
 }
 
 const h2 = 'mt-10 text-xl font-bold'

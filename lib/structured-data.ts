@@ -17,6 +17,7 @@ export function organizationJsonLd() {
     '@type': 'RealEstateAgent',
     name: SITE.broker,
     url: SITE_URL,
+    logo: `${SITE_URL}/logo-paye.png`,
     email: SITE.CONTACT_EMAIL,
     telephone: SITE.WA_NUMBER,
     areaServed: {
@@ -49,7 +50,8 @@ export function listingJsonLd() {
       `financiación en pesos y dólares. Comercializado por ${SITE.broker}.`,
     url: SITE_URL,
     image: `${SITE_URL}/hero-poster.webp`,
-    datePosted: '2025-01-01',
+    // Sin `datePosted`: tenía '2025-01-01' fijo (una fecha inventada, nunca actualizada) y
+    // no es obligatorio para RealEstateListing. Mejor omitirlo que declarar una fecha falsa.
     address: {
       '@type': 'PostalAddress',
       addressLocality: 'Corrientes',
