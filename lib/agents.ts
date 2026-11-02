@@ -16,6 +16,7 @@ export type Agent = {
 
 export const AGENTS: Record<string, Agent> = {
   leandro: { name: 'Leandro Blanchard', phone: '+5493794339447' },
+  fabricio: { name: 'Fabricio Gonzalez', phone: '+5493794866624' },
 }
 
 export const REF_STORAGE_KEY = 'sc_ref'
