@@ -12,6 +12,10 @@
  * - Lead: lo dispara ContactForm al confirmar el envío, vía trackMeta().
  *
  * NEXT_PUBLIC_META_PIXEL_ID permite cambiarlo desde Vercel; el ID no es secreto.
+ *
+ * Segundo píxel "Datos Web SC" (portafolio de Leandro Blanchard, asignado a su cuenta
+ * publicitaria) para que sus campañas optimicen por Contact. fbq('track') sin ID manda
+ * cada evento a todos los píxeles inicializados, así que no hay que duplicar llamadas.
  */
 
 import { useEffect, useState } from 'react'
@@ -20,6 +24,7 @@ import Script from 'next/script'
 import { COOKIE_CONSENT_KEY, COOKIE_CONSENT_EVENT } from '@/lib/consent'
 
 const PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID || '1073694507423162'
+const PIXEL_ID_LEANDRO = process.env.NEXT_PUBLIC_META_PIXEL_ID_LEANDRO || '2744156389311895'
 
 type Fbq = (...args: unknown[]) => void
 
@@ -71,6 +76,7 @@ export default function MetaPixel() {
         t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
         document,'script','https://connect.facebook.net/en_US/fbevents.js');
         fbq('init', '${PIXEL_ID}');
+        fbq('init', '${PIXEL_ID_LEANDRO}');
         fbq('track', 'PageView');
       `}
     </Script>
