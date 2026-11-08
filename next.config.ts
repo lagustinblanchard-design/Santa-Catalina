@@ -43,7 +43,11 @@ const securityHeaders = [
       // blob:: @loaders.gl crea los web workers de decodificación (Tile3DLayer/CesiumIonLoader)
       // desde blob URLs. Sin esto caen a default-src 'self' y quedan bloqueados en silencio.
       "worker-src 'self' blob:",
-      "frame-src 'none'",
+      // www.facebook.com: el píxel de Meta manda por POST, dentro de un iframe oculto, los
+      // eventos que no entran en una URL (el clic automático en el botón de un formulario
+      // incluye los campos del formulario). Con frame-src 'none' esos eventos se perdían
+      // (verificado 2026-11-08 en "Enviar consulta"). Solo ese origen; nada más puede enmarcarse.
+      "frame-src https://www.facebook.com",
     ].join('; '),
   },
 ]
