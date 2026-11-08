@@ -5,9 +5,10 @@ El cerebro de Pilu (IA, precios desde la planilla, escalación, alta del lead) v
 del CRM (`inmobiliaria/web/backend`). Definición de Pilu: `PROMPT-LEADS-WHATSAPP.md` sección 21
 (repo del CRM). No se copian esas reglas acá: una sola fuente.
 
-**Estado:** el widget está construido y **apagado**. No se ve nada en la web hasta que:
-1. exista el endpoint de abajo en el CRM (publicado),
-2. el CRM permita el origen de esta web en CORS (`CORS_ORIGINS`),
+**Estado:** el widget está construido y **apagado**. El endpoint ya está construido y probado en el CRM (rama
+`leads-whatsapp`: `api/routes/pilu.py`, `core/pilu.py`, migración `0038_pilu_web`). No se ve nada en la web hasta que:
+1. se publique el CRM con ese endpoint y se prenda `pilu_web_activo=true` en `config_app` (sin eso responde 503),
+2. el CRM permita el origen de esta web en CORS (`CORS_ORIGINS` en Railway),
 3. se cargue `NEXT_PUBLIC_PILU_API_URL` en Vercel y se **vuelva a publicar** (la variable se
    incrusta en el build; también activa los párrafos de Pilu en `/privacidad` y `/terminos` y el
    origen en la CSP de `next.config.ts`).
@@ -72,6 +73,7 @@ Errores: `429` = rate limit (la web muestra "muchos mensajes seguidos"); cualqui
 
 ## Pendiente antes de prender
 
-- Endpoint construido, probado y publicado en el CRM (rama de leads; la F2 está esperando OK).
+- Publicar el CRM (rama de leads; la F2 está esperando OK) con `ANTHROPIC_API_KEY` cargada y la planilla de precios
+  conectada (`/crm/precios/planilla`). Cargar en `pilu_refs` el agente del CRM de cada código `?ref=` (`lib/agents.ts`).
 - Hernán aprueba los textos de Pilu y los párrafos nuevos de `/privacidad` y `/terminos` (nombran a Anthropic como proveedor de IA y dicen que se guarda la conversación: **tienen que coincidir con lo que haga el CRM de verdad**).
 - Probar de punta a punta en producción con un `?ref=` real.
