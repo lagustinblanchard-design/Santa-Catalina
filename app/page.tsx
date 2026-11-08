@@ -8,6 +8,7 @@ import RendersV4 from '@/components/v4/RendersV4'
 import CierreV4 from '@/components/v4/CierreV4'
 import SiteFooter from '@/components/SiteFooter'
 import WhatsAppButton from '@/components/WhatsAppButton'
+import PiluChat from '@/components/pilu/PiluChat'
 import { LOTS, applyStatuses } from '@/lib/lots'
 import { fetchLotStatuses } from '@/lib/sheets'
 import { listingJsonLd } from '@/lib/structured-data'
@@ -58,6 +59,8 @@ export default async function Home() {
       </main>
       <SiteFooter />
       <WhatsAppButton />
+      {/* Pilu: apagado hasta que exista NEXT_PUBLIC_PILU_API_URL (ver lib/pilu.ts). Solo en la home. */}
+      <PiluChat />
     </>
   )
 }

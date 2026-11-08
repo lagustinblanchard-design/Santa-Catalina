@@ -1,5 +1,17 @@
 import type { NextConfig } from "next";
 
+// Origen del CRM donde vive el cerebro de Pilu (ver components/pilu/PiluChat.tsx y
+// docs/PILU-CONTRATO.md). Sin NEXT_PUBLIC_PILU_API_URL queda vacío y la CSP no cambia.
+// Va en connect-src porque el chat usa fetch() directo desde el navegador: si falta acá
+// el navegador bloquea el pedido en silencio (mismo problema que tuvo el píxel de Meta).
+const piluOrigin = (() => {
+  try {
+    return process.env.NEXT_PUBLIC_PILU_API_URL ? new URL(process.env.NEXT_PUBLIC_PILU_API_URL).origin : ''
+  } catch {
+    return ''
+  }
+})()
+
 const securityHeaders = [
   { key: 'X-Frame-Options',        value: 'SAMEORIGIN' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
@@ -27,7 +39,7 @@ const securityHeaders = [
       // Botpress Cloud (webchat en /v2): API + eventos en tiempo real del chat.
       // Lista fundada en el código fuente (defaultBaseApiUrl en @botpress/chat), no en doc oficial de CSP de Botpress —
       // confirmar contra la consola del navegador (Refused to connect/load) y ajustar si aparecen más orígenes.
-      "connect-src 'self' https://*.googleapis.com https://docs.google.com https://*.arcgisonline.com https://*.cesium.com https://assets.ion.cesium.com https://api.cesium.com https://unpkg.com https://chat.botpress.cloud https://webchat.botpress.cloud https://api.botpress.cloud https://files.bpcontent.cloud wss://*.botpress.cloud https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://www.facebook.com https://connect.facebook.net",
+      "connect-src 'self' https://*.googleapis.com https://docs.google.com https://*.arcgisonline.com https://*.cesium.com https://assets.ion.cesium.com https://api.cesium.com https://unpkg.com https://chat.botpress.cloud https://webchat.botpress.cloud https://api.botpress.cloud https://files.bpcontent.cloud wss://*.botpress.cloud https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://www.facebook.com https://connect.facebook.net" + (piluOrigin ? ` ${piluOrigin}` : ''),
       // blob:: @loaders.gl crea los web workers de decodificación (Tile3DLayer/CesiumIonLoader)
       // desde blob URLs. Sin esto caen a default-src 'self' y quedan bloqueados en silencio.
       "worker-src 'self' blob:",

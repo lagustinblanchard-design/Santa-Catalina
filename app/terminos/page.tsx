@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { SITE } from '@/lib/data'
+import { PILU_ENABLED } from '@/lib/pilu'
 
 export const metadata = {
   title: `Términos y condiciones | ${SITE.name}`,
@@ -65,10 +66,16 @@ export default function Terminos() {
 
           <h2 className={h2}>6. Enlaces y servicios de terceros</h2>
           <p className={p}>
-            El sitio integra servicios de terceros (Google Maps, WhatsApp, y en algunas secciones
-            un widget de chat) sobre los cuales {SITE.broker} no tiene control ni responsabilidad
+            El sitio integra servicios de terceros (Google Maps y WhatsApp{PILU_ENABLED ? ', y un proveedor de inteligencia artificial para el asistente virtual' : ''}) sobre los cuales {SITE.broker} no tiene control ni responsabilidad
             respecto de su disponibilidad o funcionamiento.
           </p>
+          {PILU_ENABLED && (
+            <p className={p}>
+              Pilu, el asistente virtual del sitio, es un sistema automático: sus respuestas son
+              orientativas, pueden contener errores y no constituyen una oferta. La información
+              definitiva la confirma siempre un asesor de {SITE.broker}.
+            </p>
+          )}
 
           <h2 className={h2}>7. Limitación de responsabilidad</h2>
           <p className={p}>

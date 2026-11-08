@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { SITE } from '@/lib/data'
+import { PILU_ENABLED } from '@/lib/pilu'
 
 export const metadata = {
   title: `Política de privacidad | ${SITE.name}`,
@@ -41,7 +42,7 @@ export default function Privacidad() {
           <p className={p}>
             Recopilamos los datos que nos proporcionás voluntariamente a través del formulario
             de contacto (nombre, teléfono, tipo de lote de interés y mensaje) y, cuando escribís
-            por WhatsApp, el número desde el que nos contactás. También podemos recopilar datos
+            por WhatsApp, el número desde el que nos contactás.{PILU_ENABLED ? ' Si usás el chat con Pilu, también recopilamos el contenido de la conversación.' : ''} También podemos recopilar datos
             técnicos de navegación (tipo de dispositivo, páginas visitadas) a través de cookies
             propias y, si lo aceptás, del píxel de Meta, según se detalla en la sección 6.
           </p>
@@ -57,17 +58,27 @@ export default function Privacidad() {
           <h2 className={h2}>4. Base legal</h2>
           <p className={p}>
             El tratamiento de tus datos se basa en tu consentimiento, otorgado al completar el
-            formulario de contacto o al iniciar una conversación por WhatsApp, conforme a la Ley
+            formulario de contacto{PILU_ENABLED ? ', al dejar tus datos en el chat con Pilu marcando la casilla de consentimiento' : ''} o al iniciar una conversación por WhatsApp, conforme a la Ley
             N.º 25.326 de Protección de Datos Personales de la República Argentina.
           </p>
 
           <h2 className={h2}>5. Servicios de terceros</h2>
           <p className={p}>
-            Este sitio utiliza Google Maps para mostrar la ubicación del loteo y, en algunas
-            secciones, un widget de chat (Botpress) para responder consultas. Estos proveedores
-            pueden procesar datos técnicos de tu navegación conforme a sus propias políticas de
+            Este sitio utiliza Google Maps para mostrar la ubicación del loteo. Este proveedor
+            puede procesar datos técnicos de tu navegación conforme a su propia política de
             privacidad.
           </p>
+          {PILU_ENABLED && (
+            <p className={p}>
+              Si usás el chat con Pilu, nuestro asistente virtual, tus mensajes se envían a los
+              servidores de {SITE.broker} y se procesan con un proveedor de inteligencia artificial
+              (Anthropic), que puede tratarlos fuera de Argentina. Pilu es un asistente automático y
+              puede cometer errores: los precios, planes y la disponibilidad los confirma siempre un
+              asesor. No escribas datos sensibles (documentos, claves o datos bancarios) en el chat.
+              Guardamos la conversación para poder continuarla y, si dejás tus datos, pasársela al
+              asesor que te contacte.
+            </p>
+          )}
 
           <h2 className={h2}>6. Cookies</h2>
           <p className={p}>
