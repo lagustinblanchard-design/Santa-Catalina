@@ -32,12 +32,18 @@ import {
   sendChat,
   sendLead,
   type PiluMessage,
+  type PiluIntent,
 } from '@/lib/pilu'
 
 const INTRO =
   '¡Hola! 🐆 Soy Pilu, asistente virtual de RE/MAX Payé. Puedo contarle sobre los lotes de Santa Catalina, precios y formas de pago. Si prefiere hablar con una persona, avíseme.'
 
-const QUICK_REPLIES = ['Ver precios', 'Formas de pago', 'Quiero visitar el loteo'] as const
+// Botones del saludo, con la intención que se le avisa al CRM (ver PiluIntent en lib/pilu.ts).
+const QUICK_REPLIES: { label: string; intent: PiluIntent }[] = [
+  { label: 'Ver precios', intent: 'precios' },
+  { label: 'Formas de pago', intent: 'formas_pago' },
+  { label: 'Quiero visitar el loteo', intent: 'visita' },
+]
 const HUMAN_CHIP = 'Hablar con una persona'
 
 const LEAD_KEY = 'pilu_lead'
@@ -88,6 +94,8 @@ function PiluChatInner() {
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<ChatError>(null)
   const [lastText, setLastText] = useState('')
+  const [lastIntent, setLastIntent] = useState<PiluIntent | undefined>(undefined)
+  const [suggested, setSuggested] = useState<string[]>([])
   const [contact, setContact] = useState<Contact>('none')
   const [nudge, setNudge] = useState(false)
 
@@ -176,7 +184,7 @@ function PiluChatInner() {
     setContact('form')
   }
 
-  async function send(raw: string, retry = false) {
+  async function send(raw: string, retry = false, intent?: PiluIntent) {
     const t = raw.trim().slice(0, MAX_MESSAGE_CHARS)
     if (!t || pending) return
     if (!retry && userCount >= MAX_USER_MESSAGES) {
@@ -187,11 +195,14 @@ function PiluChatInner() {
     if (!retry) push(makeMessage('user', t))
     setText('')
     setLastText(t)
+    setLastIntent(intent)
+    setSuggested([])
     setError(null)
     setPending(true)
     try {
-      const r = await sendChat(t)
+      const r = await sendChat(t, intent)
       push(makeMessage('pilu', r.reply))
+      setSuggested(r.quick_replies ?? [])
       if (r.ask_contact && contact !== 'sent') setContact('form')
       else if (contact === 'none' && userCount + (retry ? 0 : 1) >= OFFER_ADVISOR_AFTER) setContact('offer')
     } catch (e) {
@@ -202,12 +213,12 @@ function PiluChatInner() {
     }
   }
 
-  function onChip(label: string) {
+  function onChip(label: string, intent?: PiluIntent) {
     if (label === HUMAN_CHIP) {
       push(makeMessage('user', label))
       askForPerson()
     } else {
-      void send(label)
+      void send(label, false, intent)
     }
   }
 
@@ -323,20 +334,17 @@ function PiluChatInner() {
             ))}
 
             {userCount === 0 && contact === 'none' && (
-              <div className="flex flex-wrap gap-2 pt-1">
-                {[...QUICK_REPLIES, HUMAN_CHIP].map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => onChip(c)}
-                    disabled={pending}
-                    className="rounded-full px-3.5 py-2 text-sm font-medium transition-colors hover:bg-white"
-                    style={{ border: '1px solid #AA1120', color: '#AA1120', background: 'transparent' }}
-                  >
-                    {c}
-                  </button>
-                ))}
-              </div>
+              <Chips
+                items={[...QUICK_REPLIES, { label: HUMAN_CHIP }]}
+                disabled={pending}
+                onPick={(c) => onChip(c.label, 'intent' in c ? c.intent : undefined)}
+              />
+            )}
+
+            {/* Botones que sugiere Pilu en su última respuesta (ej. "De contado" / "Financiado").
+                Desaparecen apenas el visitante escribe o elige uno. */}
+            {!pending && suggested.length > 0 && (
+              <Chips items={suggested.map((label) => ({ label }))} disabled={pending} onPick={(c) => void send(c.label)} />
             )}
 
             {pending && (
@@ -354,7 +362,7 @@ function PiluChatInner() {
                 </p>
                 <div className="mt-2 flex flex-wrap gap-3">
                   {error !== 'rate_limit' && lastText && (
-                    <button type="button" onClick={() => void send(lastText, true)} className="font-bold underline">
+                    <button type="button" onClick={() => void send(lastText, true, lastIntent)} className="font-bold underline">
                       Reintentar
                     </button>
                   )}
@@ -496,6 +504,25 @@ function PiluChatInner() {
           </form>
         </div>
       )}
+    </div>
+  )
+}
+
+function Chips<T extends { label: string }>({ items, disabled, onPick }: { items: T[]; disabled: boolean; onPick: (c: T) => void }) {
+  return (
+    <div className="flex flex-wrap gap-2 pt-1">
+      {items.map((c) => (
+        <button
+          key={c.label}
+          type="button"
+          onClick={() => onPick(c)}
+          disabled={disabled}
+          className="rounded-full px-3.5 py-2 text-sm font-medium transition-colors hover:bg-white"
+          style={{ border: '1px solid #AA1120', color: '#AA1120', background: 'transparent' }}
+        >
+          {c.label}
+        </button>
+      ))}
     </div>
   )
 }

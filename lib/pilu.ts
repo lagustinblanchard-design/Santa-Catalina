@@ -29,10 +29,19 @@ const UTM_PARAMS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', '
 export type PiluRole = 'user' | 'pilu'
 export type PiluMessage = { id: string; role: PiluRole; text: string }
 
+/**
+ * Intención explícita de los botones rápidos del saludo. Le dice al CRM qué pidió el
+ * visitante sin que la IA lo tenga que adivinar — "precios" en particular se responde con
+ * la lista armada desde la planilla, no redactada por la IA (ver docs/PILU-CONTRATO.md).
+ */
+export type PiluIntent = 'precios' | 'formas_pago' | 'visita'
+
 export type PiluChatReply = {
   reply: string
   /** El servidor detectó que conviene pasar con una persona (o el visitante la pidió): mostrar el formulario. */
   ask_contact?: boolean
+  /** Botones de respuesta sugeridos por Pilu (ej. "De contado" / "Financiado"). Se muestran bajo su último mensaje. */
+  quick_replies?: string[]
 }
 
 export class PiluError extends Error {
@@ -141,10 +150,14 @@ async function post<T>(body: Record<string, unknown>): Promise<T> {
   }
 }
 
-export async function sendChat(message: string): Promise<PiluChatReply> {
-  const data = await post<Partial<PiluChatReply>>({ message: message.slice(0, MAX_MESSAGE_CHARS) })
+export async function sendChat(message: string, intent?: PiluIntent): Promise<PiluChatReply> {
+  const data = await post<Partial<PiluChatReply>>({ message: message.slice(0, MAX_MESSAGE_CHARS), ...(intent ? { intent } : {}) })
   if (typeof data.reply !== 'string' || !data.reply.trim()) throw new PiluError('server', 'Respuesta vacía')
-  return { reply: data.reply, ask_contact: data.ask_contact === true }
+  // Botones sugeridos: solo texto, pocos y cortos — vienen del servidor pero se muestran tal cual.
+  const quick = Array.isArray(data.quick_replies)
+    ? data.quick_replies.filter((q): q is string => typeof q === 'string' && q.trim() !== '').map((q) => q.trim().slice(0, 40)).slice(0, 4)
+    : []
+  return { reply: data.reply, ask_contact: data.ask_contact === true, quick_replies: quick }
 }
 
 export type LeadInput = { nombre: string; telefono: string; hp: string }

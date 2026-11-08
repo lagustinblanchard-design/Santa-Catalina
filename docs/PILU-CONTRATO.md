@@ -23,6 +23,7 @@ El navegador llama directo (no pasa por esta web), `credentials: 'omit'`.
 |---|---|---|
 | `conversation_id` | string | UUID aleatorio generado en el navegador (sessionStorage). Sin datos personales. El servidor guarda el historial **por este id**: el cliente manda solo el mensaje nuevo. |
 | `message` | string (≤ 500) | Mensaje del visitante. Ausente cuando se manda `lead`. |
+| `intent` | `"precios"` \| `"formas_pago"` \| `"visita"` | Solo cuando el visitante toca un botón rápido del saludo (el `message` trae el texto del botón). `"precios"` se responde con la lista armada por código desde la planilla — ver sección 21 del PROMPT del CRM, "Ver precios". Si el visitante lo escribe a mano no viene `intent`: el CRM lo detecta igual. |
 | `lead` | objeto | Ausente en el chat normal. Ver abajo. |
 | `ref` | string \| null | Código del agente cuyo link trajo al visitante (`?ref=fabricio`, ver `lib/agents.ts`). Si es válido, el lead se asigna **directo a ese agente** (si no, reparto normal). Puede traer un código que el CRM no conoce: validar. |
 | `utm` | objeto | `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `utm_term`, `fbclid` con los que llegó (los que existan). Es atribución de campaña: guardarla con el lead. |
@@ -40,8 +41,10 @@ El navegador llama directo (no pasa por esta web), `credentials: 'omit'`.
 
 ### Respuesta
 
-Chat normal (200): `{ "reply": string, "ask_contact"?: boolean }`
+Chat normal (200): `{ "reply": string, "ask_contact"?: boolean, "quick_replies"?: string[] }`
 - `reply`: texto de Pilu (se muestra tal cual, texto plano, con saltos de línea). No vacío.
+- `quick_replies`: botones de respuesta sugeridos bajo el último mensaje de Pilu (la web muestra hasta 4, de hasta 40
+  caracteres). Al tocar uno se manda su texto como mensaje normal. Ej.: tras la lista de precios, `["De contado", "Financiado"]`.
 - `ask_contact: true`: conviene pasar con una persona (el visitante la pidió, o escalación según la sección 21: humano, reclamo, abogado, estafa, cancelar, reservar, seña, quiero comprar, objeción fuera del playbook). La web muestra el formulario de contacto.
 
 Alta del lead (200): `{ "lead_ok": true }` → el CRM hace `ingresar_lead(fuente="web", ...)` y entra al reparto.
@@ -54,6 +57,8 @@ Errores: `429` = rate limit (la web muestra "muchos mensajes seguidos"); cualqui
 - **CORS** solo para el origen de esta web (`https://santacatalina.payedesarrollos.com`). Responder el preflight `OPTIONS`.
 - **Nunca inventar cifras**: precios solo de la planilla "LISTA DE PRECIOS SANTA CATALINA", precio de lista + "abonando al contado tiene un 5% de descuento" sin calcular el monto (sección 21).
 - Sin datos sensibles ni de cobranzas en ninguna respuesta (sección 2 del PROMPT del CRM).
+- Guardar cada conversación para el **aprendizaje supervisado** de la sección 21 (reporte semanal de preguntas y
+  objeciones, respuestas nuevas solo con aprobación humana). Lo que diga `/privacidad` sobre guardar la charla depende de esto.
 - Longitud de `message` y de cada campo del lead: validar del lado del servidor, no confiar en la web.
 - Tiempo de respuesta: la web espera hasta **45 s** y después muestra error.
 
