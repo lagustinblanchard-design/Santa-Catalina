@@ -1,6 +1,6 @@
 /**
  * Recibe el formulario de contacto (components/ContactForm.tsx) y lo manda por
- * mail vía Resend a SITE.CONTACT_EMAIL. Antes esto era un link `mailto:` que
+ * mail vía Resend a SITE.CONTACT_EMAIL (o al agente, si llegó por su link ?ref= y tiene email). Antes esto era un link `mailto:` que
  * dependía de que el visitante tuviera un cliente de correo configurado —
  * si no lo tenía, no pasaba nada y el formulario igual mostraba "enviado".
  * Esta ruta confirma la entrega real antes de mostrar éxito.
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
   const result = await sendAlertEmail(
     `Consulta ${SITE.name} — ${interest || name}${agent ? ` [Ref: ${String(body.ref).toUpperCase()}]` : ''}`,
     html,
-    SITE.CONTACT_EMAIL
+    agent?.email ?? SITE.CONTACT_EMAIL
   )
 
   if (!result.sent) {
