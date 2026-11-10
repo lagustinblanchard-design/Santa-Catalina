@@ -15,6 +15,8 @@ const PHOTOS: GalleryItem[] = [
   { kind: 'photo', src: '/gallery/avance-2026-03.jpg', alt: 'Avance de obra — marzo 2026' },
   { kind: 'photo', src: '/gallery/avance-2026-06.jpg', alt: 'Avance de obra — junio 2026' },
   { kind: 'photo', src: '/gallery/avance-2026-09.jpg', alt: 'Avance de obra — septiembre 2026' },
+  { kind: 'photo', src: '/gallery/avance-2026-10-06.jpg', alt: 'Avance de obra — 6 de octubre de 2026 (dron)' },
+  { kind: 'photo', src: '/gallery/avance-2026-10-28.jpg', alt: 'Avance de obra — 28 de octubre de 2026 (dron)' },
 ]
 
 // Video real del vuelo de dron del 29/07/2026 (mismo vuelo que el ortomosaico
