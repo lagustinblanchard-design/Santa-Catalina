@@ -11,16 +11,16 @@ import WhatsAppButton from '@/components/WhatsAppButton'
 import PiluChat from '@/components/pilu/PiluChat'
 import { LOTS, applyStatuses } from '@/lib/lots'
 import { fetchLotStatuses } from '@/lib/sheets'
-import { listingJsonLd } from '@/lib/structured-data'
+import { listingJsonLd, faqJsonLd } from '@/lib/structured-data'
 
 // Título/descripción propios de la home con la frase que la gente busca ("lotes en
 // Corrientes"); antes heredaba el genérico del layout, que no la tenía. La canónica es
 // obligatoria acá: los links de agente (?ref=…) y de campaña (?utm_…, ?fbclid=…) abren
 // esta misma página con otra URL, y sin canónica Google las trata como copias.
-const TITLE = `Lotes en Corrientes Capital | ${SITE.name} – Santa Catalina`
+const TITLE = `Lotes y terrenos en Corrientes Capital, en cuotas | ${SITE.name}`
 const DESCRIPTION =
-  `Lotes residenciales y mixtos en Santa Catalina, Corrientes Capital: ${SITE.totalBlocks} manzanas ` +
-  `aprobadas, financiación en pesos y dólares. Comercializa ${SITE.broker}.`
+  `Lotes y terrenos en Santa Catalina, Corrientes Capital: ${SITE.totalBlocks} manzanas aprobadas, ` +
+  `financiación en cuotas en pesos y dólares, escritura. Comercializa ${SITE.broker}.`
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
@@ -48,6 +48,11 @@ export default async function Home() {
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(listingJsonLd()) }}
+      />
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd()) }}
       />
       <Navbar />
       <main>

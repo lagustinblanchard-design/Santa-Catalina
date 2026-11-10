@@ -4,6 +4,7 @@
 // machine-readable en todo el sitio.
 import { SITE, PRICES } from './data'
 import { SITE_URL } from './site-url'
+import { FAQ } from './faq'
 
 // Punto central del loteo — mismo valor que components/v4/scroll-stages.ts
 // (HANDOFF_VIEW), calibrado a ojo contra el ortomosaico real.
@@ -34,12 +35,10 @@ export function organizationJsonLd() {
 }
 
 // El loteo en sí — sólo en la home (app/page.tsx), que es donde efectivamente
-// se vende. cashUSD más bajo, con su descuento, como precio "desde".
+// se vende. Rango de precios de LISTA (lo mismo que muestra la página); antes declaraba
+// el de contado con descuento, que no aparece escrito en ningún lado de la página.
 export function listingJsonLd() {
-  const lowest = Object.values(PRICES).reduce((min, p) => {
-    const net = p.cashUSD * (1 - p.discount)
-    return net < min ? net : min
-  }, Infinity)
+  const lista = Object.values(PRICES).map((p) => p.cashUSD)
 
   return {
     '@context': 'https://schema.org',
@@ -64,9 +63,10 @@ export function listingJsonLd() {
       longitude: GEO.longitude,
     },
     offers: {
-      '@type': 'Offer',
+      '@type': 'AggregateOffer',
       priceCurrency: 'USD',
-      price: Math.round(lowest),
+      lowPrice: Math.min(...lista),
+      highPrice: Math.max(...lista),
       availability: 'https://schema.org/InStock',
       url: `${SITE_URL}/#lotes`,
     },
@@ -74,5 +74,18 @@ export function listingJsonLd() {
       '@type': 'RealEstateAgent',
       name: SITE.broker,
     },
+  }
+}
+
+// Preguntas frecuentes de la home — mismo texto que components/FAQ.tsx (lib/faq.ts).
+export function faqJsonLd() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: FAQ.map(({ q, a }) => ({
+      '@type': 'Question',
+      name: q,
+      acceptedAnswer: { '@type': 'Answer', text: a },
+    })),
   }
 }

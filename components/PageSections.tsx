@@ -5,6 +5,7 @@ import Financing from '@/components/Financing'
 import Zoning from '@/components/Zoning'
 import Gallery from '@/components/Gallery'
 import ContactForm from '@/components/ContactForm'
+import FAQSection from '@/components/FAQ'
 import type { Lot } from '@/lib/lots'
 
 // Cuerpo de secciones compartido por `/` y `/v3` — lo único que cambia entre
@@ -24,6 +25,7 @@ export default function PageSections({ lots }: { lots: Lot[] }) {
       <Financing />
       <Zoning />
       <Gallery />
+      <FAQSection />
       <ContactForm />
     </>
   )
