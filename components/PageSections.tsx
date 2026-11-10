@@ -6,7 +6,7 @@ import Zoning from '@/components/Zoning'
 import Gallery from '@/components/Gallery'
 import ContactForm from '@/components/ContactForm'
 import FAQSection from '@/components/FAQ'
-import type { Lot } from '@/lib/lots'
+import { availableBySize, type Lot } from '@/lib/lots'
 
 // Cuerpo de secciones compartido por `/` y `/v3` — lo único que cambia entre
 // ambas rutas es el Hero, así que las secciones no se forkean (ver el fork de
@@ -17,12 +17,13 @@ import type { Lot } from '@/lib/lots'
 // hermano del Hero cliente; si queda dentro de un árbol cliente, esos dos pasan
 // a cliente en silencio y empiezan a mandar JS sin que nada falle a la vista.
 export default function PageSections({ lots }: { lots: Lot[] }) {
+  const available = availableBySize(lots)
   return (
     <>
       <ProjectInfo />
       <GoogleMapsLotMap lots={lots} />
-      <PriceCalculator />
-      <Financing />
+      <PriceCalculator available={available} />
+      <Financing available={available} />
       <Zoning />
       <Gallery />
       <FAQSection />

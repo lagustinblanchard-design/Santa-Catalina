@@ -39,7 +39,12 @@ export const FAQ: Array<{ q: string; a: string }> = [
   },
   {
     q: '¿Qué servicios tiene el loteo?',
-    a: SERVICES.map((s) => `${s.label}: ${s.status ? estado[s.status] : 'por confirmar'}${s.detail ? `, ${s.detail.charAt(0).toLowerCase()}${s.detail.slice(1)}` : ''}`).join('. ') + '.',
+    // Si el detalle ya dice "obra" (ej. "Inicio de obra"), no repetir "en obra" adelante.
+    a: SERVICES.map((s) => {
+      const det = s.detail ? s.detail.charAt(0).toLowerCase() + s.detail.slice(1) : ''
+      const est = s.status ? estado[s.status] : 'por confirmar'
+      return `${s.label}: ${det && /obra/i.test(det) ? det : det ? `${est}, ${det}` : est}`
+    }).join('. ') + '.',
   },
   {
     q: '¿Está aprobado el loteo?',

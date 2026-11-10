@@ -1,6 +1,6 @@
 import AnimateIn from './AnimateIn'
 import ResponsiveTable from './ResponsiveTable'
-import { FINANCING_12, FINANCING_36, LOT_TYPES, NOTARIAL_COSTS, SITE, type LotSize } from '@/lib/data'
+import { FINANCING_12, FINANCING_36, LOT_TYPES, NOTARIAL_COSTS, SITE, availabilityLabel, type LotSize } from '@/lib/data'
 
 const SIZES = Object.keys(LOT_TYPES) as LotSize[]
 
@@ -13,7 +13,7 @@ function fmt(n: number, currency: 'USD' | 'ARS' = 'USD') {
     : `$ ${n.toLocaleString('es-AR')}`
 }
 
-export default function Financing() {
+export default function Financing({ available }: { available: Partial<Record<LotSize, number>> }) {
   // Opción 1 — hasta 2 filas por tamaño (Pesos / USD), cada una condicionada
   // a que exista ese tramo de financiación (mismo criterio que el loop original).
   const rows12 = SIZES.filter((s) => FINANCING_12[s]).flatMap((size) => {
@@ -44,6 +44,7 @@ export default function Financing() {
 
   const rows36 = SIZES.filter((s) => FINANCING_36[s]).map((size) => {
     const f = FINANCING_36[size]!
+    const n = available[size] ?? 0
     return {
       key: size,
       cells: {
@@ -53,15 +54,9 @@ export default function Financing() {
         disponibilidad: (
           <span
             className="rounded-full px-2 py-0.5 text-xs font-medium"
-            style={
-              f.availability === 'SIN UNIDADES'
-                ? { background: '#fef2f2', color: '#AA1120' }
-                : f.availability === 'Consultar'
-                ? { background: '#fefce8', color: '#854d0e' }
-                : { background: '#f0fdf4', color: '#166534' }
-            }
+            style={n === 0 ? { background: '#fef2f2', color: '#AA1120' } : { background: '#f0fdf4', color: '#166534' }}
           >
-            {f.availability}
+            {availabilityLabel(n)}
           </span>
         ),
       },

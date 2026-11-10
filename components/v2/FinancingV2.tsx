@@ -111,8 +111,8 @@ export default function FinancingV2() {
                 <tbody>
                   {SIZES.filter(s => FINANCING_36[s]).map((size) => {
                     const f = FINANCING_36[size]!
-                    const avail = f.availability
-                    const color = avail === 'SIN UNIDADES' ? '#FF1200' : avail === 'Consultar' ? '#cc8800' : '#4ade80'
+                    const avail = 'Consultar'
+                    const color = '#cc8800'
                     return (
                       <tr key={size} style={{ borderBottom: '1px solid #111' }}>
                         <td style={{ padding: '0.875rem 0.5rem', fontFamily: JOSEFIN, fontWeight: 500, color: '#F5F0EB', fontSize: '0.8rem' }}>{LOT_TYPES[size].dims}</td>

@@ -90,7 +90,7 @@ export default function PriceCalculatorV2() {
           <Row label="36 cuotas de" value={fmt(fin36.installmentUSD)} />
           <Row label="Total financiado" value={fmt(fin36.downUSD + fin36.installmentUSD * 36)} highlight />
           <div style={{ marginTop: '1rem', padding: '0.75rem 1rem', border: '1px solid #2a2000', background: '#141000', fontFamily: JOSEFIN, fontSize: '0.65rem', color: '#cc8800', letterSpacing: '0.1em' }}>
-            Disponibilidad: {fin36.availability} — Confirmar antes de ofrecer
+            Disponibilidad: consultar antes de ofrecer
           </div>
         </>
       )

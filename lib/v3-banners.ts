@@ -72,7 +72,6 @@ export function getV3Banners(lots: Lot[]): V3Banner[] {
       ],
       bullets: [
         ...NOTARIAL_COSTS.map((c) => `${c.concept}: ${c.value}`),
-        `Plan de 36 cuotas (12×26): ${FINANCING_36['12x26']?.availability}`,
       ],
     },
     {

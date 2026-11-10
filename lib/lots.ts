@@ -1,4 +1,4 @@
-import type { LotStatus } from './data'
+import type { LotStatus, LotSize } from './data'
 
 export type Lot = {
   id: string      // 'M1-L1'
@@ -194,4 +194,17 @@ export function countByStatus(lots: Lot[]) {
     acc[l.status] = (acc[l.status] ?? 0) + 1
     return acc
   }, {} as Record<LotStatus, number>)
+}
+
+// Lotes DISPONIBLES por medida, en vivo desde la planilla DISPONIBILIDAD DE LOTES. La tabla de
+// 36 cuotas y la calculadora muestran esto en vez de un texto fijo: antes decía "12×26: 1 lote
+// disponible" escrito a mano cuando ya no quedaba ninguno.
+export function availableBySize(lots: Lot[]): Partial<Record<LotSize, number>> {
+  const out: Partial<Record<LotSize, number>> = {}
+  for (const l of lots) {
+    if (l.status !== 'DISPONIBLE') continue
+    const k = l.dims.replace('×', 'x') as LotSize
+    out[k] = (out[k] ?? 0) + 1
+  }
+  return out
 }

@@ -15,9 +15,10 @@ export const SITE = {
 }
 
 // ---------- Servicios de infraestructura ----------
-// Estado real de ejecución de cada servicio, según el reporte de avance de
-// obra de Payé Desarrollos (avance-2026-07.pdf, julio 2026). Luz eléctrica no
-// aparece en ese reporte — dato aparte, confirmado directamente por el usuario.
+// Estado real de ejecución de cada servicio, informado por la oficina el 10/11/2026
+// (reemplaza al reporte de julio, avance-2026-07.pdf). Actualizar acá cada vez que
+// llegue un avance nuevo: la tarjeta de servicios, las etapas y las preguntas frecuentes
+// salen de estos datos.
 export type ServiceStatus = 'ejecutado' | 'en_obra' | 'proyectado'
 
 // Capa del mapa de avance de obra (ver components/project/AvanceObraMap.tsx) que
@@ -26,11 +27,11 @@ export type ServiceStatus = 'ejecutado' | 'en_obra' | 'proyectado'
 export type AvanceLayerId = 'agua' | 'cloaca' | 'cordon' | 'ripio'
 
 export const SERVICES: Array<{ label: string; status: ServiceStatus | null; detail: string | null; layer: AvanceLayerId | null }> = [
-  { label: 'Agua corriente',  status: 'en_obra',    detail: '90% ejecutado', layer: 'agua' },
-  { label: 'Luz eléctrica',   status: 'proyectado', detail: 'Esperando aprobación de DPEC', layer: null },
-  { label: 'Cloaca',          status: 'en_obra',    detail: '90% ejecutado', layer: 'cloaca' },
-  { label: 'Ripio',           status: 'en_obra',    detail: 'Apertura de calles en ejecución — sector oeste (jul. 2026)', layer: 'ripio' },
-  { label: 'Cordón cuneta',   status: 'en_obra',    detail: '8 de 16 manzanas ejecutadas (Mz 8–14 y Reserva Municipal 2)', layer: 'cordon' },
+  { label: 'Agua corriente',  status: 'en_obra',    detail: '95% ejecutado', layer: 'agua' },
+  { label: 'Luz eléctrica',   status: 'en_obra',    detail: 'Inicio de obra', layer: null },
+  { label: 'Cloaca',          status: 'en_obra',    detail: '95% ejecutado', layer: 'cloaca' },
+  { label: 'Ripio',           status: 'en_obra',    detail: '90% ejecutado (apertura de calles 95%)', layer: 'ripio' },
+  { label: 'Cordón cuneta',   status: 'en_obra',    detail: '12 de 16 manzanas ejecutadas', layer: 'cordon' },
 ]
 
 // ---------- Entorno y accesos ----------
@@ -66,8 +67,8 @@ export const PROJECT_PHASES: Array<{
   status: PhaseStatus | null
 }> = [
   { label: 'Aprobación municipal',         detail: SITE.ordinance, status: 'completado' },
-  { label: 'Apertura de calles y mensura', detail: 'Mensura aprobada por el Catastro de la Provincia de Corrientes; apertura de calles completada', status: 'completado' },
-  { label: 'Infraestructura de servicios', detail: 'Agua y cloaca 90% ejecutadas; cordón cuneta en 8 de 16 manzanas (jul. 2026)', status: 'en_curso' },
+  { label: 'Apertura de calles y mensura', detail: 'Mensura aprobada por el Catastro de la Provincia de Corrientes; apertura de calles 95% ejecutada', status: 'en_curso' },
+  { label: 'Infraestructura de servicios', detail: 'Agua y cloaca 95% ejecutadas; ripio 90%; cordón cuneta en 12 de 16 manzanas; luz en inicio de obra (nov. 2026)', status: 'en_curso' },
   { label: 'Escrituración',                detail: 'Documentos necesarios: cesión de derechos, acta de amojonamiento y libre de deuda', status: 'proyectado' },
 ]
 
@@ -122,13 +123,19 @@ export const FINANCING_12: Partial<Record<LotSize, {
 }
 
 // Opción 3 — 36 cuotas en USD
+// Disponibilidad: NO va acá; sale en vivo de la planilla (availableBySize en lib/lots.ts).
+// Acá solo el texto, para que la calculadora (cliente) no importe lib/lots entero.
+export function availabilityLabel(n = 0): string {
+  return n === 0 ? 'Sin unidades' : n === 1 ? '1 lote disponible' : `${n} lotes disponibles`
+}
+
 export const FINANCING_36: Partial<Record<LotSize, {
-  downUSD: number; installmentUSD: number; availability: string
+  downUSD: number; installmentUSD: number
 }>> = {
-  '12x26': { downUSD: 2000, installmentUSD: 590, availability: '1 lote disponible' },
-  '12x28': { downUSD: 2000, installmentUSD: 650, availability: 'Consultar' },
-  '12x30': { downUSD: 2000, installmentUSD: 750, availability: 'Consultar' },
-  '15x30': { downUSD: 3000, installmentUSD: 920, availability: '8 lotes disponibles' },
+  '12x26': { downUSD: 2000, installmentUSD: 590 },
+  '12x28': { downUSD: 2000, installmentUSD: 650 },
+  '12x30': { downUSD: 2000, installmentUSD: 750 },
+  '15x30': { downUSD: 3000, installmentUSD: 920 },
 }
 
 // Confirmado por el usuario: los gastos de la operación son únicamente estos 3.

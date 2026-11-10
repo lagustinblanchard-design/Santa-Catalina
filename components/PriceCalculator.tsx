@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { PRICES, FINANCING_12, FINANCING_36, LOT_TYPES, type LotSize } from '@/lib/data'
+import { PRICES, FINANCING_12, FINANCING_36, LOT_TYPES, availabilityLabel, type LotSize } from '@/lib/data'
 
 type Modality = 'contado' | '12_pesos' | '12_usd' | '36_usd'
 
@@ -21,7 +21,7 @@ function fmt(n: number, currency: 'USD' | 'ARS' = 'USD') {
     : `$ ${n.toLocaleString('es-AR')}`
 }
 
-export default function PriceCalculator() {
+export default function PriceCalculator({ available }: { available: Partial<Record<LotSize, number>> }) {
   const [size, setSize]         = useState<LotSize>('12x28')
   const [modality, setModality] = useState<Modality>('contado')
 
@@ -135,7 +135,7 @@ export default function PriceCalculator() {
             </span>
           </div>
           <div className="rounded-xl p-3 text-sm" style={{ background: '#fefce8', border: '1px solid #fde047', color: '#854d0e' }}>
-            <strong>Disponibilidad:</strong> {fin36.availability}. Confirmá antes de ofrecer al cliente.
+            <strong>Disponibilidad:</strong> {availabilityLabel(available[size])}. Confirmá antes de ofrecer al cliente.
           </div>
         </div>
       )
