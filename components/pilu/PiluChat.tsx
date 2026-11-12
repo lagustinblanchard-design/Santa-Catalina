@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * Pilu, el asistente virtual de RE/MAX Payé (y mascota de Desarrollos Payé), como chat
+ * Pilu, el asistente virtual (y mascota) de Desarrollos Payé, como chat
  * flotante en la web. Este componente es solo la cara: el cerebro (IA, precios desde la
  * planilla, escalación, alta del lead) vive en el CRM — ver lib/pilu.ts y docs/PILU-CONTRATO.md.
  *
@@ -36,7 +36,7 @@ import {
 } from '@/lib/pilu'
 
 const INTRO =
-  '¡Hola! 🐆 Soy Pilu, asistente virtual de RE/MAX Payé. Puedo contarle sobre los lotes de Santa Catalina, precios y formas de pago. Si prefiere hablar con una persona, avíseme.'
+  '¡Hola! 🐆 Soy Pilu, asistente virtual de Desarrollos Payé. Puedo contarle sobre los lotes de Santa Catalina, precios y formas de pago. Si prefiere hablar con una persona, avíseme.'
 
 // Botones del saludo, con la intención que se le avisa al CRM (ver PiluIntent en lib/pilu.ts).
 const QUICK_REPLIES: { label: string; intent: PiluIntent }[] = [
@@ -239,7 +239,7 @@ function PiluChatInner() {
         // idem
       }
       setContact('sent')
-      push(makeMessage('pilu', '¡Listo! Un asesor de RE/MAX Payé le va a escribir por WhatsApp. Mientras tanto puede seguir preguntándome. 🐆'))
+      push(makeMessage('pilu', '¡Listo! Un asesor de Desarrollos Payé le va a escribir por WhatsApp. Mientras tanto puede seguir preguntándome. 🐆'))
     } catch (err) {
       setLeadError(
         err instanceof PiluError && err.kind === 'rate_limit'
@@ -298,7 +298,7 @@ function PiluChatInner() {
       {open && (
         <div
           role="dialog"
-          aria-label="Chat con Pilu, asistente virtual de RE/MAX Payé"
+          aria-label="Chat con Pilu, asistente virtual de Desarrollos Payé"
           onKeyDown={(e) => e.key === 'Escape' && closeChat()}
           className="fixed inset-x-0 bottom-0 z-[60] flex h-[min(85dvh,640px)] flex-col overflow-hidden rounded-t-2xl shadow-2xl sm:inset-x-auto sm:bottom-[88px] sm:right-6 sm:h-[min(70dvh,580px)] sm:w-[380px] sm:rounded-2xl"
           style={{ background: '#fff', border: '1px solid #D8D2C7' }}
@@ -309,7 +309,7 @@ function PiluChatInner() {
               <p className="text-sm font-bold leading-tight">Pilu</p>
               <p className="flex items-center gap-1.5 text-xs leading-tight" style={{ color: 'rgba(242,236,224,0.75)' }}>
                 <span className="inline-block h-2 w-2 rounded-full" style={{ background: '#22c55e' }} />
-                Asistente virtual de RE/MAX Payé
+                Asistente virtual de Desarrollos Payé
               </p>
             </div>
             <button
@@ -375,7 +375,7 @@ function PiluChatInner() {
 
             {contact === 'offer' && (
               <div className="rounded-xl p-3 text-sm" style={{ background: '#F2ECE0', color: '#2E2A26' }}>
-                <p>¿Quiere que un asesor de RE/MAX Payé le escriba por WhatsApp?</p>
+                <p>¿Quiere que un asesor de Desarrollos Payé le escriba por WhatsApp?</p>
                 <div className="mt-2 flex gap-2">
                   <button
                     type="button"
